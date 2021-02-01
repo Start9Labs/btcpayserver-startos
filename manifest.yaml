@@ -1,11 +1,11 @@
 compat: v0
-id: hello-world
-version: 0.1.0
-title: hello-world
+id: btcpayserver
+version: 0.1.2
+title: btcpayserver
 description:
-  short: "A simple, minimal project to serve as a template for creating an app for the Embassy."
-  long: "Hello World is a simple, minimal project to serve as a template for creating an app for the Embassy."
-release-notes: Initial release.
+  short: ""
+  long: ""
+release-notes: https://github.com/btcpayserver/btcpayserver/releases/tag/
 ports:
   - internal: 80
     tor: 80

@@ -1,6 +1,4 @@
-# Wrapper for hello-world
-
-`hello-world` is a simple, minimal project to serve as a template for creating an app for the Embassy.
+# Wrapper for BTCPay Server
 
 ## Dependencies
 
@@ -16,8 +14,9 @@
 Clone the project locally. Note the submodule link to the original project(s). 
 
 ```
-git clone git@github.com:Start9Labs/hello-world-wrapper.git
+git clone git@github.com:elvece/btc-pay-server-wrapper.git
 cd hello-world-wrapper
+git submodule update --init --recursive
 ```
 
 ## Building

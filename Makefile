@@ -1,28 +1,33 @@
 ASSETS := $(shell yq r manifest.yaml assets.*.src)
 ASSET_PATHS := $(addprefix assets/,$(ASSETS))
-VERSION := $(shell toml get hello-world/Cargo.toml package.version)
-HELLO_WORLD_SRC := $(shell find ./hello-world/src) hello-world/Cargo.toml hello-world/Cargo.lock
+VERSION := $(shell git --git-dir=btcpayserver/.git describe --tags)
+VERSION_SIMPLE := $(shell echo $(VERSION) | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+).*/\1/g' | cut -c 2-)
+VERSION_TAG := $(shell git --git-dir=btcpayserver/.git describe --abbrev=0)
+BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
+BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
+BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
 
 .DELETE_ON_ERROR:
 
-all: hello-world.s9pk
+all: btcpayserver.s9pk
 
-install: hello-world.s9pk
-	appmgr install hello-world.s9pk
+install: btcpayserver.s9pk
+	appmgr install btcpayserver.s9pk
 
-hello-world.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ASSET_PATHS)
-	appmgr -vv pack $(shell pwd) -o hello-world.s9pk
-	appmgr -vv verify hello-world.s9pk
+btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ASSET_PATHS)
+	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
+	appmgr -vv verify btcpayserver.s9pk
 
 instructions.md: README.md
 	cp README.md instructions.md
 
-image.tar: Dockerfile docker_entrypoint.sh hello-world/target/armv7-unknown-linux-musleabihf/release/hello-world
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/hello-world --platform=linux/arm/v7 -o type=docker,dest=image.tar .
+image.tar: docker_entrypoint.sh
+	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build $(BTCPAYSERVER_SRC) --tag start9/btcpayserver --platform=linux/arm/v7 -o type=docker,dest=image.tar -f $(BTCPAYSERVER_SRC)/arm32v7.Dockerfile
 
-hello-world/target/armv7-unknown-linux-musleabihf/release/hello-world: $(HELLO_WORLD_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/hello-world:/home/rust/src start9/rust-musl-cross:armv7-musleabihf cargo +beta build --release
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/hello-world:/home/rust/src start9/rust-musl-cross:armv7-musleabihf musl-strip target/armv7-unknown-linux-musleabihf/release/hello-world
+manifest.yaml: $(BTCPAYSERVER_GIT_FILE)
+	$(info VERSION_SIMPLE is $(VERSION_SIMPLE))
+	yq eval -i ".version = \"$(VERSION_SIMPLE)\"" manifest.yaml
+	yq eval -i ".release-notes = \"https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
 
-manifest.yaml: hello-world/Cargo.toml
-	yq w -i manifest.yaml version $(VERSION)
+clean:
+	rm image.tar
