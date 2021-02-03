@@ -1,17 +1,17 @@
 compat: v0
 id: btcpayserver
-version: 0.1.2
+version: 1.0.6
 title: btcpayserver
 description:
   short: ""
   long: ""
-release-notes: https://github.com/btcpayserver/btcpayserver/releases/tag/
+release-notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.0.6.8
 ports:
   - internal: 80
     tor: 80
 image:
   type: tar
-mount: /root
+mount: /datadir
 has-instructions: true
 os-version-required: ">=0.2.4"
 os-version-recommended: ">=0.2.4"

@@ -1,4 +1,4 @@
-ASSETS := $(shell yq r manifest.yaml assets.*.src)
+ASSETS := $(shell yq e '.assets.[].src' manifest.yaml)
 ASSET_PATHS := $(addprefix assets/,$(ASSETS))
 VERSION := $(shell git --git-dir=btcpayserver/.git describe --tags)
 VERSION_SIMPLE := $(shell echo $(VERSION) | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+).*/\1/g' | cut -c 2-)
@@ -21,8 +21,8 @@ btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar in
 instructions.md: README.md
 	cp README.md instructions.md
 
-image.tar: docker_entrypoint.sh
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build $(BTCPAYSERVER_SRC) --tag start9/btcpayserver --platform=linux/arm/v7 -o type=docker,dest=image.tar -f $(BTCPAYSERVER_SRC)/arm32v7.Dockerfile
+image.tar: docker_entrypoint.sh $(BTCPAYSERVER_GIT_FILE)
+	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/btcpayserver -o type=docker,dest=image.tar -f ./Dockerfile .
 
 manifest.yaml: $(BTCPAYSERVER_GIT_FILE)
 	$(info VERSION_SIMPLE is $(VERSION_SIMPLE))
