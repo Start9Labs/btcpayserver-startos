@@ -10,4 +10,5 @@ export BTCPAYGEN_REVERSEPROXY="nginx"
 # export BTCPAYGEN_LIGHTNING="clightning"
 export BTCPAY_ENABLE_SSH=false
 
+dotnet ./nbxplorer/NBXplorer.dll &
 exec dotnet ./btcpayserver/BTCPayServer.dll

@@ -1,1 +1,69 @@
-{}
+bitcoind:
+  type: union
+  name: Bitcoin Core
+  description: |
+    The Bitcoin Core node to connect to:
+      - internal: The Bitcoin Core and Proxy services installed to your Embassy
+      - external: An unpruned Bitcoin Core node running on a different device
+      - quick-connect: A Quick Connect URL for an unpruned Bitcoin Core node
+  tag: type
+  default: internal
+  variants:
+    internal:
+      rpc-host:
+        type: pointer
+        name: Local RPC Address
+        description: The LAN IP address of your Bitcoin Proxy service
+        subtype: app
+        app-id: btc-rpc-proxy
+        target: lan-address
+      rpc-user:
+        type: pointer
+        name: RPC Username
+        description: The username for the RPC user allocated to lnd
+        subtype: app
+        app-id: btc-rpc-proxy
+        target: config
+        index: 'users.[first(item => ''item.name = "btcpayserver")].name'
+      rpc-password:
+        type: pointer
+        name: RPC Password
+        description: The password for the RPC user allocated to lnd
+        subtype: app
+        app-id: btc-rpc-proxy
+        target: config
+        index: 'users.[first(item => ''item.name = "btcpayserver")].password'
+    external:
+      rpc-host:
+        type: string
+        name: Public Address
+        description: The public address of your Bitcoin Core server
+        nullable: false
+      rpc-user:
+        type: string
+        name: RPC Username
+        description: The username for the RPC user on your Bitcoin Core RPC server
+        nullable: false
+      rpc-password:
+        type: string
+        name: RPC Password
+        description: The password for the RPC user on your Bitcoin Core RPC server
+        nullable: false
+      rpc-port:
+        type: number
+        name: RPC Port
+        description: The port that your Bitcoin Core RPC server is bound to
+        nullable: false
+        range: "[0,65535]"
+        integral: true
+        default: 8332
+    quick-connect:
+      quick-connect-url:
+        type: string
+        name: Quick Connect URL
+        description: |
+          The Quick Connect URL for your Bitcoin Core RPC server
+          NOTE: LND will not accept a .onion url for this option
+        nullable: false
+        pattern: 'btcstandup://[^:]*:[^@]*@[a-zA-Z0-9.-]+:[0-9]+(/(\?(label=.+)?)?)?'
+        patternDescription: Must be a valid Quick Connect URL. For help, check out https://github.com/BlockchainCommons/Gordian/blob/master/Docs/Quick-Connect-API.md
