@@ -17,3 +17,26 @@ os-version-required: ">=0.2.4"
 os-version-recommended: ">=0.2.4"
 assets: []
 hidden-service-version: v3
+dependencies:
+  btc-rpc-proxy:
+    version: "^0.2.4"
+    optional: Can alternatively configure an external bitcoin node.
+    description: Used to fetch validated blocks.
+    config:
+      - rule: '''users.*.name = "btcpayserver"'
+        description: 'Must have an RPC user named "btcpayserver"'
+        suggestions:
+          - PUSH:
+              to: "users"
+              value:
+                name: btcpayserver
+                allowed-calls: []
+          - SET:
+              var: 'users.[first(item => ''item.name = "btcpayserver")].password'
+              to-entropy:
+                charset: "a-z,A-Z,0-9"
+                len: 22
+  bitcoind:
+    version: "^0.21.0"
+    optional: Can alternatively configure an external bitcoin node.
+    description: Used for the P2P connection interface.

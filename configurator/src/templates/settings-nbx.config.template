@@ -21,8 +21,10 @@
 #agm.startheight=-1
 ## rescan forces a rescan from startheight
 #agm.rescan=0
+
+
 ## This is the RPC Connection to your node
-btc.rpc.url=http://{btc_rpc_proxy_rpc_host}:8332/
+btc.rpc.url=http://{btc_rpc_proxy_rpc_host}:{btc_rpc_proxy_port}/
 #By user name and password
 btc.rpc.user={btc_rpc_proxy_rpc_user}
 btc.rpc.password={btc_rpc_proxy_rpc_password}
@@ -32,7 +34,7 @@ btc.rpc.password={btc_rpc_proxy_rpc_password}
 #btc.rpc.auth=walletuser:password
 
 ## This is the connection to your node through P2P
-#btc.node.endpoint=127.0.0.1:BTC
+btc.node.endpoint={btc_p2p_host}:{btc_p2p_port}
 
 ## minutxovalue defines the minimum value allowed for a utxo to be tracked
 #btc.minutxovalue=1
@@ -41,6 +43,8 @@ btc.rpc.password={btc_rpc_proxy_rpc_password}
 #btc.startheight=-1
 ## rescan forces a rescan from startheight
 #btc.rescan=0
+
+
 ## This is the RPC Connection to your node
 #btx.rpc.url=http://127.0.0.1:8556/
 #By user name and password
@@ -456,9 +460,9 @@ btc.rpc.password={btc_rpc_proxy_rpc_password}
 
 
 ####Server Commands####
-#port=24444
-#bind=127.0.0.1
-#mainnet=1
+port=24444
+bind=127.0.0.1
+mainnet=1
 
 
 ####Azure Service Bus####

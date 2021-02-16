@@ -1,9 +1,9 @@
 ### Global settings ###
-#network=mainnet
+network=mainnet
 
 ### Server settings ###
-#port=23000
-#bind=127.0.0.1
+port=23000
+bind=127.0.0.1
 #httpscertificatefilepath=devtest.pfx
 #httpscertificatefilepassword=toto
 
@@ -13,7 +13,7 @@
 sqlitefile=sqlite.db
 
 ### NBXplorer settings ###
-#BTC.explorer.url=http://127.0.0.1:24444/
-#BTC.explorer.cookiefile=/root/.nbxplorer/Main/.cookie
+#BTC.explorer.url=http://{btc_proxy_address}:24444/
+#BTC.explorer.cookiefile=/nbxplorer/Main/.cookie
 #BTC.lightning=/root/.lightning/lightning-rpc
 #BTC.lightning=https://apitoken:API_TOKEN_SECRET@charge.example.com/

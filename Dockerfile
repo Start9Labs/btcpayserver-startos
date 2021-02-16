@@ -48,11 +48,13 @@ WORKDIR /app
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV BTCPAY_DATADIR=/datadir/btcpayserver
 ENV NBXPLORER_DATADIR=/datadir/nbxplorer
+ENV NBXPLORER_NOAUTH=1
 
 VOLUME /datadir
 
 COPY --from=nbx-builder "/app" ./nbxplorer
 COPY --from=btcpay-builder "/app" ./btcpayserver
 
+ADD ./configurator/target/armv7-unknown-linux-musleabihf/release/configurator /usr/local/bin/configurator
 COPY ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]

@@ -1,5 +1,7 @@
 # Wrapper for BTCPay Server
 
+[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free.
+
 ## Dependencies
 
 - [docker](https://docs.docker.com/get-docker)
@@ -14,8 +16,8 @@
 Clone the project locally. Note the submodule link to the original project(s). 
 
 ```
-git clone git@github.com:elvece/btc-pay-server-wrapper.git
-cd hello-world-wrapper
+git clone git@github.com:elvece/btcpayserver-wrapper.git
+cd btcpayserver-wrapper
 git submodule update --init --recursive
 ```
 
@@ -29,10 +31,10 @@ make
 
 ## Installing (on Embassy)
 
-SSH into an Embassy device.
+SSH into a device running EmbassyOS.
 `scp` the `.s9pk` to any directory from your local machine.
 Run the following command to determine successful install:
 
 ```
-appmgr install hello-world.s9pk
+appmgr install btcpayserver.s9pk
 ```

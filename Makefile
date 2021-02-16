@@ -6,6 +6,7 @@ VERSION_TAG := $(shell git --git-dir=btcpayserver/.git describe --abbrev=0)
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
 BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
 BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
+CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
 
 .DELETE_ON_ERROR:
 
@@ -21,8 +22,12 @@ btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar in
 instructions.md: README.md
 	cp README.md instructions.md
 
-image.tar: docker_entrypoint.sh $(BTCPAYSERVER_GIT_FILE)
+image.tar: docker_entrypoint.sh configurator/target/armv7-unknown-linux-musleabihf/release/configurator $(BTCPAYSERVER_GIT_FILE)
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/btcpayserver -o type=docker,dest=image.tar -f ./Dockerfile .
+
+configurator/target/armv7-unknown-linux-musleabihf/release/configurator: $(CONFIGURATOR_SRC)
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:armv7-musleabihf cargo +beta build --release
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:armv7-musleabihf musl-strip target/armv7-unknown-linux-musleabihf/release/configurator
 
 manifest.yaml: $(BTCPAYSERVER_GIT_FILE)
 	$(info VERSION_SIMPLE is $(VERSION_SIMPLE))

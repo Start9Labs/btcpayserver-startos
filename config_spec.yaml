@@ -1,6 +1,6 @@
-bitcoind:
+bitcoin-rpc:
   type: union
-  name: Bitcoin Core
+  name: Bitcoin Core RPC
   description: |
     The Bitcoin Core node to connect to:
       - internal: The Bitcoin Core and Proxy services installed to your Embassy
@@ -67,3 +67,36 @@ bitcoind:
         nullable: false
         pattern: 'btcstandup://[^:]*:[^@]*@[a-zA-Z0-9.-]+:[0-9]+(/(\?(label=.+)?)?)?'
         patternDescription: Must be a valid Quick Connect URL. For help, check out https://github.com/BlockchainCommons/Gordian/blob/master/Docs/Quick-Connect-API.md
+bitcoin-p2p:
+  type: union
+  name: Bitcoin Core P2P
+  description: |
+    The Bitcoin Core node to connect to:
+      - internal: The Bitcoin Core and Proxy services installed to your Embassy
+      - external: An unpruned Bitcoin Core node running on a different device
+      - quick-connect: A Quick Connect URL for an unpruned Bitcoin Core node
+  tag: type
+  default: internal
+  variants:
+    internal:
+      p2p-host:
+        type: pointer
+        name: Local P2P Address
+        description: The LAN IP address of your Bitcoin service
+        subtype: app
+        app-id: bitcoind
+        target: lan-address
+    external:
+      p2p-host:
+        type: string
+        name: Public Address
+        description: The public address of your Bitcoin Core server
+        nullable: false
+      p2p-port:
+        type: number
+        name: P2P Port
+        description: The port that your Bitcoin Core P2P server is bound to
+        nullable: false
+        range: "[0,65535]"
+        integral: true
+        default: 8332
