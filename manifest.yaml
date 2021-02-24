@@ -7,7 +7,7 @@ description:
   long: ""
 release-notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.0.6.8
 ports:
-  - internal: 80
+  - internal: 23000
     tor: 80
 image:
   type: tar

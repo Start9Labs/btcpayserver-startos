@@ -3,12 +3,12 @@ network=mainnet
 
 ### Server settings ###
 port=23000
-bind=127.0.0.1
+bind=0.0.0.0
 #httpscertificatefilepath=devtest.pfx
 #httpscertificatefilepassword=toto
 
 ### Database ###
-#postgres=User ID=root;Password=myPassword;Host=localhost;Port=5432;Database=myDataBase;
+#postgres=User ID=root;Password=myPassword;Host=localhost;Port=5432;
 #mysql=User ID=root;Password=myPassword;Host=localhost;Port=3306;Database=myDataBase;
 sqlitefile=sqlite.db
 
