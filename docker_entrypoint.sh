@@ -2,6 +2,10 @@
 
 set -ea
 
+if [ "$#" -ne "0" ]; then
+  exec btcpay-admin.sh $@
+fi
+
 _term() { 
   echo "Caught SIGTERM signal!" 
   kill -TERM "$nbxplorer_process" 2>/dev/null

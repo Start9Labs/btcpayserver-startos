@@ -100,3 +100,17 @@ bitcoin-p2p:
         range: "[0,65535]"
         integral: true
         default: 8332
+c-lightning:
+  type: union
+  name: C-lightning
+  description: The details needed for lightning node connection to the internal c-lightning service.
+  nullable: true
+  tag: type
+  default: internal
+  variants:
+    internal:
+      rpc:
+        type: string
+        name: RPC stuff
+        description: things
+        nullable: true

@@ -17,6 +17,27 @@ os-version-required: ">=0.2.4"
 os-version-recommended: ">=0.2.4"
 assets: []
 hidden-service-version: v3
+actions:
+  - id: "reset-server-policy"
+    name: "Reset Server Policies"
+    description: "Resets the policies settings if you cannot create a new user because registrations are disabled."
+    warning: |
+      "If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user on the front-end home page using the register button. Running this command will delete any other server settings currently being used."
+    allowed-statuses: 
+      - "RUNNING"
+    command:
+      - docker_entrypoint.sh
+      - reset-server-policy
+  - id: "reset-admin-password"
+    name: "Reset Admin Password"
+    description: "Resets the admin user with a temporary password."
+    warning: |
+      "This action will fail if more than one admin user is present. If another admin user exists, please login to this admin account to add SMTP settings to utilize the default "Forgot Password" flow."
+    allowed-statuses: 
+      - "RUNNING"
+    command:
+      - docker_entrypoint.sh
+      - reset-admin-password
 dependencies:
   btc-rpc-proxy:
     version: "^0.2.4"
@@ -40,3 +61,9 @@ dependencies:
     version: "^0.21.0"
     optional: Can alternatively configure an external bitcoin node.
     description: Used for the P2P connection interface.
+  c-lightning:
+    version: ^0.9.1
+    description: Used to communicate with the Lightning Network.
+    config: []
+    optional: Optionally use c-lightning as integrated lightning network implementation
+    mount-shared: true

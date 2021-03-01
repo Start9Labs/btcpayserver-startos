@@ -4,6 +4,7 @@ VERSION := $(shell git --git-dir=btcpayserver/.git describe --tags)
 VERSION_SIMPLE := $(shell echo $(VERSION) | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+).*/\1/g' | cut -c 2-)
 VERSION_TAG := $(shell git --git-dir=btcpayserver/.git describe --abbrev=0)
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
+ACTIONS_SRC := $(shell find ./actions)
 BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
 BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
 CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
@@ -15,7 +16,7 @@ all: btcpayserver.s9pk
 install: btcpayserver.s9pk
 	appmgr install btcpayserver.s9pk
 
-btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ASSET_PATHS)
+btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
 	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
 	appmgr -vv verify btcpayserver.s9pk
 

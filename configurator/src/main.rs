@@ -1,9 +1,7 @@
 
 use std::fs::File;
-use std::net::{IpAddr};
-use std::{
-    io::Write
-};
+use std::net::IpAddr;
+use std::io::Write;
 
 use anyhow::Context;
 use http::Uri;
@@ -41,6 +39,7 @@ fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), an
 struct Config {
     bitcoin_rpc: BitcoindConfig,
     bitcoin_p2p: BitcoindP2PConfig,
+    c_lightning_rpc: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -81,6 +80,26 @@ enum BitcoindP2PConfig {
         p2p_host: Uri,
         p2p_port: u16,
     },
+}
+#[derive(serde::Serialize)]
+pub struct Properties {
+    version: u8,
+    data: Data,
+}
+#[derive(serde::Serialize)]
+pub struct Data {
+    #[serde(rename = "C-lightning RPC")]
+    c_lightning_rpc: Property<String>,
+}
+#[derive(serde::Serialize)]
+pub struct Property<T> {
+    #[serde(rename = "type")]
+    value_type: &'static str,
+    value: T,
+    description: Option<String>,
+    copyable: bool,
+    qr: bool,
+    masked: bool,
 }
 
 fn main() -> Result<(), anyhow::Error> {
@@ -143,6 +162,25 @@ fn main() -> Result<(), anyhow::Error> {
             p2p_port
         )
     };
+
+    if config.c_lightning_rpc.is_some() {
+        serde_yaml::to_writer(
+            File::create("/datadir/start9/stats.yaml")?,
+            &Properties {
+                version: 2,
+                data: Data {
+                    c_lightning_rpc: Property {
+                        value_type: "string",
+                        value: "/datadir/start9/shared/c-lightning/lightning-rpc".to_owned(),
+                        description: Some("The RPC unix domain socket connection path needed for BTCPay Server".to_owned()),
+                        copyable: true,
+                        qr:false,
+                        masked: true,
+                    },
+                },
+            },
+        )?;
+    }
     
     write!(
         nbx_config,
