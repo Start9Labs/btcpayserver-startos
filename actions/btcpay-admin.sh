@@ -19,9 +19,10 @@ create_password() {
         exit 8
     else
         PW=$(LC_ALL=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+= < /dev/urandom | fold -w ${1:-10} | head -n 1)
-        HASH=$(dotnet /actions/actions.dll $PW)
-        query "UPDATE public.\"AspNetUsers\" SET \"PasswordHash\"=$HASH WHERE \"Id\" = ${ARR[1]}"
-        echo "Your new temporary password is: $PW. Use this to login and reset your password. This password will not be available after you leave this screen."
+        PWS= echo "$PW" | tr -d '\r'
+        HASH=$(dotnet /actions/actions.dll $PWS)
+        query "UPDATE public.\"AspNetUsers\" SET \"PasswordHash\"=$HASH WHERE \"Id\" = ${ARR[0]}"
+        echo "Your new temporary password is: $PWS. Use this to login and reset your password. This password will not be available after you leave this screen."
     fi
 }
 

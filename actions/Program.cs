@@ -20,7 +20,7 @@ namespace actions
             {
                 rng.GetBytes(salt);
             }
-            byte[] subkey = KeyDerivation.Pbkdf2(args[0], salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+            byte[] subkey = KeyDerivation.Pbkdf2(args[1], salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
 
             var outputBytes = new byte[1 + SaltSize + Pbkdf2SubkeyLength];
             outputBytes[0] = 0x00; // format marker
