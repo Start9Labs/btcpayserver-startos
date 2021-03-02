@@ -9,7 +9,6 @@ RUN cd NBXplorer && \
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1.202 AS actions-builder
 WORKDIR /actions
-RUN ls
 COPY . .
 RUN dotnet restore "actions/actions.csproj"
 WORKDIR "/actions"
