@@ -39,7 +39,17 @@ fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), an
 struct Config {
     bitcoin_rpc: BitcoindConfig,
     bitcoin_p2p: BitcoindP2PConfig,
-    c_lightning_rpc: Option<String>,
+    c_lightning: CLightningConfig,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "kebab-case")]
+enum CLightningConfig {
+    #[serde(rename_all = "kebab-case")]
+    Internal {
+        rpc: bool,
+    },
 }
 
 #[derive(serde::Deserialize)]
@@ -163,7 +173,15 @@ fn main() -> Result<(), anyhow::Error> {
         )
     };
 
-    if config.c_lightning_rpc.is_some() {
+    let c_lightning_rpc = match config.c_lightning {
+        CLightningConfig::Internal {
+            rpc,
+        } => (
+            rpc
+        )
+    };
+
+    if c_lightning_rpc {
         serde_yaml::to_writer(
             File::create("/datadir/start9/stats.yaml")?,
             &Properties {

@@ -104,13 +104,12 @@ c-lightning:
   type: union
   name: C-lightning
   description: The details needed for lightning node connection to the internal c-lightning service.
-  nullable: true
   tag: type
   default: internal
   variants:
     internal:
       rpc:
-        type: string
-        name: RPC stuff
-        description: things
-        nullable: true
+        type: boolean
+        default: false
+        name: Connection Path Enabled
+        description: Toggle to get internal c-lightning node path.
