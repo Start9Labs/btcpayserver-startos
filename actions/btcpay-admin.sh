@@ -8,21 +8,19 @@ query() {
 
 create_password() {
     ADMIN_USERS=$(query "SELECT \"UserId\" FROM \"AspNetUserRoles\"")
-    echo "$ADMIN_USERS"
     ARR=$(echo "$ADMIN_USERS" | readarray -t)
-    echo "$ARR"
     LEN="${#ARR[@]}"
-    echo "$LEN"
     if [ "$LEN" -gt "1" ]
     then
         echo "More than one admin user exists, please use this account to create a new admin user." >&2
         exit 8
     else
-        PW=$(LC_ALL=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+= < /dev/urandom | fold -w ${1:-10} | head -n 1)
-        PWS= echo "$PW" | tr -d '\r'
-        HASH=$(dotnet /actions/actions.dll $PWS)
-        query "UPDATE public.\"AspNetUsers\" SET \"PasswordHash\"=$HASH WHERE \"Id\" = ${ARR[0]}"
-        echo "Your new temporary password is: $PWS. Use this to login and reset your password. This password will not be available after you leave this screen."
+        ADMIN=( ${ADMIN_USERS[0]} ); echo ${ADMIN[1]}  
+        PW=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | fold -w ${1:-10} | head -n 1)
+        HASH=$(dotnet /actions/actions.dll "$PW")
+        query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'"
+        NEWLINE=$'\n'
+        echo "Your new temporary password is: ${PW}${NEWLINE}This password will be unavailable for retrieval after you leave the screen."
     fi
 }
 
@@ -36,6 +34,7 @@ case "$1" in
         ;;
     reset-server-policy)
         query "DELETE FROM \"Settings\" WHERE \"Id\" = 'BTCPayServer.Services.PoliciesSettings'"
+        echo "Registrations are now enabled on your server."
         ;;
     reset-admin-password)
         create_password
