@@ -13,8 +13,6 @@ _term() {
 }
 
 export HOST_IP=$(ip -4 route list match 0/0 | awk '{print $3}')
-export BTCPAY_HOST="btcpay.local"
-export NBITCOIN_NETWORK="mainnet"
 export BTCPAY_ENABLE_SSH=false
 
 configurator > .env 

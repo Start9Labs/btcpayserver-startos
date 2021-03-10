@@ -136,7 +136,7 @@ pub struct Property<T> {
 
 fn main() -> Result<(), anyhow::Error> {
     let config: Config = serde_yaml::from_reader(File::open("/datadir/start9/config.yaml").with_context(||"/datadir/start9/config.yaml")?)?;
-    // let tor_address = std::env::var("TOR_ADDRESS")?;
+    let tor_address = std::env::var("TOR_ADDRESS")?;
     let mut nbx_config = File::create("/datadir/nbxplorer/Main/settings.config").with_context(|| "/datadir/nbxplorer/mainnet/settings.config")?;
     let mut btcpay_config = File::create("/datadir/btcpayserver/Main/settings.config").with_context(||"/datadir/btcpayserver/btcpay.config")?;
     let (
@@ -211,9 +211,17 @@ fn main() -> Result<(), anyhow::Error> {
         btc_proxy_address = bitcoind_rpc_host
     )?;
 
+    let addr = tor_address.split('.').collect::<Vec<&str>>();
+    match addr.first() {
+        Some(x) => {
+            print!("{}", format!("export BTCPAY_HOST='https://{}.local/'\n", x));
+        }
+        None => {}
+    }
+    
     match config.lightning.internal {
         LightningImplementationConfig::CLightning => {
-            print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'");
+            print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'\n");
         },
         LightningImplementationConfig::Lnd => {
             let lan_address =
