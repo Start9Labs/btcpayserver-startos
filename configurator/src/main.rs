@@ -1,7 +1,7 @@
 
 use std::fs::File;
 use std::net::IpAddr;
-use std::io::Write;
+use std::io::{Write};
 
 use anyhow::Context;
 use http::Uri;
@@ -37,25 +37,57 @@ fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), an
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct Config {
-    bitcoin_rpc: BitcoindConfig,
-    bitcoin_p2p: BitcoindP2PConfig,
-    c_lightning: CLightningConfig,
+    bitcoin: BitcoindConfig,
+    lightning: LightningConfig,
 }
 
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct LightningConfig {
+    internal: LightningImplementationConfig,
+    lnd: LndConfig,
+    c_lightning: CLightningConfig
+}
+
+#[derive(serde::Deserialize)]
+// #[serde(tag = "type")]
+#[serde(rename_all = "kebab-case")]
+enum LightningImplementationConfig {
+    #[serde(rename_all = "kebab-case")]
+    CLightning,
+    Lnd,
+    None,
+}
+#[derive(serde::Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "kebab-case")]
+enum LndConfig {
+    #[serde(rename_all = "kebab-case")]
+    Internal {
+        address: String,
+    },
+}
 #[derive(serde::Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
 enum CLightningConfig {
     #[serde(rename_all = "kebab-case")]
     Internal {
-        rpc: bool,
+        address: String,
     },
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct BitcoindConfig {
+    bitcoind_rpc: BitcoindRPCConfig,
+    bitcoind_p2p: BitcoindP2PConfig
 }
 
 #[derive(serde::Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
-enum BitcoindConfig {
+enum BitcoindRPCConfig {
     #[serde(rename_all = "kebab-case")]
     Internal {
         rpc_host: IpAddr,
@@ -92,16 +124,6 @@ enum BitcoindP2PConfig {
     },
 }
 #[derive(serde::Serialize)]
-pub struct Properties {
-    version: u8,
-    data: Data,
-}
-#[derive(serde::Serialize)]
-pub struct Data {
-    #[serde(rename = "C-lightning RPC")]
-    c_lightning_rpc: Property<String>,
-}
-#[derive(serde::Serialize)]
 pub struct Property<T> {
     #[serde(rename = "type")]
     value_type: &'static str,
@@ -122,8 +144,8 @@ fn main() -> Result<(), anyhow::Error> {
         bitcoind_rpc_pass,
         bitcoind_rpc_host,
         bitcoind_rpc_port,
-    ) = match config.bitcoin_rpc {
-        BitcoindConfig::Internal {
+    ) = match config.bitcoin.bitcoind_rpc {
+        BitcoindRPCConfig::Internal {
             rpc_host,
             rpc_user,
             rpc_password,
@@ -133,7 +155,7 @@ fn main() -> Result<(), anyhow::Error> {
             format!("{}", rpc_host),
             8332,
         ),
-        BitcoindConfig::External {
+        BitcoindRPCConfig::External {
             rpc_host,
             rpc_user,
             rpc_password,
@@ -144,7 +166,7 @@ fn main() -> Result<(), anyhow::Error> {
             format!("{}", rpc_host.host().unwrap()),
             rpc_port,
         ),
-        BitcoindConfig::QuickConnect {
+        BitcoindRPCConfig::QuickConnect {
             quick_connect_url,
         } => {
             let (bitcoin_rpc_user, bitcoin_rpc_pass, bitcoin_rpc_host, bitcoin_rpc_port) =
@@ -157,7 +179,7 @@ fn main() -> Result<(), anyhow::Error> {
             )
         }
     };
-    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin_p2p {
+    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin.bitcoind_p2p {
         BitcoindP2PConfig::Internal {
             p2p_host,
         } => (
@@ -173,33 +195,6 @@ fn main() -> Result<(), anyhow::Error> {
         )
     };
 
-    let c_lightning_rpc = match config.c_lightning {
-        CLightningConfig::Internal {
-            rpc,
-        } => (
-            rpc
-        )
-    };
-
-    if c_lightning_rpc {
-        serde_yaml::to_writer(
-            File::create("/datadir/start9/stats.yaml")?,
-            &Properties {
-                version: 2,
-                data: Data {
-                    c_lightning_rpc: Property {
-                        value_type: "string",
-                        value: "/datadir/start9/shared/c-lightning/lightning-rpc".to_owned(),
-                        description: Some("The RPC unix domain socket connection path needed for BTCPay Server".to_owned()),
-                        copyable: true,
-                        qr:false,
-                        masked: true,
-                    },
-                },
-            },
-        )?;
-    }
-    
     write!(
         nbx_config,
         include_str!("templates/settings-nbx.config.template"),
@@ -215,5 +210,27 @@ fn main() -> Result<(), anyhow::Error> {
         include_str!("templates/settings-btcpay.config.template"),
         btc_proxy_address = bitcoind_rpc_host
     )?;
+
+    match config.lightning.internal {
+        LightningImplementationConfig::CLightning => {
+            print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'");
+        },
+        LightningImplementationConfig::Lnd => {
+            let lan_address =
+                match config.lightning.lnd {
+                    LndConfig::Internal {
+                        address,
+                    } => address,
+                };
+            print!("{}", format!(
+                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;allowinsecure=true'\n
+                export BTCPAY_BTCEXTERNALLNDGRPC='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'\n
+                export BTCPAY_BTCEXTERNALLNDREST='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'"
+                
+                , lan_address, lan_address, lan_address));
+        },
+        LightningImplementationConfig::None => {}
+    }
+
     Ok(())
 }

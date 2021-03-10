@@ -1,6 +1,6 @@
 compat: v0
 id: btcpayserver
-version: 1.0.6
+version: 1.0.6.8
 title: btcpayserver
 description:
   short: ""
@@ -13,10 +13,18 @@ image:
   type: tar
 mount: /datadir
 has-instructions: true
-os-version-required: ">=0.2.4"
-os-version-recommended: ">=0.2.4"
+os-version-required: ">=0.2.10"
+os-version-recommended: ">=0.2.10"
 assets: []
 hidden-service-version: v3
+install-alert: |
+  BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!
+
+  The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.
+uninstall-alert: |
+  READ CAREFULLY! Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
+restore-alert: |
+  Restoring BTCPay will overwrite its current data. Any stores or invoices created since the last backup will be not be recognized.
 actions:
   - id: "reset-server-policy"
     name: "Reset Server Policies"
@@ -40,7 +48,7 @@ actions:
       - reset-admin-password
 dependencies:
   btc-rpc-proxy:
-    version: "^0.2.4"
+    version: ">=0.2.4 <0.4.0"
     optional: Can alternatively configure an external bitcoin node.
     description: Used to fetch validated blocks.
     config:
@@ -57,13 +65,23 @@ dependencies:
               to-entropy:
                 charset: "a-z,A-Z,0-9"
                 len: 22
+      - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
+        description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
+        suggestions:
+          - SET:
+              var: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks'
+              to-value: true
   bitcoind:
     version: "^0.21.0"
     optional: Can alternatively configure an external bitcoin node.
     description: Used for the P2P connection interface.
   c-lightning:
-    version: ^0.9.1
+    version: "^0.9.3"
     description: Used to communicate with the Lightning Network.
-    config: []
-    optional: Optionally use c-lightning as integrated lightning network implementation
+    optional: Optionally use c-lightning for internal lightning network node implementation.
     mount-shared: true
+  lnd:
+    version: "^0.11.1"
+    optional: Optionally use LND for internal lightning network node implementation.
+    description: Used to communicate with the Lightning Network.
+    mount-public: true

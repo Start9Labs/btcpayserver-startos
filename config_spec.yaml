@@ -1,115 +1,156 @@
-bitcoin-rpc:
-  type: union
-  name: Bitcoin Core RPC
-  description: |
-    The Bitcoin Core node to connect to:
-      - internal: The Bitcoin Core and Proxy services installed to your Embassy
-      - external: An unpruned Bitcoin Core node running on a different device
-      - quick-connect: A Quick Connect URL for an unpruned Bitcoin Core node
-  tag: type
-  default: internal
-  variants:
+bitcoin:
+  type: object
+  name: Bitcoin Settings
+  description: RPC and P2P node configuration options (these are internal pointers only - there is nothing to configure)
+  nullable: false
+  nullByDefault: false
+  spec:
+    bitcoind-rpc:
+      type: union
+      name: Bitcoin Core RPC
+      description: |
+        The Bitcoin Core node to connect to:
+          - internal: The Bitcoin Core and Proxy services installed to your Embassy
+          - external: An unpruned Bitcoin Core node running on a different device
+          - quick-connect: A Quick Connect URL for an unpruned Bitcoin Core node
+      tag: type
+      default: internal
+      variants:
+        internal:
+          rpc-host:
+            type: pointer
+            name: Local RPC Address
+            description: The LAN IP address of your Bitcoin Proxy service
+            subtype: app
+            app-id: btc-rpc-proxy
+            target: lan-address
+          rpc-user:
+            type: pointer
+            name: RPC Username
+            description: The username for the RPC user allocated to lnd
+            subtype: app
+            app-id: btc-rpc-proxy
+            target: config
+            index: 'users.[first(item => ''item.name = "btcpayserver")].name'
+          rpc-password:
+            type: pointer
+            name: RPC Password
+            description: The password for the RPC user allocated to lnd
+            subtype: app
+            app-id: btc-rpc-proxy
+            target: config
+            index: 'users.[first(item => ''item.name = "btcpayserver")].password'
+        external:
+          rpc-host:
+            type: string
+            name: Public Address
+            description: The public address of your Bitcoin Core server
+            nullable: false
+          rpc-user:
+            type: string
+            name: RPC Username
+            description: The username for the RPC user on your Bitcoin Core RPC server
+            nullable: false
+          rpc-password:
+            type: string
+            name: RPC Password
+            description: The password for the RPC user on your Bitcoin Core RPC server
+            nullable: false
+          rpc-port:
+            type: number
+            name: RPC Port
+            description: The port that your Bitcoin Core RPC server is bound to
+            nullable: false
+            range: "[0,65535]"
+            integral: true
+            default: 8332
+        quick-connect:
+          quick-connect-url:
+            type: string
+            name: Quick Connect URL
+            description: |
+              The Quick Connect URL for your Bitcoin Core RPC server
+              NOTE: LND will not accept a .onion url for this option
+            nullable: false
+            pattern: 'btcstandup://[^:]*:[^@]*@[a-zA-Z0-9.-]+:[0-9]+(/(\?(label=.+)?)?)?'
+            patternDescription: Must be a valid Quick Connect URL. For help, check out https://github.com/BlockchainCommons/Gordian/blob/master/Docs/Quick-Connect-API.md
+    bitcoind-p2p:
+      type: union
+      name: Bitcoin Core P2P
+      description: |
+        The Bitcoin Core node to connect to:
+          - internal: The Bitcoin Core and Proxy services installed to your Embassy
+          - external: An unpruned Bitcoin Core node running on a different device
+          - quick-connect: A Quick Connect URL for an unpruned Bitcoin Core node
+      tag: type
+      default: internal
+      variants:
+        internal:
+          p2p-host:
+            type: pointer
+            name: Local P2P Address
+            description: The LAN IP address of your Bitcoin service
+            subtype: app
+            app-id: bitcoind
+            target: lan-address
+        external:
+          p2p-host:
+            type: string
+            name: Public Address
+            description: The public address of your Bitcoin Core server
+            nullable: false
+          p2p-port:
+            type: number
+            name: P2P Port
+            description: The port that your Bitcoin Core P2P server is bound to
+            nullable: false
+            range: "[0,65535]"
+            integral: true
+            default: 8332
+lightning:
+  type: object
+  name: Lightning Settings
+  description: Internal Lightning implementation configuration options
+  nullable: false
+  nullByDefault: false
+  spec:
     internal:
-      rpc-host:
-        type: pointer
-        name: Local RPC Address
-        description: The LAN IP address of your Bitcoin Proxy service
-        subtype: app
-        app-id: btc-rpc-proxy
-        target: lan-address
-      rpc-user:
-        type: pointer
-        name: RPC Username
-        description: The username for the RPC user allocated to lnd
-        subtype: app
-        app-id: btc-rpc-proxy
-        target: config
-        index: 'users.[first(item => ''item.name = "btcpayserver")].name'
-      rpc-password:
-        type: pointer
-        name: RPC Password
-        description: The password for the RPC user allocated to lnd
-        subtype: app
-        app-id: btc-rpc-proxy
-        target: config
-        index: 'users.[first(item => ''item.name = "btcpayserver")].password'
-    external:
-      rpc-host:
-        type: string
-        name: Public Address
-        description: The public address of your Bitcoin Core server
-        nullable: false
-      rpc-user:
-        type: string
-        name: RPC Username
-        description: The username for the RPC user on your Bitcoin Core RPC server
-        nullable: false
-      rpc-password:
-        type: string
-        name: RPC Password
-        description: The password for the RPC user on your Bitcoin Core RPC server
-        nullable: false
-      rpc-port:
-        type: number
-        name: RPC Port
-        description: The port that your Bitcoin Core RPC server is bound to
-        nullable: false
-        range: "[0,65535]"
-        integral: true
-        default: 8332
-    quick-connect:
-      quick-connect-url:
-        type: string
-        name: Quick Connect URL
-        description: |
-          The Quick Connect URL for your Bitcoin Core RPC server
-          NOTE: LND will not accept a .onion url for this option
-        nullable: false
-        pattern: 'btcstandup://[^:]*:[^@]*@[a-zA-Z0-9.-]+:[0-9]+(/(\?(label=.+)?)?)?'
-        patternDescription: Must be a valid Quick Connect URL. For help, check out https://github.com/BlockchainCommons/Gordian/blob/master/Docs/Quick-Connect-API.md
-bitcoin-p2p:
-  type: union
-  name: Bitcoin Core P2P
-  description: |
-    The Bitcoin Core node to connect to:
-      - internal: The Bitcoin Core and Proxy services installed to your Embassy
-      - external: An unpruned Bitcoin Core node running on a different device
-      - quick-connect: A Quick Connect URL for an unpruned Bitcoin Core node
-  tag: type
-  default: internal
-  variants:
-    internal:
-      p2p-host:
-        type: pointer
-        name: Local P2P Address
-        description: The LAN IP address of your Bitcoin service
-        subtype: app
-        app-id: bitcoind
-        target: lan-address
-    external:
-      p2p-host:
-        type: string
-        name: Public Address
-        description: The public address of your Bitcoin Core server
-        nullable: false
-      p2p-port:
-        type: number
-        name: P2P Port
-        description: The port that your Bitcoin Core P2P server is bound to
-        nullable: false
-        range: "[0,65535]"
-        integral: true
-        default: 8332
-c-lightning:
-  type: union
-  name: C-lightning
-  description: The details needed for lightning node connection to the internal c-lightning service.
-  tag: type
-  default: internal
-  variants:
-    internal:
-      rpc:
-        type: boolean
-        default: false
-        name: Connection Path Enabled
-        description: Toggle to get internal c-lightning node path.
+        type: enum
+        name: Internal implementation
+        description: The internal lightning network implementation to use for BTCPay Server
+        default: none
+        changeWarning: "Changing this value will enable your BTCPay server instance to be configured with your internal lightning node. Balances will display according to the chosen implementation's channels."
+        values: 
+          - c-lightning
+          - lnd
+          - none
+    c-lightning:
+      type: union
+      name: C-lightning
+      description: The details needed for lightning node connection to the internal c-lightning service (this is an internal pointer only - there is nothing to configure)
+      tag: type
+      default: internal
+      variants:
+        internal:
+          address:
+            type: pointer
+            name: Local Address
+            description: The LAN IP address of your C-Lightning service
+            subtype: app
+            app-id: c-lightning
+            target: lan-address 
+    lnd:
+      type: union
+      name: LND
+      description: The details needed for lightning node connection to the internal LND service (this is an internal pointer only - there is nothing to configure)
+      tag: type
+      default: internal
+      variants:
+        internal:
+          address:
+            type: pointer
+            name: Local Address
+            description: The LAN IP address of your Lightning Network Daemon service
+            subtype: app
+            app-id: lnd
+            target: lan-address

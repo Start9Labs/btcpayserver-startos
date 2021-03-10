@@ -12,12 +12,15 @@ _term() {
   kill -TERM "$btcpayserver_process" 2>/dev/null
 }
 
-HOST_IP=$(ip -4 route list match 0/0 | awk '{print $3}')
-BTCPAY_HOST="btcpay.local"
-NBITCOIN_NETWORK="mainnet"
-BTCPAY_ENABLE_SSH=false
+export HOST_IP=$(ip -4 route list match 0/0 | awk '{print $3}')
+export BTCPAY_HOST="btcpay.local"
+export NBITCOIN_NETWORK="mainnet"
+export BTCPAY_ENABLE_SSH=false
 
-configurator
+configurator > .env 
+source .env
+env
+
 dotnet /nbxplorer/NBXplorer.dll &
 nbxplorer_process=$1
 
