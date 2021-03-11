@@ -69,7 +69,7 @@ dependencies:
         description: 'RPC user "btcpayserver" must have "getblock" enabled'
         suggestions:
           - PUSH:
-              to: 'users.[first(item => ''item.name = "lnd")].allowed-calls'
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
               value: "getblock"
       - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
         description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
