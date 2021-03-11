@@ -36,10 +36,10 @@ If you forgot your BTCPay Server password and you are not an admin user, please 
 
 BTCPay Server is compatible with multiple lightning implementations, including the ones running on your Embassy. To begin using Lightning, your Bitcoin blockchain needs to be fully synced.
 
-After your Bitcoin node's sync is complete: 
+If you would like to use your Embassy's lightning node for BTCPay:
 
 1. Open your BTCPay Server service details page and select `Config`. 
-1. Navigate to `Lightning > Internal` and select the internal lightning implementation you would like to use for BTCPay. 
+1. Navigate to `Lightning` and select the internal lightning implementation you would like to use for BTCPay. 
 1. Save this setting. BTCPay will now be able to recognize the internal lightning node running on EmbassyOS.
 
 To enable lightning for a particular store's wallet:

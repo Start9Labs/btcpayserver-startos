@@ -129,7 +129,7 @@ lightning:
   tag:
     id: type
     name: Type
-    description: Internal lighting implementation selction
+    description: To enable BTCPay to use an internal lightning node, select the desired internal lighting implementation
     variantNames: 
       none: No selection
       c-lightning: C-Lightning
@@ -141,33 +141,17 @@ lightning:
     none: {}
     lnd:
       connection-settings:
-        type: union
-        name: LND Connection Settings
-        description: The details needed for lightning node connection to the internal LND service (this is an internal pointer only - there is nothing to configure)
-        tag: type
-        default: internal
-        variants:
-          internal:
-            address:
-              type: pointer
-              name: Local Address
-              description: The LAN IP address of your Lightning Network Daemon service
-              subtype: app
-              app-id: lnd
-              target: lan-address
-          # external:
-          #   server:
-          #     type: string
-          #     name: Server URL
-          #     description: The URL of the external LND node you want to connect to. This should include the port eg. https://mylnd:8080/
-          #   macaroon:
-          #   allow_insecure:
-          # add other external options - grpc / rest connection strings
+        type: pointer
+        name: LND Local Address
+        description: The LAN IP address of your Internal Lightning Network Daemon service
+        subtype: app
+        app-id: lnd
+        target: lan-address
     c-lightning:
       connection-settings:
         type: pointer
         name: C-lightning Local Address
-        description: The LAN IP address of your C-Lightning service
+        description: The LAN IP address of your Internal C-Lightning service
         subtype: app
         app-id: c-lightning
         target: lan-address

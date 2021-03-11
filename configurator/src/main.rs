@@ -1,5 +1,5 @@
 
-use std::fs::File;
+use std::{fs::{self, File}, path::Path};
 use std::net::IpAddr;
 use std::io::{Write};
 
@@ -49,32 +49,13 @@ enum LightningConfig {
     None {},
     #[serde(rename_all = "kebab-case")]
     Lnd {
-        connection_settings: LndConfig
+        connection_settings: String
     },
     #[serde(rename_all = "kebab-case")]
     CLightning {
-        connection_settings: CLightningConfig
+        _connection_settings: String
     },
 }
-#[derive(serde::Deserialize)]
-#[serde(tag = "type")]
-#[serde(rename_all = "kebab-case")]
-enum LndConfig {
-    #[serde(rename_all = "kebab-case")]
-    Internal {
-        address: String,
-    },
-}
-#[derive(serde::Deserialize)]
-#[serde(tag = "type")]
-#[serde(rename_all = "kebab-case")]
-enum CLightningConfig {
-    #[serde(rename_all = "kebab-case")]
-    Internal {
-        address: String,
-    },
-}
-
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct BitcoindConfig {
@@ -142,6 +123,8 @@ pub struct Property<T> {
 }
 
 fn main() -> Result<(), anyhow::Error> {
+    fs::create_dir_all("/datadir/nbxplorer/Main/")?;
+    fs::create_dir_all("/datadir/btcpayserver/Main/")?;
     let config: Config = serde_yaml::from_reader(File::open("/datadir/start9/config.yaml").with_context(||"/datadir/start9/config.yaml")?)?;
     let tor_address = std::env::var("TOR_ADDRESS")?;
     let mut nbx_config = File::create("/datadir/nbxplorer/Main/settings.config").with_context(|| "/datadir/nbxplorer/mainnet/settings.config")?;
@@ -234,30 +217,29 @@ fn main() -> Result<(), anyhow::Error> {
     
     match config.lightning {
         LightningConfig::CLightning {
-            connection_settings:
-                CLightningConfig::Internal {
-                    address
-                },
-         } => {
-             let _lan_address = address;
+            _connection_settings: _
+        } => {
              print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'\n");
         },
         LightningConfig::Lnd {
-            connection_settings:
-                LndConfig::Internal {
-                    address
-                },
+            connection_settings
         } => {
-            let lan_address = address;
-            print!("{}", format!(
+            println!("{}", format!(
                 "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;allowinsecure=true'\n
                 export BTCPAY_BTCEXTERNALLNDGRPC='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'\n
                 export BTCPAY_BTCEXTERNALLNDREST='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'"
                 
-                , lan_address, lan_address, lan_address));
+                , connection_settings, connection_settings, connection_settings));
         },
         LightningConfig::None {  } => {}
     }
+
+    // write backup ignore to the root of the mounted volume
+    std::fs::write(
+        Path::new("/datadir/.backupignore.tmp"),
+        include_str!("./templates/.backupignore.template"),
+    )?;
+    std::fs::rename("/datadir/.backupignore.tmp", "/datadir/.backupignore")?;
 
     Ok(())
 }

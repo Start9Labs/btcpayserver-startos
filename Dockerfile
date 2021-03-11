@@ -22,8 +22,6 @@ COPY --from=actions-builder "/actions/build" /actions
 RUN apt-get update && \
     apt-get install -y sqlite3 libsqlite3-0
 
-# ENV LC_ALL en_US.UTF-8
-# ENV LANG en_US.UTF-8
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV BTCPAY_DATADIR=/datadir/btcpayserver
 ENV NBXPLORER_DATADIR=/datadir/nbxplorer
