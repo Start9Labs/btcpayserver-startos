@@ -181,16 +181,16 @@ fn main() -> Result<(), anyhow::Error> {
                 ExternalBitcoinCoreConfig::QuickConnect {
                     quick_connect_url,
                 }, 
-            } => {
-                let (bitcoin_rpc_user, bitcoin_rpc_pass, bitcoin_rpc_host, bitcoin_rpc_port) =
-                    parse_quick_connect_url(quick_connect_url)?;
-                (
-                    bitcoin_rpc_user,
-                    bitcoin_rpc_pass,
-                    bitcoin_rpc_host.clone(),
-                    bitcoin_rpc_port,
-                )
-            }
+        } => {
+            let (bitcoin_rpc_user, bitcoin_rpc_pass, bitcoin_rpc_host, bitcoin_rpc_port) =
+                parse_quick_connect_url(quick_connect_url)?;
+            (
+                bitcoin_rpc_user,
+                bitcoin_rpc_pass,
+                bitcoin_rpc_host.clone(),
+                bitcoin_rpc_port,
+            )
+        }
     };
     let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin.bitcoind_p2p {
         BitcoindP2PConfig::Internal {

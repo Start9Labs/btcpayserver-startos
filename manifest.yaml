@@ -1,11 +1,11 @@
 compat: v0
 id: btcpayserver
-version: 1.0.6.8
+version: 1.0.7.0
 title: btcpayserver
 description:
   short: "BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free."
   long: "BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet."
-release-notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.0.6.8
+release-notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.0.7.0
 ports:
   - internal: 23000
     tor: 80
