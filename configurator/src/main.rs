@@ -43,20 +43,17 @@ struct Config {
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
-struct LightningConfig {
-    internal: LightningImplementationConfig,
-    lnd: LndConfig,
-    c_lightning: CLightningConfig
-}
-
-#[derive(serde::Deserialize)]
-// #[serde(tag = "type")]
-#[serde(rename_all = "kebab-case")]
-enum LightningImplementationConfig {
+enum LightningConfig {
     #[serde(rename_all = "kebab-case")]
-    CLightning,
-    Lnd,
-    None,
+    None {},
+    #[serde(rename_all = "kebab-case")]
+    Lnd {
+        connection_settings: LndConfig
+    },
+    #[serde(rename_all = "kebab-case")]
+    CLightning {
+        connection_settings: CLightningConfig
+    },
 }
 #[derive(serde::Deserialize)]
 #[serde(tag = "type")]
@@ -219,17 +216,23 @@ fn main() -> Result<(), anyhow::Error> {
         None => {}
     }
     
-    match config.lightning.internal {
-        LightningImplementationConfig::CLightning => {
-            print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'\n");
+    match config.lightning {
+        LightningConfig::CLightning {
+            connection_settings:
+                CLightningConfig::Internal {
+                    address
+                },
+         } => {
+             let _lan_address = address;
+             print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'\n");
         },
-        LightningImplementationConfig::Lnd => {
-            let lan_address =
-                match config.lightning.lnd {
-                    LndConfig::Internal {
-                        address,
-                    } => address,
-                };
+        LightningConfig::Lnd {
+            connection_settings:
+                LndConfig::Internal {
+                    address
+                },
+        } => {
+            let lan_address = address;
             print!("{}", format!(
                 "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;allowinsecure=true'\n
                 export BTCPAY_BTCEXTERNALLNDGRPC='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'\n
@@ -237,7 +240,7 @@ fn main() -> Result<(), anyhow::Error> {
                 
                 , lan_address, lan_address, lan_address));
         },
-        LightningImplementationConfig::None => {}
+        LightningConfig::None {  } => {}
     }
 
     Ok(())

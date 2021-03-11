@@ -108,49 +108,42 @@ bitcoin:
             integral: true
             default: 8332
 lightning:
-  type: object
+  type: union
+  tag:
+    id: type
+    name: Type
+    description: Internal lighting implementation selction
+    variantNames: 
+      none: No selection
+      c-lightning: C-Lightning
+      lnd: LND
   name: Lightning Settings
   description: Internal Lightning implementation configuration options
-  nullable: false
-  nullByDefault: false
-  spec:
-    internal:
-        type: enum
-        name: Internal implementation
-        description: The internal lightning network implementation to use for BTCPay Server
-        default: none
-        changeWarning: "Changing this value will enable your BTCPay server instance to be configured with your internal lightning node. Balances will display according to the chosen implementation's channels."
-        values: 
-          - c-lightning
-          - lnd
-          - none
-    c-lightning:
-      type: union
-      name: C-lightning
-      description: The details needed for lightning node connection to the internal c-lightning service (this is an internal pointer only - there is nothing to configure)
-      tag: type
-      default: internal
-      variants:
-        internal:
-          address:
-            type: pointer
-            name: Local Address
-            description: The LAN IP address of your C-Lightning service
-            subtype: app
-            app-id: c-lightning
-            target: lan-address 
+  default: none
+  variants:
+    none: {}
     lnd:
-      type: union
-      name: LND
-      description: The details needed for lightning node connection to the internal LND service (this is an internal pointer only - there is nothing to configure)
-      tag: type
-      default: internal
-      variants:
-        internal:
-          address:
-            type: pointer
-            name: Local Address
-            description: The LAN IP address of your Lightning Network Daemon service
-            subtype: app
-            app-id: lnd
-            target: lan-address
+      connection-settings:
+        type: union
+        name: LND Connection Settings
+        description: The details needed for lightning node connection to the internal LND service (this is an internal pointer only - there is nothing to configure)
+        tag: type
+        default: internal
+        variants:
+          internal:
+            address:
+              type: pointer
+              name: Local Address
+              description: The LAN IP address of your Lightning Network Daemon service
+              subtype: app
+              app-id: lnd
+              target: lan-address
+          # add other external options - grpc / rest connection strings
+    c-lightning:
+      connection-settings:
+        type: pointer
+        name: C-lightning Local Address
+        description: The LAN IP address of your C-Lightning service
+        subtype: app
+        app-id: c-lightning
+        target: lan-address
