@@ -42,6 +42,7 @@ struct Config {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
 enum LightningConfig {
     #[serde(rename_all = "kebab-case")]
@@ -93,6 +94,15 @@ enum BitcoindRPCConfig {
     },
     #[serde(rename_all = "kebab-case")]
     External {
+        connection_settings: ExternalBitcoinCoreConfig,
+    },
+}
+#[derive(serde::Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "kebab-case")]
+enum ExternalBitcoinCoreConfig {
+    #[serde(rename_all = "kebab-case")]
+    Manual {
         #[serde(deserialize_with = "deserialize_parse")]
         rpc_host: Uri,
         rpc_user: String,
@@ -153,28 +163,34 @@ fn main() -> Result<(), anyhow::Error> {
             8332,
         ),
         BitcoindRPCConfig::External {
-            rpc_host,
-            rpc_user,
-            rpc_password,
-            rpc_port,
+            connection_settings:
+                ExternalBitcoinCoreConfig::Manual {
+                    rpc_host,
+                    rpc_user,
+                    rpc_password,
+                    rpc_port,
+                },
         } => (
             rpc_user,
             rpc_password,
             format!("{}", rpc_host.host().unwrap()),
             rpc_port,
         ),
-        BitcoindRPCConfig::QuickConnect {
-            quick_connect_url,
-        } => {
-            let (bitcoin_rpc_user, bitcoin_rpc_pass, bitcoin_rpc_host, bitcoin_rpc_port) =
-                parse_quick_connect_url(quick_connect_url)?;
-            (
-                bitcoin_rpc_user,
-                bitcoin_rpc_pass,
-                bitcoin_rpc_host.clone(),
-                bitcoin_rpc_port,
-            )
-        }
+        BitcoindRPCConfig::External {
+            connection_settings:
+                ExternalBitcoinCoreConfig::QuickConnect {
+                    quick_connect_url,
+                }, 
+            } => {
+                let (bitcoin_rpc_user, bitcoin_rpc_pass, bitcoin_rpc_host, bitcoin_rpc_port) =
+                    parse_quick_connect_url(quick_connect_url)?;
+                (
+                    bitcoin_rpc_user,
+                    bitcoin_rpc_pass,
+                    bitcoin_rpc_host.clone(),
+                    bitcoin_rpc_port,
+                )
+            }
     };
     let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin.bitcoind_p2p {
         BitcoindP2PConfig::Internal {
