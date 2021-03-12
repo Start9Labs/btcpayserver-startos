@@ -1,6 +1,6 @@
 compat: v0
 id: btcpayserver
-version: 1.0.7.0
+version: 1.0.7
 title: btcpayserver
 description:
   short: "BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free."
@@ -89,6 +89,18 @@ dependencies:
           - PUSH:
               to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
               value: "getpeerinfo"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockheader"'
+        description: 'RPC user "btcpayserver" must have "getblockheader" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "getblockheader"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "setban"'
+        description: 'RPC user "btcpayserver" must have "setban" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "setban"
       - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
         description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
         suggestions:
