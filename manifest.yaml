@@ -71,6 +71,24 @@ dependencies:
           - PUSH:
               to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
               value: "getblock"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockchaininfo"'
+        description: 'RPC user "btcpayserver" must have "getblockchaininfo" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "getblockchaininfo"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getnetworkinfo"'
+        description: 'RPC user "btcpayserver" must have "getnetworkinfo" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "getnetworkinfo"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getpeerinfo"'
+        description: 'RPC user "btcpayserver" must have "getpeerinfo" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "getpeerinfo"
       - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
         description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
         suggestions:

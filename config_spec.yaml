@@ -32,7 +32,7 @@ bitcoin:
           rpc-user:
             type: pointer
             name: RPC Username
-            description: The username for the RPC user allocated to lnd
+            description: The username for the RPC user allocated to BTCPay
             subtype: app
             app-id: btc-rpc-proxy
             target: config
@@ -40,7 +40,7 @@ bitcoin:
           rpc-password:
             type: pointer
             name: RPC Password
-            description: The password for the RPC user allocated to lnd
+            description: The password for the RPC user allocated to BTCPay
             subtype: app
             app-id: btc-rpc-proxy
             target: config
