@@ -17,7 +17,6 @@ export BTCPAY_ENABLE_SSH=false
 
 configurator > .env 
 source .env
-env
 
 dotnet /nbxplorer/NBXplorer.dll &
 nbxplorer_process=$1
