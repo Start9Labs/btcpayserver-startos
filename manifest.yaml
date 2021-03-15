@@ -119,6 +119,30 @@ dependencies:
           - PUSH:
               to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
               value: "sendrawtransaction"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getrawtransaction"'
+        description: 'RPC user "btcpayserver" must have "getrawtransaction" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "getrawtransaction"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "testmempoolaccept"'
+        description: 'RPC user "btcpayserver" must have "testmempoolaccept" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "testmempoolaccept"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "utxoupdatepsbt"'
+        description: 'RPC user "btcpayserver" must have "utxoupdatepsbt" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "utxoupdatepsbt"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getbestblockhash"'
+        description: 'RPC user "btcpayserver" must have "getbestblockhash" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "getbestblockhash"
       - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
         description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
         suggestions:
