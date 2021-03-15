@@ -113,6 +113,12 @@ dependencies:
           - PUSH:
               to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
               value: "getblockcount"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "sendrawtransaction"'
+        description: 'RPC user "btcpayserver" must have "sendrawtransaction" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "sendrawtransaction"
       - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
         description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
         suggestions:
