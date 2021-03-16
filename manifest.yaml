@@ -13,8 +13,8 @@ image:
   type: tar
 mount: /datadir
 has-instructions: true
-os-version-required: ">=0.2.10"
-os-version-recommended: ">=0.2.10"
+os-version-required: ">=0.2.11"
+os-version-recommended: ">=0.2.11"
 assets: []
 hidden-service-version: v3
 install-alert: |
@@ -143,6 +143,42 @@ dependencies:
           - PUSH:
               to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
               value: "getbestblockhash"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
+        description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "scantxoutset"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "signrawtransactionwithkey"'
+        description: 'RPC user "btcpayserver" must have "signrawtransactionwithkey" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "signrawtransactionwithkey"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "generatetoaddress"'
+        description: 'RPC user "btcpayserver" must have "generatetoaddress" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "generatetoaddress"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "validateaddress"'
+        description: 'RPC user "btcpayserver" must have "validateaddress" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "validateaddress"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
+        description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "scantxoutset"
+      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "signrawtransactionwithkey"'
+        description: 'RPC user "btcpayserver" must have "signrawtransactionwithkey" enabled'
+        suggestions:
+          - PUSH:
+              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+              value: "signrawtransactionwithkey"
       - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
         description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
         suggestions:
