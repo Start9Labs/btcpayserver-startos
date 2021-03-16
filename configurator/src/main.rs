@@ -53,7 +53,7 @@ enum LightningConfig {
     },
     #[serde(rename_all = "kebab-case")]
     CLightning {
-        _connection_settings: String
+        connection_settings: String
     },
 }
 #[derive(serde::Deserialize)]
@@ -217,7 +217,7 @@ fn main() -> Result<(), anyhow::Error> {
     
     match config.lightning {
         LightningConfig::CLightning {
-            _connection_settings: _
+            connection_settings: _
         } => {
              print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'\n");
         },
