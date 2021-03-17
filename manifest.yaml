@@ -1,6 +1,6 @@
 compat: v0
 id: btcpayserver
-version: 10.7.0
+version: 100.7.0
 title: BTCPay Server
 description:
   short: BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free.
