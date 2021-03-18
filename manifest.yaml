@@ -24,9 +24,13 @@ install-alert: |
 
   **PLEASE READ** the **INSTRUCTIONS** after installation!
 uninstall-alert: |
-  READ CAREFULLY! Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
+  **READ CAREFULLY!**
+  
+  Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
 restore-alert: |
-  Restoring BTCPay will overwrite its current data. Any stores or invoices created since the last backup will be not be recognized.
+  Restoring BTCPay will overwrite its current data. 
+  
+  Any stores or invoices created since the last backup will be not be recognized.
 actions:
   - id: "reset-server-policy"
     name: "Reset Server Policies"
