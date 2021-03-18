@@ -10,7 +10,7 @@ BTCPayServer Vault is not yet supported for hardware wallet integration.
 
 ## Creating your Account
 
-When you visit your BTCPay Server for the first time, you will be asked to create an account - this will be the admin user account. Note, *you are creating an account with yourself* - there are no third parties involved storing your password on a remote server. The password is stored on the Embassy in the BTCPay Server database and is not editable from the service config page.
+When you visit your BTCPay Server for the first time, you will be asked to create an account - this will be the admin user account. Note, *you are creating an account with yourself* - there are no third parties involved storing your password on a remote server. The password is stored on the Embassy in the BTCPay Server database and is not editable from the service config page. Please save this password in a password manager, such as Bitwarden.
 
 By default, additional registrations are disabled. This means once you create an account, no one else will be permitted to create an account on your instance. The admin user can add additional accounts under `Server settings > Users`.
 
@@ -36,9 +36,13 @@ If you forgot your BTCPay Server password and you are not an admin user, please 
 
 ## Enabling Lightning
 
+**Important**
+
 BTCPay Server is compatible with multiple lightning implementations, including the ones running on your Embassy. These are called "Internal Nodes" in BTCPay. To begin using Lightning, your Bitcoin blockchain needs to be fully synced.
 
-If you would like to use your Embassy's lightning node for BTCPay:
+**Do not** attempt to follow the directions in the BTCPay interface *unless you know what you are doing*. Please follow the instructions below to enable lightning.
+
+If you would like to **use your Embassy's lightning node** for BTCPay:
 
 1. Open your BTCPay Server service details page and select `Config`. 
 1. Navigate to `Lightning` and select the internal lightning implementation you would like to use for BTCPay. 
