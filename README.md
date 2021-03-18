@@ -10,6 +10,7 @@
 - [toml](https://crates.io/crates/toml-cli)
 - [appmgr](https://github.com/Start9Labs/appmgr)
 - [make](https://www.gnu.org/software/make/)
+- [md-packer](https://github.com/Start9Labs/md-packer)
 
 ## Cloning
 

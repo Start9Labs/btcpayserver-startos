@@ -1,5 +1,6 @@
 ASSETS := $(shell yq e '.assets.[].src' manifest.yaml)
 ASSET_PATHS := $(addprefix assets/,$(ASSETS))
+DOC_ASSETS := $(shell find ./docs/assets)
 VERSION_TAG := $(shell ./get_tag.sh)
 VERSION := $(shell ./get_tag.sh | cut -c 2-)
 MAJOR := $(shell echo $(VERSION) | cut -d. -f1)
@@ -20,12 +21,9 @@ all: btcpayserver.s9pk
 install: btcpayserver.s9pk
 	appmgr install btcpayserver.s9pk
 
-btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.yaml instructions.md image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
+btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
 	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
 	appmgr -vv verify btcpayserver.s9pk
-
-instructions.md: README.md
-	cp README.md instructions.md
 
 image.tar: docker_entrypoint.sh configurator/target/armv7-unknown-linux-musleabihf/release/configurator $(BTCPAYSERVER_GIT_FILE) Dockerfile
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/btcpayserver -o type=docker,dest=image.tar -f ./Dockerfile . 
