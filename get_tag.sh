@@ -1,0 +1,1 @@
+git --git-dir=btcpayserver/.git name-rev --tags --name-only $(git --git-dir=btcpayserver/.git rev-parse HEAD) | sed 's|\([^\^]*\)\(\^0\)$|\1|g'
