@@ -20,7 +20,7 @@ all: btcpayserver.s9pk
 install: btcpayserver.s9pk
 	appmgr install btcpayserver.s9pk
 
-btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
+btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.yaml instructions.md image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
 	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
 	appmgr -vv verify btcpayserver.s9pk
 
@@ -39,6 +39,9 @@ manifest-version: $(BTCPAYSERVER_GIT_FILE)
 	$(info S9 VERSION is $(S9_VERSION))
 	yq eval -i ".version = \"$(S9_VERSION)\"" manifest.yaml
 	yq eval -i ".release-notes = \"This release corresponds to BTCPay Server build version $(BUILD) at tag version $(VERSION). See offical release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
+
+instructions.md: docs/instructions.md $(DOC_ASSETS)
+	cd docs && md-packer < instructions.md > ../instructions.md
 
 clean:
 	rm image.tar
