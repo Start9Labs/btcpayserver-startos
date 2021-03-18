@@ -21,6 +21,8 @@ install-alert: |
   BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!
 
   The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.
+
+  PLEASE READ *INSTRUCTIONS* after installation!!!
 uninstall-alert: |
   READ CAREFULLY! Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
 restore-alert: |
