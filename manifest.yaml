@@ -33,7 +33,7 @@ actions:
     name: "Reset Server Policies"
     description: "Resets the policies settings if you cannot create a new user because registrations are disabled."
     warning: |
-      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user on the front-end home page using the register button. Running this command will delete any other server settings currently being used.
+      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web interface using the register button. Running this command will also disable any other server policies currently configured.
     allowed-statuses:
       - "RUNNING"
     command:
