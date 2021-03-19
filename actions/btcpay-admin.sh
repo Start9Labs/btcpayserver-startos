@@ -20,7 +20,7 @@ create_password() {
         HASH=$(dotnet /actions/actions.dll "$PW")
         query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'"
         NEWLINE=$'\n'
-        echo "Your new temporary password is: ${PW}${NEWLINE}This password will be unavailable for retrieval after you leave the screen."
+        echo "Your new temporary password is: ${PW}${NEWLINE}This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in."
     fi
 }
 
