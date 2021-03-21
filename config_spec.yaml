@@ -129,7 +129,7 @@ lightning:
   tag:
     id: type
     name: Type
-    description: Internal Lightning implementation configuration options
+    description: Enables BTCPay to use the selected internal lightning node.
     variantNames: 
       none: No selection
       c-lightning: C-Lightning
