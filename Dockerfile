@@ -27,6 +27,8 @@ ENV BTCPAY_DATADIR=/datadir/btcpayserver
 ENV NBXPLORER_DATADIR=/datadir/nbxplorer
 # removes default of NBX cookie auth
 ENV NBXPLORER_NOAUTH=1 
+RUN touch btcpay.log
+ENV BTCPAY_DEBUGLOG=btcpay.log
 
 EXPOSE 23000 80
 ADD ./configurator/target/armv7-unknown-linux-musleabihf/release/configurator /usr/local/bin/configurator
