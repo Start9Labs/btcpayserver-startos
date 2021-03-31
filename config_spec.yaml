@@ -123,7 +123,7 @@ bitcoin:
             nullable: false
             range: "[0,65535]"
             integral: true
-            default: 8332
+            default: 8333
 lightning:
   type: union
   tag:
