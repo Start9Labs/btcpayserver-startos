@@ -188,11 +188,11 @@ dependencies:
     description: Used for the P2P connection interface.
     config:
       - rule: "advanced.peers.listen?"
-        description: ~
+        description: Peer port must be listening on the network.
         suggestions:
           - SET:
               var: advanced.peers.listen
-              to: true
+              to-value: true
   c-lightning:
     version: "^0.9.3"
     description: Used to communicate with the Lightning Network.
