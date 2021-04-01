@@ -1,8 +1,10 @@
 ASSETS := $(shell yq e '.assets.[].src' manifest.yaml)
 ASSET_PATHS := $(addprefix assets/,$(ASSETS))
 DOC_ASSETS := $(shell find ./docs/assets)
-VERSION_TAG := $(shell ./get_tag.sh)
-VERSION := $(shell ./get_tag.sh | cut -c 2-)
+#VERSION_TAG := $(shell ./get_tag.sh)
+VERSION_TAG := v1.0.7.2
+#VERSION := $(shell ./get_tag.sh | cut -c 2-)
+VERSION := 1.0.7.2
 MAJOR := $(shell echo $(VERSION) | cut -d. -f1)
 MINOR := $(shell echo $(VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(VERSION) | cut -d. -f3)
