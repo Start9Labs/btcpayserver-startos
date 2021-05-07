@@ -1,15 +1,13 @@
-ASSETS := $(shell yq e '.assets.[].src' manifest.yaml)
-ASSET_PATHS := $(addprefix assets/,$(ASSETS))
 DOC_ASSETS := $(shell find ./docs/assets)
-#VERSION_TAG := $(shell ./get_tag.sh)
-VERSION_TAG := v1.0.7.2
-#VERSION := $(shell ./get_tag.sh | cut -c 2-)
-VERSION := 1.0.7.2
+# edit get_tag.sh when project uses 4 digit semver
+VERSION_TAG := $(shell ./get_tag.sh)
+VERSION := $(shell ./get_tag.sh | cut -c 2-)
 MAJOR := $(shell echo $(VERSION) | cut -d. -f1)
 MINOR := $(shell echo $(VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(VERSION) | cut -d. -f3)
 BUILD := $(shell echo $(VERSION) | cut -d. -f4)
-BUILD_TRIMMED := $(shell [ $(BUILD) = 0 ] && echo "" || echo .$(BUILD))
+# for when project uses 4 digit semver (build and tag version) eg. 1.0.7.2
+# BUILD_TRIMMED := $(shell [ $(BUILD) = 0 ] && echo "" || echo .$(BUILD))
 S9_VERSION := $(shell echo $(MAJOR).$(MINOR).$(PATCH)$(BUILD_TRIMMED))
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
 ACTIONS_SRC := $(shell find ./actions)
@@ -24,7 +22,7 @@ all: btcpayserver.s9pk
 install: btcpayserver.s9pk
 	appmgr install btcpayserver.s9pk
 
-btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
+btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC)
 	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
 	appmgr -vv verify btcpayserver.s9pk
 
@@ -39,7 +37,9 @@ manifest-version: $(BTCPAYSERVER_GIT_FILE)
 	$(info TAG VERSION is $(VERSION))
 	$(info S9 VERSION is $(S9_VERSION))
 	yq eval -i ".version = \"$(S9_VERSION)\"" manifest.yaml
-	yq eval -i ".release-notes = \"This release corresponds to BTCPay Server build version $(BUILD) at tag version $(VERSION). See offical release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
+	# use this line when build version exists
+	# yq eval -i ".release-notes = \"This release corresponds to BTCPay Server build version $(BUILD) at tag version $(VERSION). See offical release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
+	yq eval -i ".release-notes = \"See official release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
 
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
