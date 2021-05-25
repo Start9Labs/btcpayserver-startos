@@ -187,7 +187,7 @@ dependencies:
               to-value: true
   bitcoind:
     version: "^0.21.1.1"
-    optional: Can alternatively configure an external bitcoin node.
+    optional: Internal node is recommended, but you can alternatively configure an external bitcoin node.
     description: Used for the P2P connection interface.
     config:
       - rule: "advanced.peers.listen?"
