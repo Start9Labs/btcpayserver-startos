@@ -8,7 +8,7 @@ description:
 release-notes: 'See official release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.1.2'
 license-info:
   license: MIT
-  url: https://github.com/btcpayserver/btcpayserver/blob/v1.1.0/LICENSE
+  url: https://github.com/btcpayserver/btcpayserver/blob/v1.1.2/LICENSE
 ports:
   - internal: 23000
     tor: 80
