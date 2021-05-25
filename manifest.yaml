@@ -196,18 +196,6 @@ dependencies:
           - SET:
               var: advanced.peers.listen
               to-value: true
-      - rule: '''advanced.whitelist = "internal_ip"'
-        description: Internal IP must be whitelisted
-        suggestions:
-          - PUSH:
-              to: "advanced.whitelist"
-              value:
-                type: pointer
-                name: Local IP Address
-                description: The LAN IP address of your BTCPayServer service
-                subtype: app
-                app-id: btcpayserver
-                target: lan-address
   c-lightning:
     version: "^0.9.3"
     description: Used to communicate with the Lightning Network.

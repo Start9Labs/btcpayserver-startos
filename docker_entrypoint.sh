@@ -15,6 +15,10 @@ _term() {
 export HOST_IP=$(ip -4 route list match 0/0 | awk '{print $3}')
 export BTCPAY_ENABLE_SSH=false
 
+# ymlString.replace(/\$\{(.*)\}/g, (str, variable, index) => process.env[variable])
+
+# sed -i "s/HOST_IP/${HOST_IP}/g" /etc/nginx/conf.d/nginx-mempool.conf
+
 configurator > .env 
 source .env
 
