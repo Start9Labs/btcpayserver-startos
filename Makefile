@@ -10,6 +10,7 @@ BUILD := $(shell echo $(VERSION) | cut -d. -f4)
 # BUILD_TRIMMED := $(shell [ $(BUILD) = 0 ] && echo "" || echo .$(BUILD))
 S9_VERSION := $(shell echo $(MAJOR).$(MINOR).$(PATCH)$(BUILD_TRIMMED))
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
+NBXPLORER_SRC := $(shell find ./NBXplorer)
 ACTIONS_SRC := $(shell find ./actions)
 BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
 BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
@@ -26,7 +27,7 @@ btcpayserver.s9pk: manifest-version manifest.yaml config_spec.yaml config_rules.
 	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
 	appmgr -vv verify btcpayserver.s9pk
 
-image.tar: docker_entrypoint.sh configurator/target/armv7-unknown-linux-musleabihf/release/configurator $(BTCPAYSERVER_GIT_FILE) Dockerfile
+image.tar: docker_entrypoint.sh configurator/target/armv7-unknown-linux-musleabihf/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) Dockerfile
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/btcpayserver -o type=docker,dest=image.tar -f ./Dockerfile . 
 
 configurator/target/armv7-unknown-linux-musleabihf/release/configurator: $(CONFIGURATOR_SRC)
