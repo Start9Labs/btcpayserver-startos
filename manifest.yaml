@@ -1,11 +1,12 @@
 compat: v0
 id: btcpayserver
-version: "1.1.2"
+version: "1.1.2.1"
 title: BTCPay Server
 description:
   short: BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free.
   long: BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
-release-notes: 'See official release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.1.2'
+release-notes: |-
+  Bumps version requirement to allow for c-lightning v0.10.0
 license-info:
   license: MIT
   url: https://github.com/btcpayserver/btcpayserver/blob/v1.1.2/LICENSE
@@ -197,7 +198,7 @@ dependencies:
               var: advanced.peers.listen
               to-value: true
   c-lightning:
-    version: "^0.9.3"
+    version: ">=0.9.3 <0.11.0"
     description: Used to communicate with the Lightning Network.
     optional: Optionally use c-lightning for internal lightning network node implementation.
     mount-shared: true

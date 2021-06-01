@@ -6,9 +6,10 @@ MAJOR := $(shell echo $(VERSION) | cut -d. -f1)
 MINOR := $(shell echo $(VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(VERSION) | cut -d. -f3)
 BUILD := $(shell echo $(VERSION) | cut -d. -f4)
-# for when project uses 4 digit semver (build and tag version) eg. 1.0.7.2
+# for when upstream project uses 4 digit semver (build and tag version) eg. 1.0.7.2
 # BUILD_TRIMMED := $(shell [ $(BUILD) = 0 ] && echo "" || echo .$(BUILD))
-S9_VERSION := $(shell echo $(MAJOR).$(MINOR).$(PATCH)$(BUILD_TRIMMED))
+# S9_VERSION := $(shell echo $(MAJOR).$(MINOR).$(PATCH)$(BUILD_TRIMMED))
+S9_VERSION := "1.1.2.1"
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
 NBXPLORER_SRC := $(shell find ./NBXplorer)
 ACTIONS_SRC := $(shell find ./actions)
@@ -40,7 +41,8 @@ manifest-version: $(BTCPAYSERVER_GIT_FILE)
 	yq eval -i ".version = \"$(S9_VERSION)\"" manifest.yaml
 	# use this line when build version exists
 	# yq eval -i ".release-notes = \"This release corresponds to BTCPay Server build version $(BUILD) at tag version $(VERSION). See offical release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
-	yq eval -i ".release-notes = \"See official release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
+	# yq eval -i ".release-notes = \"See official release notes here: https://github.com/btcpayserver/btcpayserver/releases/tag/$(VERSION_TAG)\"" manifest.yaml
+	yq eval -i ".release-notes = \"Bumps version requirement to allow for c-lightning v0.10.0\"" manifest.yaml
 
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
