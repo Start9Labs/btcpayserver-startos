@@ -14,6 +14,6 @@ sqlitefile=sqlite.db
 
 ### NBXplorer settings ###
 #BTC.explorer.url=http://{btc_proxy_address}:24444/
-#BTC.explorer.cookiefile=/nbxplorer/Main/.cookie
+BTC.explorer.cookiefile=/datadir/nbxplorer/Main/.cookie
 #BTC.lightning=/root/.lightning/lightning-rpc
 #BTC.lightning=https://apitoken:API_TOKEN_SECRET@charge.example.com/

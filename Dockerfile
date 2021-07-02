@@ -25,8 +25,6 @@ RUN apt-get update && \
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV BTCPAY_DATADIR=/datadir/btcpayserver
 ENV NBXPLORER_DATADIR=/datadir/nbxplorer
-# removes default of NBX cookie auth
-ENV NBXPLORER_NOAUTH=1 
 RUN touch btcpay.log
 ENV BTCPAY_DEBUGLOG=btcpay.log
 
