@@ -51,11 +51,8 @@ If you would like to **use your Embassy's lightning node** for BTCPay:
 To **enable lightning** for a particular store's wallet using your Embassy's lightning node:
 
 1. Navigate to `Stores > Settings > General Settings > Lightning > Modify`. 
-1. At the bottom of the page, find the "Connection string" input box.
-1. Below this box should say "Use the internal lightning node of this BTCPay Server instance by clicking here." Follow through with this statement to populate the connection string for your chosen EmbassyOS lightning node. "Internal Node" will display in the input box.
-1. Alternatively, you can paste "Internal Node" in the input box.
-1. Test the connection and ensure a green success box appeared at the top of the screen.
-1. Click "Submit" to save the Lightning configuration settings for this wallet.
+1. On the page entitled "Connect to a Lightning node", select "Use internal node"
+1. Click "Save".
 
 <!-- MD_PACKER_INLINE BEGIN -->
 ![internal node connection](./assets/internal-node-connection.png)
