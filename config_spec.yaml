@@ -3,7 +3,7 @@ bitcoin:
   name: Bitcoin Settings
   description: RPC and P2P interface configuration options for Bitcoin Core
   nullable: false
-  nullByDefault: false
+  null-by-default: false
   spec:
     bitcoind-rpc:
       type: union
@@ -12,7 +12,7 @@ bitcoin:
       tag:
         id: type
         name: Type
-        variantNames:
+        variant-names:
           internal: Internal
           external: External
         description: |
@@ -56,7 +56,7 @@ bitcoin:
               description: |
                 - Manual: Raw information for finding a Bitcoin Core node
                 - Quick Connect: A Quick Connect URL for a Bitcoin Core node
-              variantNames:
+              variant-names:
                 manual: Manual
                 quick-connect: Quick Connect
             default: quick-connect
@@ -130,7 +130,7 @@ lightning:
     id: type
     name: Type
     description: Enables BTCPay to use the selected internal lightning node.
-    variantNames: 
+    variant-names: 
       none: No selection
       c-lightning: C-Lightning
       lnd: LND
