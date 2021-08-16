@@ -1,209 +1,354 @@
-compat: v0
 id: btcpayserver
-version: "1.1.2.3"
 title: BTCPay Server
+version: 1.1.2.4
+release-notes: "Upgrade to EmbassyOS v0.3.0"
+license: mit
+wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
+upstream-repo: "https://github.com/btcpayserver/btcpayserver"
+support-site: "https://docs.btcpayserver.org/Support/"
+marketing-site: "https://btcpayserver.org/"
+donation-url: "https://btcpayserver.org/donate/"
+build: ["make"]
+min-os-version: "0.3.0"
 description:
   short: BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free.
-  long: BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
-release-notes: |-
-  Update version requirement for optional dependency LND.
-license-info:
-  license: MIT
-  url: https://github.com/btcpayserver/btcpayserver/blob/v1.1.2/LICENSE
-ports:
-  - internal: 23000
-    tor: 80
-image:
-  type: tar
-mount: /datadir
-has-instructions: true
-os-version-required: ">=0.2.11"
-os-version-recommended: ">=0.2.11"
-assets: []
-hidden-service-version: v3
-install-alert: |
-  BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!
-
-  The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.
-
-  **PLEASE READ** the **INSTRUCTIONS** after installation!
-uninstall-alert: |
-  **READ CAREFULLY!**
-
-  Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
-restore-alert: "Restoring BTCPay will overwrite its current data. \n\nAny stores or invoices created since the last backup will be not be recognized.\n"
-actions:
-  - id: "reset-server-policy"
-    name: "Reset Server Policies"
-    description: "Resets the policies settings if you cannot create a new user because registrations are disabled."
-    warning: |
-      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web interface using the register button. Running this command will also disable any other server policies currently configured.
-    allowed-statuses:
-      - "RUNNING"
-    command:
-      - docker_entrypoint.sh
-      - reset-server-policy
-  - id: "reset-admin-password"
-    name: "Reset Admin Password"
-    description: "Resets the admin user with a temporary password."
-    warning: |
-      This action will fail if more than one admin user is present. If another admin user exists, please login to this admin account to add SMTP settings to utilize the default "Forgot Password" flow.
-    allowed-statuses:
-      - "RUNNING"
-    command:
-      - docker_entrypoint.sh
-      - reset-admin-password
+  long: |
+    BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
+assets:
+  license: LICENSE
+  icon: icon.png
+  instructions: instructions.md
+  docker-images: image.tar
+  icon-type: png
+main:
+  type: docker
+  image: main
+  entrypoint: "docker_entrypoint.sh"
+  args: []
+  mounts:
+    lnd: "/mnt/lnd"
+    c-lightning: "/mnt/c-lightning"
+  io-format: yaml
+health-checks: {}
+config:
+  get:
+    type: docker
+    image: compat
+    entrypoint: config
+    args: 
+      - "get"
+      - "/datadir"
+    mounts: {}
+    io-format: yaml
+  set:
+    type: docker
+    image: compat
+    entrypoint: config
+    args:
+      - "set"
+      - "/datadir"
+    mounts: {}
+    io-format: yaml
 dependencies:
   btc-rpc-proxy:
-    version: ">=0.2.4 <0.4.0"
+    version: ">=0.3.2.1 <0.4.0"
+    recommended: true
+    critical: false
     optional: Can alternatively configure an external bitcoin node.
     description: Used to fetch validated blocks.
     config:
-      - rule: '''users.*.name = "btcpayserver"'
-        description: 'Must have an RPC user named "btcpayserver"'
-        suggestions:
-          - PUSH:
-              to: "users"
-              value:
-                name: btcpayserver
-                allowed-calls: []
-          - SET:
-              var: 'users.[first(item => ''item.name = "btcpayserver")].password'
-              to-entropy:
-                charset: "a-z,A-Z,0-9"
-                len: 22
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblock"'
-        description: 'RPC user "btcpayserver" must have "getblock" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getblock"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockchaininfo"'
-        description: 'RPC user "btcpayserver" must have "getblockchaininfo" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getblockchaininfo"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getnetworkinfo"'
-        description: 'RPC user "btcpayserver" must have "getnetworkinfo" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getnetworkinfo"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getpeerinfo"'
-        description: 'RPC user "btcpayserver" must have "getpeerinfo" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getpeerinfo"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockheader"'
-        description: 'RPC user "btcpayserver" must have "getblockheader" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getblockheader"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "setban"'
-        description: 'RPC user "btcpayserver" must have "setban" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "setban"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "estimatesmartfee"'
-        description: 'RPC user "btcpayserver" must have "estimatesmartfee" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "estimatesmartfee"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockcount"'
-        description: 'RPC user "btcpayserver" must have "getblockcount" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getblockcount"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "sendrawtransaction"'
-        description: 'RPC user "btcpayserver" must have "sendrawtransaction" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "sendrawtransaction"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getrawtransaction"'
-        description: 'RPC user "btcpayserver" must have "getrawtransaction" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getrawtransaction"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "testmempoolaccept"'
-        description: 'RPC user "btcpayserver" must have "testmempoolaccept" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "testmempoolaccept"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "utxoupdatepsbt"'
-        description: 'RPC user "btcpayserver" must have "utxoupdatepsbt" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "utxoupdatepsbt"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getbestblockhash"'
-        description: 'RPC user "btcpayserver" must have "getbestblockhash" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "getbestblockhash"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
-        description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "scantxoutset"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "signrawtransactionwithkey"'
-        description: 'RPC user "btcpayserver" must have "signrawtransactionwithkey" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "signrawtransactionwithkey"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "generatetoaddress"'
-        description: 'RPC user "btcpayserver" must have "generatetoaddress" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "generatetoaddress"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "validateaddress"'
-        description: 'RPC user "btcpayserver" must have "validateaddress" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "validateaddress"
-      - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
-        description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
-        suggestions:
-          - PUSH:
-              to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-              value: "scantxoutset"
-      - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
-        description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
-        suggestions:
-          - SET:
-              var: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks'
-              to-value: true
+      check: 
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+      auto-configure:
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+        implementation:
+          - rule: '''users.*.name = "btcpayserver"'
+            description: 'Must have an RPC user named "btcpayserver"'
+            suggestions:
+              - PUSH:
+                  to: "users"
+                  value:
+                    name: btcpayserver
+                    allowed-calls: []
+              - SET:
+                  var: 'users.[first(item => ''item.name = "btcpayserver")].password'
+                  to-entropy:
+                    charset: "a-z,A-Z,0-9"
+                    len: 22
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblock"'
+            description: 'RPC user "btcpayserver" must have "getblock" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getblock"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockchaininfo"'
+            description: 'RPC user "btcpayserver" must have "getblockchaininfo" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getblockchaininfo"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getnetworkinfo"'
+            description: 'RPC user "btcpayserver" must have "getnetworkinfo" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getnetworkinfo"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getpeerinfo"'
+            description: 'RPC user "btcpayserver" must have "getpeerinfo" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getpeerinfo"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockheader"'
+            description: 'RPC user "btcpayserver" must have "getblockheader" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getblockheader"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "setban"'
+            description: 'RPC user "btcpayserver" must have "setban" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "setban"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "estimatesmartfee"'
+            description: 'RPC user "btcpayserver" must have "estimatesmartfee" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "estimatesmartfee"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockcount"'
+            description: 'RPC user "btcpayserver" must have "getblockcount" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getblockcount"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "sendrawtransaction"'
+            description: 'RPC user "btcpayserver" must have "sendrawtransaction" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "sendrawtransaction"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getrawtransaction"'
+            description: 'RPC user "btcpayserver" must have "getrawtransaction" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getrawtransaction"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "testmempoolaccept"'
+            description: 'RPC user "btcpayserver" must have "testmempoolaccept" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "testmempoolaccept"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "utxoupdatepsbt"'
+            description: 'RPC user "btcpayserver" must have "utxoupdatepsbt" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "utxoupdatepsbt"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getbestblockhash"'
+            description: 'RPC user "btcpayserver" must have "getbestblockhash" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "getbestblockhash"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
+            description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "scantxoutset"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "signrawtransactionwithkey"'
+            description: 'RPC user "btcpayserver" must have "signrawtransactionwithkey" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "signrawtransactionwithkey"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "generatetoaddress"'
+            description: 'RPC user "btcpayserver" must have "generatetoaddress" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "generatetoaddress"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "validateaddress"'
+            description: 'RPC user "btcpayserver" must have "validateaddress" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "validateaddress"
+          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
+            description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
+            suggestions:
+              - PUSH:
+                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
+                  value: "scantxoutset"
+          - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
+            description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
+            suggestions:
+              - SET:
+                  var: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks'
+                  to-value: true
   bitcoind:
-    version: "^0.21.1.1"
+    version: "^0.21.1.2"
+    recommended: true
+    critical: true
     optional: Internal node is recommended, but you can alternatively configure an external bitcoin node.
     description: Used for the P2P connection interface.
     config:
-      - rule: "advanced.peers.listen?"
-        description: Peer port must be listening on the network.
-        suggestions:
-          - SET:
-              var: advanced.peers.listen
-              to-value: true
-  c-lightning:
-    version: ">=0.9.3 <0.11.0"
-    description: Used to communicate with the Lightning Network.
-    optional: Optionally use c-lightning for internal lightning network node implementation.
-    mount-shared: true
+      check: 
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+      auto-configure:
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+        implementation:
+          - rule: "advanced.peers.listen?"
+            description: Peer port must be listening on the network.
+            suggestions:
+              - SET:
+                  var: advanced.peers.listen
+                  to-value: true
   lnd:
-    version: "^0.13.0"
+    version: ">=0.13.0.5 <0.14.0"
+    recommended: true
+    critical: false
     optional: Optionally use LND for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
-    mount-public: true
+    config:
+      check: 
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+      auto-configure:
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+        implementation: {}
+  c-lightning:
+    version: ">=0.10.0.1 <0.11.0"
+    recommended: true
+    critical: false
+    optional: Optionally use c-lightning for internal lightning network node implementation.
+    description: Used to communicate with the Lightning Network.
+    config:
+      check: 
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+      auto-configure:
+        type: docker
+        image: compat
+        system: true
+        entrypoint: "true"
+        implementation: {}
+volumes:
+  bitcoind:
+    type: pointer
+    package-id: bitcoind
+    volume-id: main
+    path: "/root"
+    readonly: false
+  btc-rpc-proxy:
+    type: pointer
+    package-id: btc-rpc-proxy
+    volume-id: main
+    path: "/root"
+    readonly: false
+  lnd:
+    type: pointer
+    package-id: bitcoind
+    volume-id: main
+    path: "/root/.lnd"
+    readonly: true
+  c-lightning:
+    type: pointer
+    package-id: c-lightning
+    volume-id: main
+    path: "/root/.lightning"
+    readonly: true
+alerts:
+  install: |
+    BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!
+
+    The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.
+
+    **PLEASE READ** the **INSTRUCTIONS** after installation!
+  uninstall: |
+    **READ CAREFULLY!**
+
+    Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
+  restore: "Restoring BTCPay will overwrite its current data. \n\nAny stores or invoices created since the last backup will be not be recognized.\n"
+interfaces:
+  main:
+    name: Main
+    description: Main image interface configurations
+    tor-config:
+      port-mapping:
+        80: "80"
+        23000: "23000"
+    lan-config:
+      23000:
+        ssl: false
+        mapping: 23000
+    ui: true
+    protocols:
+      - tcp
+      - http
+backup:
+  create:
+    type: docker
+    image: compat
+    system: true
+    entrypoint: "true"
+    args: []
+    mounts: {}
+  restore:
+    type: docker
+    image: compat
+    system: true
+    entrypoint: "true"
+    args: []
+    mounts: {}
+actions:
+  reset-server-policy:
+    name: Reset Server Policies
+    description: Resets the policies settings if you cannot create a new user because registrations are disabled.
+    warning: |
+      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web interface using the register button. Running this command will also disable any other server policies currently configured.
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: compat
+      system: true
+      entrypoint: docker_entrypoint.sh
+      args: ["reset-server-policy"]
+      mounts: {}
+  reset-admin-password:
+    name: Reset Admin Password
+    description: Resets the admin user with a temporary password.
+    warning: |
+      This action will fail if more than one admin user is present. If another admin user exists, please login to this admin account to add SMTP settings to utilize the default "Forgot Password" flow.
+    allowed-statuses:
+      - running
+    implementation:
+      type: docker
+      image: compat
+      system: true
+      entrypoint: docker_entrypoint.sh
+      args: ["reset-admin-password"]
+      mounts: {}

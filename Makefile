@@ -5,24 +5,24 @@ ACTIONS_SRC := $(shell find ./actions)
 BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
 BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
 CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
+S9PK_PATH=$(shell find . -name btcpayserver.s9pk -print)
 
 .DELETE_ON_ERROR:
 
-all: btcpayserver.s9pk
+all: verify
 
-install: btcpayserver.s9pk
-	appmgr install btcpayserver.s9pk
+verify: btcpayserver.s9pk $(S9PK_PATH)
+	embassy-sdk verify $(S9PK_PATH)
 
 btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC)
-	appmgr -vv pack $(shell pwd) -o btcpayserver.s9pk
-	appmgr -vv verify btcpayserver.s9pk
+	embassy-sdk pack
 
-image.tar: docker_entrypoint.sh configurator/target/armv7-unknown-linux-musleabihf/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) Dockerfile
+image.tar: docker_entrypoint.sh configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) Dockerfile
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/btcpayserver -o type=docker,dest=image.tar -f ./Dockerfile . 
 
-configurator/target/armv7-unknown-linux-musleabihf/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:armv7-musleabihf cargo +beta build --release
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:armv7-musleabihf musl-strip target/armv7-unknown-linux-musleabihf/release/configurator
+configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo +beta build --release
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl musl-strip target/aarch64-unknown-linux-musl/release/configurator
 
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
