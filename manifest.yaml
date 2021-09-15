@@ -246,8 +246,8 @@ backup:
       - duplicity
       - restore
       - btcpayserver
-      - /datadir
       - /mnt/backup
+      - /datadir
     mounts:
       BACKUP: /mnt/backup
       main: /datadir
