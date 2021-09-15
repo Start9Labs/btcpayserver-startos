@@ -37,6 +37,7 @@ fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), an
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct Config {
+    tor_address: String,
     bitcoin: BitcoindConfig,
     lightning: LightningConfig,
 }
@@ -126,7 +127,7 @@ fn main() -> Result<(), anyhow::Error> {
     fs::create_dir_all("/datadir/nbxplorer/Main/")?;
     fs::create_dir_all("/datadir/btcpayserver/Main/")?;
     let config: Config = serde_yaml::from_reader(File::open("/datadir/start9/config.yaml").with_context(||"/datadir/start9/config.yaml")?)?;
-    let tor_address = std::env::var("TOR_ADDRESS")?;
+    let tor_address = config.tor_address;
     let mut nbx_config = File::create("/datadir/nbxplorer/Main/settings.config").with_context(|| "/datadir/nbxplorer/mainnet/settings.config")?;
     let mut btcpay_config = File::create("/datadir/btcpayserver/Main/settings.config").with_context(||"/datadir/btcpayserver/btcpay.config")?;
     let (
@@ -219,15 +220,15 @@ fn main() -> Result<(), anyhow::Error> {
         LightningConfig::CLightning {
             connection_settings: _
         } => {
-             print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://datadir/start9/shared/c-lightning/lightning-rpc'\n");
+             print!("export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://mnt/lightning-rpc'\n");
         },
         LightningConfig::Lnd {
             connection_settings
         } => {
             println!("{}", format!(
-                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;allowinsecure=true'\n
-                export BTCPAY_BTCEXTERNALLNDGRPC='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'\n
-                export BTCPAY_BTCEXTERNALLNDREST='server=https://{}:8080/;macaroonfilepath=/datadir/start9/public/lnd/admin.macaroon;macaroondirectorypath=/datadir/start9/public/lnd;allowinsecure=true'"
+                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=https://{}:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;allowinsecure=true'\n
+                export BTCPAY_BTCEXTERNALLNDGRPC='server=https://{}:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'\n
+                export BTCPAY_BTCEXTERNALLNDREST='server=https://{}:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'"
                 
                 , connection_settings, connection_settings, connection_settings));
         },

@@ -1,3 +1,7 @@
+EMVER := $(shell yq e ".version" manifest.yaml)
+VERSION_TAG := $(shell git --git-dir=btcpayserver/.git describe --abbrev=0)
+VERSION := $(VERSION_TAG:v%=%)
+ASSET_PATHS := $(shell find ./assets/*)
 DOC_ASSETS := $(shell find ./docs/assets)
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver)
 NBXPLORER_SRC := $(shell find ./NBXplorer)
@@ -14,11 +18,11 @@ all: verify
 verify: btcpayserver.s9pk $(S9PK_PATH)
 	embassy-sdk verify $(S9PK_PATH)
 
-btcpayserver.s9pk: manifest.yaml config_spec.yaml config_rules.yaml image.tar instructions.md $(ACTIONS_SRC)
+btcpayserver.s9pk: manifest.yaml image.tar instructions.md $(ACTIONS_SRC) $(ASSET_PATHS)
 	embassy-sdk pack
 
 image.tar: docker_entrypoint.sh configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) Dockerfile
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --tag start9/btcpayserver -o type=docker,dest=image.tar -f ./Dockerfile . 
+	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8  --tag start9/btcpayserver/main:${EMVER} -o type=docker,dest=image.tar -f ./Dockerfile . 
 
 configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
 	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo +beta build --release

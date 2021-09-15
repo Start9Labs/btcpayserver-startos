@@ -1,3 +1,11 @@
+tor-address:
+  name: Network Tor Address
+  description: The Tor address for the network interface. 
+  type: pointer
+  subtype: package
+  package-id: btcpayserver
+  target: tor-address
+  interface: network
 bitcoin:
   type: object
   name: Bitcoin Settings

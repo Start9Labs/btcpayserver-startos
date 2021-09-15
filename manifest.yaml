@@ -19,35 +19,67 @@ assets:
   icon: icon.png
   instructions: instructions.md
   docker-images: image.tar
-  icon-type: png
 main:
   type: docker
   image: main
   entrypoint: "docker_entrypoint.sh"
   args: []
   mounts:
-    lnd: "/mnt/lnd"
+    btc-rpc-proxy: "/mnt/btc-rpc-proxy"
+    lnd: /mnt/lnd
     c-lightning: "/mnt/c-lightning"
+    main: /datadir
   io-format: yaml
-health-checks: {}
+health-checks:
+  explorer: 
+    type: docker
+    image: main
+    system: false
+    entrypoint: sh
+    args: ["-c", "curl http://localhost:24444 || exit 1"]
+    mounts:
+      main: /datadir
+    io-format: yaml
+    critical: true
+  main: 
+    type: docker
+    image: main
+    system: false
+    entrypoint: sh
+    args: ["-c", "curl http://localhost:23000 || exit 1"]
+    mounts:
+      main: /datadir
+    io-format: yaml
+    critical: true
 config:
   get:
     type: docker
     image: compat
-    entrypoint: config
+    system: true
+    entrypoint: compat
     args: 
-      - "get"
-      - "/datadir"
-    mounts: {}
+      - config
+      - get
+      - /datadir
+      - "/mnt/assets/config_spec.yaml"
+    mounts:
+      compat: /mnt/assets
+      main: /datadir
     io-format: yaml
   set:
     type: docker
     image: compat
-    entrypoint: config
+    system: true
+    entrypoint: compat
     args:
-      - "set"
-      - "/datadir"
-    mounts: {}
+      - config
+      - set
+      - btcpayserver
+      - /datadir
+      - "/mnt/assets/config_rules.yaml"
+    mounts:
+      compat: /mnt/assets
+      main: /datadir
     io-format: yaml
 dependencies:
   btc-rpc-proxy:
@@ -57,144 +89,32 @@ dependencies:
     optional: Can alternatively configure an external bitcoin node.
     description: Used to fetch validated blocks.
     config:
-      check: 
+      check:
         type: docker
         image: compat
         system: true
-        entrypoint: "true"
+        entrypoint: compat
+        args:
+          - dependency
+          - check
+          - "btc-rpc-proxy"
+          - /datadir
+          - "/mnt/assets/btc-rpc-proxy_config_rules.yaml"
+        mounts: 
+          main: /datadir
+          compat: /mnt/assets
       auto-configure:
         type: docker
         image: compat
         system: true
-        entrypoint: "true"
-        implementation:
-          - rule: '''users.*.name = "btcpayserver"'
-            description: 'Must have an RPC user named "btcpayserver"'
-            suggestions:
-              - PUSH:
-                  to: "users"
-                  value:
-                    name: btcpayserver
-                    allowed-calls: []
-              - SET:
-                  var: 'users.[first(item => ''item.name = "btcpayserver")].password'
-                  to-entropy:
-                    charset: "a-z,A-Z,0-9"
-                    len: 22
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblock"'
-            description: 'RPC user "btcpayserver" must have "getblock" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getblock"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockchaininfo"'
-            description: 'RPC user "btcpayserver" must have "getblockchaininfo" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getblockchaininfo"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getnetworkinfo"'
-            description: 'RPC user "btcpayserver" must have "getnetworkinfo" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getnetworkinfo"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getpeerinfo"'
-            description: 'RPC user "btcpayserver" must have "getpeerinfo" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getpeerinfo"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockheader"'
-            description: 'RPC user "btcpayserver" must have "getblockheader" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getblockheader"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "setban"'
-            description: 'RPC user "btcpayserver" must have "setban" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "setban"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "estimatesmartfee"'
-            description: 'RPC user "btcpayserver" must have "estimatesmartfee" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "estimatesmartfee"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getblockcount"'
-            description: 'RPC user "btcpayserver" must have "getblockcount" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getblockcount"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "sendrawtransaction"'
-            description: 'RPC user "btcpayserver" must have "sendrawtransaction" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "sendrawtransaction"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getrawtransaction"'
-            description: 'RPC user "btcpayserver" must have "getrawtransaction" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getrawtransaction"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "testmempoolaccept"'
-            description: 'RPC user "btcpayserver" must have "testmempoolaccept" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "testmempoolaccept"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "utxoupdatepsbt"'
-            description: 'RPC user "btcpayserver" must have "utxoupdatepsbt" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "utxoupdatepsbt"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "getbestblockhash"'
-            description: 'RPC user "btcpayserver" must have "getbestblockhash" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "getbestblockhash"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
-            description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "scantxoutset"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "signrawtransactionwithkey"'
-            description: 'RPC user "btcpayserver" must have "signrawtransactionwithkey" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "signrawtransactionwithkey"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "generatetoaddress"'
-            description: 'RPC user "btcpayserver" must have "generatetoaddress" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "generatetoaddress"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "validateaddress"'
-            description: 'RPC user "btcpayserver" must have "validateaddress" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "validateaddress"
-          - rule: '''users.[first(item => ''item.name = "btcpayserver")].allowed-calls.* = "scantxoutset"'
-            description: 'RPC user "btcpayserver" must have "scantxoutset" enabled'
-            suggestions:
-              - PUSH:
-                  to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
-                  value: "scantxoutset"
-          - rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
-            description: 'RPC user "btcpayserver" must have "Fetch Blocks" enabled'
-            suggestions:
-              - SET:
-                  var: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks'
-                  to-value: true
+        entrypoint: compat
+        args: 
+          - dependency
+          - "auto-configure"
+          - "btc-rpc-proxy"
+          - "/mnt/assets/btc-rpc-proxy_config_rules.yaml"
+        mounts:
+          compat: /mnt/assets
   bitcoind:
     version: "^0.21.1.2"
     recommended: true
@@ -206,62 +126,53 @@ dependencies:
         type: docker
         image: compat
         system: true
-        entrypoint: "true"
+        entrypoint: compat
+        args:
+          - dependency
+          - check
+          - bitcoind
+          - /datadir
+          - "/mnt/assets/bitcoind_config_rules.yaml"
+        mounts: 
+          main: /datadir
+          compat: /mnt/assets
       auto-configure:
         type: docker
         image: compat
         system: true
-        entrypoint: "true"
-        implementation:
-          - rule: "advanced.peers.listen?"
-            description: Peer port must be listening on the network.
-            suggestions:
-              - SET:
-                  var: advanced.peers.listen
-                  to-value: true
+        entrypoint: compat
+        args: 
+          - dependency
+          - "auto-configure"
+          - bitcoind
+          - "/mnt/assets/bitcoind_config_rules.yaml"
+        mounts:
+          compat: /mnt/assets
   lnd:
     version: ">=0.13.0.5 <0.14.0"
     recommended: true
     critical: false
     optional: Optionally use LND for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
-    config:
-      check: 
-        type: docker
-        image: compat
-        system: true
-        entrypoint: "true"
-      auto-configure:
-        type: docker
-        image: compat
-        system: true
-        entrypoint: "true"
-        implementation: {}
+    config: ~
   c-lightning:
     version: ">=0.10.0.1 <0.11.0"
     recommended: true
     critical: false
     optional: Optionally use c-lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
-    config:
-      check: 
-        type: docker
-        image: compat
-        system: true
-        entrypoint: "true"
-      auto-configure:
-        type: docker
-        image: compat
-        system: true
-        entrypoint: "true"
-        implementation: {}
+    config: ~
 volumes:
+  main:
+    type: data
+  compat:
+    type: assets
   bitcoind:
     type: pointer
     package-id: bitcoind
     volume-id: main
-    path: "/root"
-    readonly: false
+    path: "/root/.bitcoin"
+    readonly: true
   btc-rpc-proxy:
     type: pointer
     package-id: btc-rpc-proxy
@@ -293,9 +204,9 @@ alerts:
     Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
   restore: "Restoring BTCPay will overwrite its current data. \n\nAny stores or invoices created since the last backup will be not be recognized.\n"
 interfaces:
-  main:
-    name: Main
-    description: Main image interface configurations
+  network:
+    name: Network Interface
+    description: Specifies the interfaces to listen on for HTTP connections.
     tor-config:
       port-mapping:
         80: "80"
@@ -304,6 +215,9 @@ interfaces:
       23000:
         ssl: false
         mapping: 23000
+      80:
+        ssl: true
+        mapping: 443
     ui: true
     protocols:
       - tcp
@@ -313,16 +227,30 @@ backup:
     type: docker
     image: compat
     system: true
-    entrypoint: "true"
-    args: []
-    mounts: {}
+    entrypoint: compat
+    args:
+      - duplicity
+      - create
+      - btcpayserver
+      - /mnt/backup
+      - /datadir
+    mounts:
+      BACKUP: /mnt/backup
+      main: /datadir
   restore:
     type: docker
     image: compat
     system: true
-    entrypoint: "true"
-    args: []
-    mounts: {}
+    entrypoint: compat
+    args:
+      - duplicity
+      - restore
+      - btcpayserver
+      - /datadir
+      - /mnt/backup
+    mounts:
+      BACKUP: /mnt/backup
+      main: /datadir
 actions:
   reset-server-policy:
     name: Reset Server Policies
@@ -337,7 +265,8 @@ actions:
       system: true
       entrypoint: docker_entrypoint.sh
       args: ["reset-server-policy"]
-      mounts: {}
+      mounts:
+        main: /datadir
   reset-admin-password:
     name: Reset Admin Password
     description: Resets the admin user with a temporary password.
@@ -351,4 +280,5 @@ actions:
       system: true
       entrypoint: docker_entrypoint.sh
       args: ["reset-admin-password"]
-      mounts: {}
+      mounts:
+        main: /datadir
