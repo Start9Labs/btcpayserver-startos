@@ -84,9 +84,10 @@ config:
 dependencies:
   btc-rpc-proxy:
     version: ">=0.3.2.1 <0.4.0"
-    recommended: true
+    requirement:
+      type: "opt-in"
+      how: Can alternatively configure an external bitcoin node.
     critical: false
-    optional: Can alternatively configure an external bitcoin node.
     description: Used to fetch validated blocks.
     config:
       check:
@@ -117,9 +118,10 @@ dependencies:
           compat: /mnt/assets
   bitcoind:
     version: "^0.21.1.2"
-    recommended: true
+    requirement:
+      type: "opt-in"
+      how: Internal node is recommended, but you can alternatively configure an external bitcoin node.
     critical: true
-    optional: Internal node is recommended, but you can alternatively configure an external bitcoin node.
     description: Used for the P2P connection interface.
     config:
       check: 
@@ -150,16 +152,18 @@ dependencies:
           compat: /mnt/assets
   lnd:
     version: ">=0.13.0.5 <0.14.0"
-    recommended: true
     critical: false
-    optional: Optionally use LND for internal lightning network node implementation.
+    requirement:
+      type: "opt-out"
+      how: Optionally use LND for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
   c-lightning:
     version: ">=0.10.0.1 <0.11.0"
-    recommended: true
     critical: false
-    optional: Optionally use c-lightning for internal lightning network node implementation.
+    requirement:
+      type: "opt-in"
+      how: Optionally use c-lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
 volumes:
