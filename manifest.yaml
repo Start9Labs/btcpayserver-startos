@@ -162,7 +162,7 @@ dependencies:
     version: ">=0.13.0.5 <0.14.0"
     critical: false
     requirement:
-      type: "opt-out"
+      type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
@@ -183,25 +183,25 @@ volumes:
     type: pointer
     package-id: bitcoind
     volume-id: main
-    path: "/root/.bitcoin"
+    path: "/.bitcoin"
     readonly: true
   btc-rpc-proxy:
     type: pointer
     package-id: btc-rpc-proxy
     volume-id: main
-    path: "/root"
+    path: ""
     readonly: false
   lnd:
     type: pointer
     package-id: bitcoind
     volume-id: main
-    path: "/root/.lnd"
+    path: "/.lnd"
     readonly: true
   c-lightning:
     type: pointer
     package-id: c-lightning
     volume-id: main
-    path: "/root/.lightning"
+    path: "/.lightning"
     readonly: true
 alerts:
   install: |
