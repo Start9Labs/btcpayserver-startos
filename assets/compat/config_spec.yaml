@@ -11,7 +11,6 @@ bitcoin:
   name: Bitcoin Settings
   description: RPC and P2P interface configuration options for Bitcoin Core
   nullable: false
-  null-by-default: false
   spec:
     bitcoind-rpc:
       type: union
@@ -30,29 +29,22 @@ bitcoin:
       default: internal
       variants:
         internal:
-          rpc-host:
-            type: pointer
-            name: Local RPC Address
-            description: The LAN IP address of your Bitcoin Proxy service
-            subtype: app
-            app-id: btc-rpc-proxy
-            target: lan-address
           rpc-user:
             type: pointer
             name: RPC Username
             description: The username for the RPC user allocated to BTCPay
-            subtype: app
-            app-id: btc-rpc-proxy
+            subtype: package
+            package-id: btc-rpc-proxy
             target: config
-            index: 'users.[first(item => ''item.name = "btcpayserver")].name'
+            index: '$users.[?(@.name == "btcpayserver")].name'
           rpc-password:
             type: pointer
             name: RPC Password
             description: The password for the RPC user allocated to BTCPay
-            subtype: app
-            app-id: btc-rpc-proxy
+            subtype: package
+            package-id: btc-rpc-proxy
             target: config
-            index: 'users.[first(item => ''item.name = "btcpayserver")].password'
+            index: '$users.[?(@.name == "btcpayserver")].password'
         external:
           connection-settings:
             type: union
@@ -110,14 +102,7 @@ bitcoin:
       tag: type
       default: internal
       variants:
-        internal:
-          p2p-host:
-            type: pointer
-            name: Local P2P Address
-            description: The LAN IP address of your Bitcoin service
-            subtype: app
-            app-id: bitcoind
-            target: lan-address
+        internal: {}
         external:
           p2p-host:
             type: string
@@ -147,19 +132,5 @@ lightning:
   default: none
   variants:
     none: {}
-    lnd:
-      connection-settings:
-        type: pointer
-        name: LND Local Address
-        description: The LAN IP address of your Internal Lightning Network Daemon service
-        subtype: app
-        app-id: lnd
-        target: lan-address
-    c-lightning:
-      connection-settings:
-        type: pointer
-        name: C-lightning Local Address
-        description: The LAN IP address of your Internal C-Lightning service
-        subtype: app
-        app-id: c-lightning
-        target: lan-address
+    lnd: {}
+    c-lightning: {}

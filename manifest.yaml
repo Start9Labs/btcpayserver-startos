@@ -159,7 +159,7 @@ dependencies:
           main: /datadir
         io-format: yaml
   lnd:
-    version: ">=0.13.0.5 <0.14.0"
+    version: ">=0.13.3.1 <0.14.0"
     critical: false
     requirement:
       type: "opt-in"
@@ -179,23 +179,17 @@ volumes:
     type: data
   compat:
     type: assets
-  bitcoind:
-    type: pointer
-    package-id: bitcoind
-    volume-id: main
-    path: "/.bitcoin"
-    readonly: true
   btc-rpc-proxy:
     type: pointer
     package-id: btc-rpc-proxy
     volume-id: main
-    path: ""
+    path: "/root"
     readonly: false
   lnd:
     type: pointer
     package-id: bitcoind
     volume-id: main
-    path: "/.lnd"
+    path: "/.lnd/public"
     readonly: true
   c-lightning:
     type: pointer
@@ -290,5 +284,6 @@ actions:
       image: main
       entrypoint: docker_entrypoint.sh
       args: ["reset-admin-password"]
-      inject: true
+      mounts:
+        main: /datadir
       io-format: yaml
