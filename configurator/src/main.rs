@@ -1,5 +1,4 @@
 use std::io::Write;
-use std::net::IpAddr;
 use std::{
     fs::{self, File},
     path::Path,
@@ -40,7 +39,7 @@ fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), an
 #[serde(rename_all = "kebab-case")]
 struct Config {
     tor_address: String,
-    bitcoin: BitcoindConfig,
+    bitcoind: BitcoindConfig,
     lightning: LightningConfig,
 }
 
@@ -68,7 +67,6 @@ struct BitcoindConfig {
 enum BitcoindRPCConfig {
     #[serde(rename_all = "kebab-case")]
     Internal {
-        rpc_host: IpAddr,
         rpc_user: String,
         rpc_password: String,
     },
@@ -100,7 +98,7 @@ enum ExternalBitcoinCoreConfig {
 #[serde(rename_all = "kebab-case")]
 enum BitcoindP2PConfig {
     #[serde(rename_all = "kebab-case")]
-    Internal { p2p_host: IpAddr },
+    Internal {},
     #[serde(rename_all = "kebab-case")]
     External {
         #[serde(deserialize_with = "deserialize_parse")]
@@ -131,12 +129,16 @@ fn main() -> Result<(), anyhow::Error> {
     let mut btcpay_config = File::create("/datadir/btcpayserver/Main/settings.config")
         .with_context(|| "/datadir/btcpayserver/btcpay.config")?;
     let (bitcoind_rpc_user, bitcoind_rpc_pass, bitcoind_rpc_host, bitcoind_rpc_port) =
-        match config.bitcoin.bitcoind_rpc {
+        match config.bitcoind.bitcoind_rpc {
             BitcoindRPCConfig::Internal {
-                rpc_host,
                 rpc_user,
                 rpc_password,
-            } => (rpc_user, rpc_password, format!("{}", rpc_host), 8332),
+            } => (
+                rpc_user,
+                rpc_password,
+                "btc-rpc-proxy.embassy".to_string(),
+                8332,
+            ),
             BitcoindRPCConfig::External {
                 connection_settings:
                     ExternalBitcoinCoreConfig::Manual {
@@ -164,8 +166,8 @@ fn main() -> Result<(), anyhow::Error> {
                 )
             }
         };
-    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin.bitcoind_p2p {
-        BitcoindP2PConfig::Internal { p2p_host } => (format!("{}", p2p_host), 8333),
+    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoind.bitcoind_p2p {
+        BitcoindP2PConfig::Internal {} => ("bitcoind.embassy".to_string(), 8333),
         BitcoindP2PConfig::External { p2p_host, p2p_port } => {
             (format!("{}", p2p_host.host().unwrap()), p2p_port)
         }
@@ -184,7 +186,6 @@ fn main() -> Result<(), anyhow::Error> {
     write!(
         btcpay_config,
         include_str!("templates/settings-btcpay.config.template"),
-        btc_proxy_address = bitcoind_rpc_host
     )?;
 
     let addr = tor_address.split('.').collect::<Vec<&str>>();
@@ -198,7 +199,7 @@ fn main() -> Result<(), anyhow::Error> {
     match config.lightning {
         LightningConfig::CLightning => {
             print!(
-                "export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://mnt/lightning-rpc'\n"
+                "export BTCPAY_BTCLIGHTNING='type=clightning;server=unix://mnt/c-lightning/lightning-rpc'\n"
             );
         }
         LightningConfig::Lnd => {

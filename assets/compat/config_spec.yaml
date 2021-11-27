@@ -6,7 +6,7 @@ tor-address:
   package-id: btcpayserver
   target: tor-address
   interface: network
-bitcoin:
+bitcoind:
   type: object
   name: Bitcoin Settings
   description: RPC and P2P interface configuration options for Bitcoin Core
@@ -36,7 +36,8 @@ bitcoin:
             subtype: package
             package-id: btc-rpc-proxy
             target: config
-            index: '$users.[?(@.name == "btcpayserver")].name'
+            multi: false
+            selector: '$.users.[?(@.name == "btcpayserver")].name'
           rpc-password:
             type: pointer
             name: RPC Password
@@ -44,7 +45,8 @@ bitcoin:
             subtype: package
             package-id: btc-rpc-proxy
             target: config
-            index: '$users.[?(@.name == "btcpayserver")].password'
+            multi: false
+            selector: '$.users.[?(@.name == "btcpayserver")].password'
         external:
           connection-settings:
             type: union
@@ -103,6 +105,14 @@ bitcoin:
       default: internal
       variants:
         internal: {}
+          # p2p-host:
+          #   type: pointer
+          #   name: Local P2P Address
+          #   description: The LAN IP address of the Bitcoin service on your Embassy
+          #   subtype: package
+          #   package-id: bitcoind
+          #   target: lan-address
+          #   interface: peer
         external:
           p2p-host:
             type: string

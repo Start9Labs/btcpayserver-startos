@@ -30,22 +30,46 @@ main:
     c-lightning: "/mnt/c-lightning"
     main: /datadir
   io-format: yaml
+migrations:
+  from:
+    '<=1.1.2.4':
+        type: docker
+        image: main
+        entrypoint: sh
+        args: ["-c", "echo { \"configured\": true }"]
+        io-format: json
+        inject: true
+  to:
+    '<=1.1.2.4':
+        type: docker
+        image: main
+        entrypoint: sh
+        args: ["-c", "echo { \"configured\": true }"]
+        io-format: json
+        inject: true
 health-checks:
-  explorer: 
+  explorer-synced:
+    name: Explorer synced
+    description: Ensures the UTXO tracker is synced to the tip of the Bitcoin blockchain.
+    type: docker
+    image: utils
+    system: true
+    entrypoint: /mnt/assets/nbx_synced.sh
+    args: []
+    mounts:
+      main: /datadir
+      utils: /mnt/assets
+    io-format: yaml
+    severity: warning
+  main:
+    name: Web Interface
+    description: Ensures the network interface is accessible via HTTP.
     type: docker
     image: main
     entrypoint: sh
-    args: ["-c", "curl btcpayserver.embassy:24444 || exit 1"]
+    args: ["-c", "curl --silent --show-error --fail btcpayserver.embassy:23000"]
     io-format: yaml
-    critical: true
-    inject: true
-  main: 
-    type: docker
-    image: main
-    entrypoint: sh
-    args: ["-c", "curl btcpayserver.embassy:23000 || exit 1"]
-    io-format: yaml
-    critical: true
+    severity: warning
     inject: true
 config:
   get:
@@ -82,7 +106,7 @@ dependencies:
     version: ">=0.3.2.1 <0.4.0"
     requirement:
       type: "opt-in"
-      how: Can alternatively configure an external bitcoin node.
+      how: Can alternatively configure an external bitcoind node.
     critical: false
     description: Used to fetch validated blocks.
     config:
@@ -179,6 +203,8 @@ volumes:
     type: data
   compat:
     type: assets
+  utils:
+    type: assets
   btc-rpc-proxy:
     type: pointer
     package-id: btc-rpc-proxy
@@ -187,15 +213,15 @@ volumes:
     readonly: false
   lnd:
     type: pointer
-    package-id: bitcoind
+    package-id: lnd
     volume-id: main
-    path: "/.lnd/public"
+    path: "/public"
     readonly: true
   c-lightning:
     type: pointer
     package-id: c-lightning
     volume-id: main
-    path: "/.lightning"
+    path: "/shared"
     readonly: true
 alerts:
   install: |
@@ -215,12 +241,11 @@ interfaces:
     description: Specifies the interfaces to listen on for HTTP connections.
     tor-config:
       port-mapping:
-        80: "80"
-        23000: "23000"
+        80: "23000"
     lan-config:
       23000:
         ssl: false
-        mapping: 23000
+        mapping: 443
       80:
         ssl: true
         mapping: 443
