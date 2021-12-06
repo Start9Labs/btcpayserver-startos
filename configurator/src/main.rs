@@ -204,9 +204,9 @@ fn main() -> Result<(), anyhow::Error> {
         }
         LightningConfig::Lnd => {
             println!("{}", format!(
-                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;allowinsecure=true'\n
-                export BTCPAY_BTCEXTERNALLNDGRPC='server=lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'\n
-                export BTCPAY_BTCEXTERNALLNDREST='server=lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'"
+                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;allowinsecure=true'\n
+                export BTCPAY_BTCEXTERNALLNDGRPC='server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'\n
+                export BTCPAY_BTCEXTERNALLNDREST='server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'"
                 ));
         }
         LightningConfig::None => {}

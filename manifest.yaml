@@ -32,19 +32,19 @@ main:
   io-format: yaml
 migrations:
   from:
-    '<=1.1.2.4':
+    "<=1.1.2.4":
         type: docker
         image: main
         entrypoint: sh
-        args: ["-c", "echo { \"configured\": true }"]
+        args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
         io-format: json
         inject: true
   to:
-    '<=1.1.2.4':
+    "<=1.1.2.4":
         type: docker
         image: main
         entrypoint: sh
-        args: ["-c", "echo { \"configured\": true }"]
+        args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
         io-format: json
         inject: true
 health-checks:
