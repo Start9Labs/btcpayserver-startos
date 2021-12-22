@@ -52,15 +52,11 @@ health-checks:
     name: Explorer synced
     description: Ensures the UTXO tracker is synced to the tip of the Bitcoin blockchain.
     type: docker
-    image: utils
-    system: true
-    entrypoint: /mnt/assets/nbx_synced.sh
+    image: main
+    entrypoint: nbx_synced.sh
     args: []
-    mounts:
-      main: /datadir
-      utils: /mnt/assets
+    inject: true
     io-format: yaml
-    severity: warning
   main:
     name: Web Interface
     description: Ensures the network interface is accessible via HTTP.
@@ -69,7 +65,6 @@ health-checks:
     entrypoint: sh
     args: ["-c", "curl --silent --show-error --fail btcpayserver.embassy:23000"]
     io-format: yaml
-    severity: warning
     inject: true
 config:
   get:

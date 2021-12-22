@@ -18,10 +18,10 @@ configurator > .env
 source .env
 
 dotnet /nbxplorer/NBXplorer.dll &
-nbxplorer_process=$1
+nbxplorer_process=$!
 
 dotnet ./BTCPayServer.dll &
-btcpayserver_process=$1
+btcpayserver_process=$!
 
 trap _term SIGTERM
 
