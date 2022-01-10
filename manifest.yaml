@@ -204,7 +204,7 @@ volumes:
     type: pointer
     package-id: btc-rpc-proxy
     volume-id: main
-    path: "/root"
+    path: /
     readonly: false
   lnd:
     type: pointer
