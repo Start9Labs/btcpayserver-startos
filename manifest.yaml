@@ -30,23 +30,23 @@ main:
     c-lightning: "/mnt/c-lightning"
     main: /datadir
   io-format: yaml
-migrations:
-  from:
-    "<=1.1.2.4":
-        type: docker
-        image: main
-        entrypoint: sh
-        args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
-        io-format: json
-        inject: true
-  to:
-    "<=1.1.2.4":
-        type: docker
-        image: main
-        entrypoint: sh
-        args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
-        io-format: json
-        inject: true
+# migrations:
+#   from:
+#     "<=1.1.2.4":
+#         type: docker
+#         image: main
+#         entrypoint: sh
+#         args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
+#         io-format: json
+#         inject: true
+#   to:
+#     "<=1.1.2.4":
+#         type: docker
+#         image: main
+#         entrypoint: sh
+#         args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
+#         io-format: json
+#         inject: true
 health-checks:
   explorer-synced:
     name: Explorer synced
