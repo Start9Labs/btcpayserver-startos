@@ -291,7 +291,7 @@ actions:
       entrypoint: docker_entrypoint.sh
       args: ["reset-server-policy"]
       inject: true
-      io-format: yaml
+      io-format: json
   reset-admin-password:
     name: Reset Admin Password
     description: Resets the admin user with a temporary password.
@@ -306,4 +306,4 @@ actions:
       args: ["reset-admin-password"]
       mounts:
         main: /datadir
-      io-format: yaml
+      io-format: json
