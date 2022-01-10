@@ -203,10 +203,10 @@ fn main() -> Result<(), anyhow::Error> {
             );
         }
         LightningConfig::Lnd => {
+            // export BTCPAY_BTCEXTERNALLNDGRPC='server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'\n
+            // export BTCPAY_BTCEXTERNALLNDREST='server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'
             println!("{}", format!(
-                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;allowinsecure=true'\n
-                export BTCPAY_BTCEXTERNALLNDGRPC='server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'\n
-                export BTCPAY_BTCEXTERNALLNDREST='server=http://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;macaroondirectorypath=/mnt/lnd;allowinsecure=true'"
+                "export BTCPAY_BTCLIGHTNING='type=lnd-rest;server=https://lnd.embassy:8080/;macaroonfilepath=/mnt/lnd/admin.macaroon;allowinsecure=true'\n"
                 ));
         }
         LightningConfig::None => {}
