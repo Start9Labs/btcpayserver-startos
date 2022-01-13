@@ -6,15 +6,6 @@ query() {
     sqlite3 /datadir/btcpayserver/sqlite.db "$*"
 }
 
-action_result() {
-    jq -n \
-        --arg message $MESSAGE \
-        --arg value $VALUE \
-        --argjson copyable $COPYABLE \
-        --argjson qr $QR \
-        '{message: $message, value: $value, copyable: $copyable, qr: $qr}'
-}
-
 create_password() {
     ADMIN_USERS=$(query "SELECT \"UserId\" FROM \"AspNetUserRoles\"")
     ARR=$(echo "$ADMIN_USERS" | readarray -t)
@@ -28,10 +19,6 @@ create_password() {
         PW=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | fold -w ${1:-10} | head -n 1)
         HASH=$(dotnet /actions/actions.dll "$PW")
         query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'"
-        MESSAGE="This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in. Your new temporary password is: "
-        VALUE=$PW
-        COPYABLE=true
-        QR=false
         RESULT="    {
             \"version\": \"0\",
             \"message\": \"This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in. Your new temporary password is:\",
@@ -39,14 +26,7 @@ create_password() {
             \"copyable\": true,
             \"qr\": false
         }"
-        # RESULT=$(jq -n \
-        #             --arg message $MESSAGE \
-        #             --arg value $VALUE \
-        #             --argjson copyable $COPYABLE \
-        #             --argjson qr $QR \
-        #             '{message: $message, value: $value, copyable: $copyable, qr: $qr}')
         echo $RESULT
-
     fi
 }
 
@@ -60,10 +40,6 @@ case "$1" in
         ;;
     reset-server-policy)
         query "DELETE FROM \"Settings\" WHERE \"Id\" = 'BTCPayServer.Services.PoliciesSettings'"
-        MESSAGE="Registrations are now enabled on your server."
-        VALUE=null
-        COPYABLE-false
-        QR=false
         RESULT="    {
             \"version\": \"0\",
             \"message\": \"Registrations are now enabled on your server.\",
