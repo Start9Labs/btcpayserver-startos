@@ -49,22 +49,31 @@ main:
 #         inject: true
 health-checks:
   explorer-synced:
-    name: Explorer synced
+    name: Explorer Synced
     description: Ensures the UTXO tracker is synced to the tip of the Bitcoin blockchain.
     type: docker
     image: main
-    entrypoint: nbx_synced.sh
-    args: []
+    entrypoint: health_check.sh
+    args: ["nbx"]
     inject: true
-    io-format: yaml
-  main:
+    io-format: json
+  web-ui:
     name: Web Interface
     description: Ensures the network interface is accessible via HTTP.
     type: docker
     image: main
     entrypoint: sh
-    args: ["-c", "curl --silent --show-error --fail btcpayserver.embassy:23000"]
-    io-format: yaml
+    args: ["-c", "curl --silent --show-error --fail btcpayserver.embassy:23000 || exit 1"]
+    io-format: json
+    inject: true
+  api:
+    name: Data Interface
+    description: Checks the health status of the instance via its API.
+    type: docker
+    image: main
+    entrypoint: health_check.sh
+    args: ["api"]
+    io-format: json
     inject: true
 config:
   get:

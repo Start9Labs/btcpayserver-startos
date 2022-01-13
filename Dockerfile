@@ -20,7 +20,7 @@ COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
 
 RUN apt-get update && \
-    apt-get install -y sqlite3 libsqlite3-0 curl locales jq
+    apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc
 
 RUN locale-gen en_US.UTF-8
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -35,8 +35,8 @@ EXPOSE 23000 80
 ADD ./configurator/target/aarch64-unknown-linux-musl/release/configurator /usr/local/bin/configurator
 COPY ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 COPY actions/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
-COPY assets/utils/nbx_synced.sh /usr/local/bin/nbx_synched.sh
+COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
 RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 RUN chmod a+x /usr/local/bin/btcpay-admin.sh
-RUN chmod a+x /usr/local/bin/nbx_synched.sh
+RUN chmod a+x /usr/local/bin/health_check.sh
 ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]
