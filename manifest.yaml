@@ -224,9 +224,6 @@ interfaces:
         80: "23000"
     lan-config:
       23000:
-        ssl: false
-        mapping: 443
-      80:
         ssl: true
         mapping: 443
     ui: true

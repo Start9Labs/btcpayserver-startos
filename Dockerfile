@@ -28,7 +28,7 @@ ENV BTCPAY_DATADIR=/datadir/btcpayserver
 ENV NBXPLORER_DATADIR=/datadir/nbxplorer
 RUN touch btcpay.log
 ENV BTCPAY_DEBUGLOG=btcpay.log
-
+ENV BTCPAY_ENABLE_SSH=false
 ENV LC_ALL=C 
 
 EXPOSE 23000 80

@@ -12,8 +12,6 @@ _term() {
   kill -TERM "$btcpayserver_process" 2>/dev/null
 }
 
-export BTCPAY_ENABLE_SSH=false
-
 configurator > .env 
 source .env
 
