@@ -216,9 +216,9 @@ alerts:
     Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
   restore: "Restoring BTCPay will overwrite its current data. \n\nAny stores or invoices created since the last backup will be not be recognized.\n"
 interfaces:
-  network:
-    name: Network Interface
-    description: Specifies the interfaces to listen on for HTTP connections.
+  main:
+    name: Web Interface
+    description: User interface for interacting with BTCPay Server in a browser.
     tor-config:
       port-mapping:
         80: "23000"
