@@ -105,14 +105,6 @@ bitcoin:
       default: internal
       variants:
         internal: {}
-          # p2p-host:
-          #   type: pointer
-          #   name: Local P2P Address
-          #   description: The LAN IP address of the Bitcoin service on your Embassy
-          #   subtype: package
-          #   package-id: bitcoind
-          #   target: lan-address
-          #   interface: peer
         external:
           p2p-host:
             type: string

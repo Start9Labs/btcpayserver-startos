@@ -25,28 +25,10 @@ main:
   entrypoint: "docker_entrypoint.sh"
   args: []
   mounts:
-    btc-rpc-proxy: "/mnt/btc-rpc-proxy"
     lnd: /mnt/lnd
     c-lightning: "/mnt/c-lightning"
     main: /datadir
   io-format: yaml
-# migrations:
-#   from:
-#     "<=1.1.2.4":
-#         type: docker
-#         image: main
-#         entrypoint: sh
-#         args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
-#         io-format: json
-#         inject: true
-#   to:
-#     "<=1.1.2.4":
-#         type: docker
-#         image: main
-#         entrypoint: sh
-#         args: ["-c", 'json=''{"configured": true }'' && echo "$json"']
-#         io-format: json
-#         inject: true
 health-checks:
   explorer-synced:
     name: Explorer Synced
@@ -209,12 +191,6 @@ volumes:
     type: assets
   utils:
     type: assets
-  btc-rpc-proxy:
-    type: pointer
-    package-id: btc-rpc-proxy
-    volume-id: main
-    path: /
-    readonly: false
   lnd:
     type: pointer
     package-id: lnd
