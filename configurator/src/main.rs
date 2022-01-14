@@ -39,7 +39,7 @@ fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), an
 #[serde(rename_all = "kebab-case")]
 struct Config {
     tor_address: String,
-    bitcoind: BitcoindConfig,
+    bitcoin: BitcoindConfig,
     lightning: LightningConfig,
 }
 
@@ -129,7 +129,7 @@ fn main() -> Result<(), anyhow::Error> {
     let mut btcpay_config = File::create("/datadir/btcpayserver/Main/settings.config")
         .with_context(|| "/datadir/btcpayserver/btcpay.config")?;
     let (bitcoind_rpc_user, bitcoind_rpc_pass, bitcoind_rpc_host, bitcoind_rpc_port) =
-        match config.bitcoind.bitcoind_rpc {
+        match config.bitcoin.bitcoind_rpc {
             BitcoindRPCConfig::Internal {
                 rpc_user,
                 rpc_password,
@@ -166,7 +166,7 @@ fn main() -> Result<(), anyhow::Error> {
                 )
             }
         };
-    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoind.bitcoind_p2p {
+    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin.bitcoind_p2p {
         BitcoindP2PConfig::Internal {} => ("bitcoind.embassy".to_string(), 8333),
         BitcoindP2PConfig::External { p2p_host, p2p_port } => {
             (format!("{}", p2p_host.host().unwrap()), p2p_port)

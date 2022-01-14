@@ -6,7 +6,7 @@ tor-address:
   package-id: btcpayserver
   target: tor-address
   interface: network
-bitcoind:
+bitcoin:
   type: object
   name: Bitcoin Settings
   description: RPC and P2P interface configuration options for Bitcoin Core
