@@ -45,7 +45,7 @@ BTCPay Server is compatible with multiple lightning implementations, including t
 If you would like to **use your Embassy's lightning node** for BTCPay:
 
 1. Open your BTCPay Server service details page and select `Config`. 
-1. Navigate to `Lightning` and select the internal lightning implementation you would like to use for BTCPay. 
+1. Navigate to `Embassy Lightning Node` and select the internal lightning implementation type you would like to use for BTCPay. 
 1. Save this setting. BTCPay will now be able to recognize the internal lightning node running on EmbassyOS.
 
 To **enable lightning** for a particular store's wallet using your Embassy's lightning node:
@@ -66,7 +66,7 @@ Manual maintenance updates are disabled. Updates for BTCPay Server will be deliv
 
 ## Advanced
 
-The BTCPay Server documentation can recommend `ssh` or `docker-compose` commands for resolving issues. The way BTCPay Server is configured for your Embassy is different than the default installation, which is meant to run on a standalone server instance. Start9 has consolidated BTCPay Server to run in an optimal way, so please reach out to the team for support in these circumstances. Adding an SSH key to your device to manually debug voids the warranty and Start9 cannot assure that operations will continue to function as intended. 
+The BTCPay Server documentation can recommend `ssh` or `docker-compose` commands for resolving issues. The way BTCPay Server is configured for your Embassy is different than the default installation, which is meant to run on a standalone server instance. Start9 has consolidated BTCPay Server to run in an optimal way, so please reach out to the Start9 team for support in these circumstances. Adding an SSH key to your device to manually debug voids the warranty and Start9 cannot assure that operations will continue to function as intended. 
 
 ## Tips
 
