@@ -6,7 +6,9 @@ check_synched(){
     AUTH=$(cat /datadir/nbxplorer/Main/.cookie | base64 -w 0)
     STATUS_RES=$(curl --silent --show-error --fail -H "Authorization: Basic $AUTH" -H "Content-Type: application/json" http://127.0.0.1:24444/v1/cryptos/BTC/status)
     IS_SYNCED=$(echo $STATUS_RES | jq .isFullySynched)
-    PROGRESS=$(echo $STATUS_RES | jq .verificationProgress)
+    CHAIN_HEIGHT=$(echo $STATUS_RES | jq .chainHeight)
+    SYNC_HEIGHT=$(echo $STATUS_RES | jq .syncHeight)
+    PROGRESS=$(echo "scale=6; $SYNC_HEIGHT / $CHAIN_HEIGHT" | bc)
 
     if [ "$IS_SYNCED" = true ]; then
         exit 0
