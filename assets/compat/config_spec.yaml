@@ -5,7 +5,7 @@ tor-address:
   subtype: package
   package-id: btcpayserver
   target: tor-address
-  interface: network
+  interface: main
 bitcoin:
   type: object
   name: Bitcoin Settings
