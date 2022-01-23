@@ -5,17 +5,23 @@ set -ea
 check_synched(){
     AUTH=$(cat /datadir/nbxplorer/Main/.cookie | base64 -w 0)
     STATUS_RES=$(curl --silent --show-error --fail -H "Authorization: Basic $AUTH" -H "Content-Type: application/json" http://127.0.0.1:24444/v1/cryptos/BTC/status)
-    IS_SYNCED=$(echo $STATUS_RES | jq .isFullySynched)
+    IS_BTC_SYNCED=$(echo $STATUS_RES | jq .bitcoinStatus.isSynched)
+    BTC_VERIFICATION_PROGRESS=$(echo $STATUS_RES | jq .bitcoinStatus.verificationProgress)
+    IS_NBX_SYNCED=$(echo $STATUS_RES | jq .isFullySynched)
     CHAIN_HEIGHT=$(echo $STATUS_RES | jq .chainHeight)
     SYNC_HEIGHT=$(echo $STATUS_RES | jq .syncHeight)
-    PROGRESS=$(echo "scale=6; $SYNC_HEIGHT / $CHAIN_HEIGHT" | bc)
 
-    if [ "$IS_SYNCED" = true ]; then
+    if [[ $IS_NBX_SYNCED == true ]]; then
         exit 0
-    elif [ "$IS_SYNCED" = false ]; then
+    elif [[ $IS_NBX_SYNCED == false && $IS_BTC_SYNCED == false ]]; then
+        PERCENTAGE=$(bc -l <<<"100*$BTC_VERIFICATION_PROGRESS")
+        echo "Bitcoin node syncing. This must complete before the UTXO explorer can sync. Verification progress: $(printf "%.2f" $PERCENTAGE)%" >&2
+        exit 61 # Loading
+    elif [[ $IS_NBX_SYNCED == false && $IS_BTC_SYNCED == true ]]; then
+        PROGRESS=$(echo "scale=6; $SYNC_HEIGHT / $CHAIN_HEIGHT" | bc)
         PERCENTAGE=$(bc -l <<<"100*$PROGRESS")
-        echo "UTXO tracker syncing. Progress: $(printf "%.2f" $PERCENTAGE)%" >&2
-        exit 61
+        echo "UTXO explorer syncing. Progress: $(printf "%.2f" $PERCENTAGE)%" >&2
+        exit 61 # Loading
     else
         # Starting
         exit 60
@@ -35,6 +41,20 @@ check_api(){
     fi
 }
 
+check_web(){
+    DURATION=$(</dev/stdin)
+    if (($DURATION <= 30000 )); then 
+        echo $DURATION
+        exit 60
+    else
+        curl --silent --show-error --fail btcpayserver.embassy:23000
+        RES=$?
+        if test "$RES" != 0; then
+            echo "Web interface is unreachable"
+            exit 1
+        fi
+    fi
+}
 
 case "$1" in
     nbx)
@@ -42,6 +62,9 @@ case "$1" in
         ;;
 	api)
         check_api
+        ;;
+	web)
+        check_web
         ;;
     *)
         echo "Usage: $0 [command]"

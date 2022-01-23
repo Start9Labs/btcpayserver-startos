@@ -44,8 +44,8 @@ health-checks:
     description: Ensures the network interface is accessible via HTTP.
     type: docker
     image: main
-    entrypoint: sh
-    args: ["-c", "curl --silent --show-error --fail btcpayserver.embassy:23000 || exit 1"]
+    entrypoint: health_check.sh
+    args: ["web"]
     io-format: json
     inject: true
   api:
