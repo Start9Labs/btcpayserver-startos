@@ -44,7 +44,6 @@ check_api(){
 check_web(){
     DURATION=$(</dev/stdin)
     if (($DURATION <= 30000 )); then 
-        echo $DURATION
         exit 60
     else
         curl --silent --show-error --fail btcpayserver.embassy:23000
