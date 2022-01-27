@@ -1,0 +1,6 @@
+lnd:
+  condition: '''lightning.type = "lnd"'
+  health_checks: []
+c-lightning:
+  condition: '''lightning.type = "c-lightning"'
+  health_checks: []
