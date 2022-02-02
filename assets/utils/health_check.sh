@@ -51,6 +51,8 @@ check_web(){
         if test "$RES" != 0; then
             echo "Web interface is unreachable"
             exit 1
+        else
+            exit 0
         fi
     fi
 }
@@ -71,4 +73,5 @@ case "$1" in
         echo "Commands:"
         echo "         nbx"
         echo "         api"
+        echo "         web"
 esac
