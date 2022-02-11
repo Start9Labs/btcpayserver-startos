@@ -16,7 +16,7 @@ S9PK_PATH=$(shell find . -name btcpayserver.s9pk -print)
 all: verify
 
 verify: btcpayserver.s9pk $(S9PK_PATH)
-	embassy-sdk verify $(S9PK_PATH)
+	embassy-sdk verify s9pk $(S9PK_PATH)
 
 btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png $(ASSET_PATHS)
 	embassy-sdk pack
