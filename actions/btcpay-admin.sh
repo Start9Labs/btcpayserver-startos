@@ -19,8 +19,14 @@ create_password() {
         PW=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | fold -w ${1:-10} | head -n 1)
         HASH=$(dotnet /actions/actions.dll "$PW")
         query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'"
-        NEWLINE=$'\n'
-        echo "Your new temporary password is: ${PW}${NEWLINE}This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in."
+        RESULT="    {
+            \"version\": \"0\",
+            \"message\": \"This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in. Your new temporary password is:\",
+            \"value\": \"$PW\",
+            \"copyable\": true,
+            \"qr\": false
+        }"
+        echo $RESULT
     fi
 }
 
@@ -34,7 +40,14 @@ case "$1" in
         ;;
     reset-server-policy)
         query "DELETE FROM \"Settings\" WHERE \"Id\" = 'BTCPayServer.Services.PoliciesSettings'"
-        echo "Registrations are now enabled on your server."
+        RESULT="    {
+            \"version\": \"0\",
+            \"message\": \"Registrations are now enabled on your server.\",
+            \"value\": null,
+            \"copyable\": false,
+            \"qr\": false
+        }"
+        echo $RESULT
         ;;
     reset-admin-password)
         create_password

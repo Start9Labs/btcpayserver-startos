@@ -1,9 +1,16 @@
+tor-address:
+  name: Network Tor Address
+  description: The Tor address for the network interface. 
+  type: pointer
+  subtype: package
+  package-id: btcpayserver
+  target: tor-address
+  interface: main
 bitcoin:
   type: object
   name: Bitcoin Settings
   description: RPC and P2P interface configuration options for Bitcoin Core
   nullable: false
-  nullByDefault: false
   spec:
     bitcoind-rpc:
       type: union
@@ -12,7 +19,7 @@ bitcoin:
       tag:
         id: type
         name: Type
-        variantNames:
+        variant-names:
           internal: Internal
           external: External
         description: |
@@ -22,29 +29,24 @@ bitcoin:
       default: internal
       variants:
         internal:
-          rpc-host:
-            type: pointer
-            name: Local RPC Address
-            description: The LAN IP address of your Bitcoin Proxy service
-            subtype: app
-            app-id: btc-rpc-proxy
-            target: lan-address
           rpc-user:
             type: pointer
             name: RPC Username
             description: The username for the RPC user allocated to BTCPay
-            subtype: app
-            app-id: btc-rpc-proxy
+            subtype: package
+            package-id: btc-rpc-proxy
             target: config
-            index: 'users.[first(item => ''item.name = "btcpayserver")].name'
+            multi: false
+            selector: '$.users.[?(@.name == "btcpayserver")].name'
           rpc-password:
             type: pointer
             name: RPC Password
             description: The password for the RPC user allocated to BTCPay
-            subtype: app
-            app-id: btc-rpc-proxy
+            subtype: package
+            package-id: btc-rpc-proxy
             target: config
-            index: 'users.[first(item => ''item.name = "btcpayserver")].password'
+            multi: false
+            selector: '$.users.[?(@.name == "btcpayserver")].password'
         external:
           connection-settings:
             type: union
@@ -56,7 +58,7 @@ bitcoin:
               description: |
                 - Manual: Raw information for finding a Bitcoin Core node
                 - Quick Connect: A Quick Connect URL for a Bitcoin Core node
-              variantNames:
+              variant-names:
                 manual: Manual
                 quick-connect: Quick Connect
             default: quick-connect
@@ -102,20 +104,15 @@ bitcoin:
       tag: type
       default: internal
       variants:
-        internal:
-          p2p-host:
-            type: pointer
-            name: Local P2P Address
-            description: The LAN IP address of your Bitcoin service
-            subtype: app
-            app-id: bitcoind
-            target: lan-address
+        internal: {}
         external:
           p2p-host:
             type: string
             name: Public Address
             description: The public address of your Bitcoin Core server
             nullable: false
+            pattern: '/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/'
+            patternDescription: Must be a valid URL without a port specified
           p2p-port:
             type: number
             name: P2P Port
@@ -130,7 +127,7 @@ lightning:
     id: type
     name: Type
     description: Enables BTCPay to use the selected internal lightning node.
-    variantNames: 
+    variant-names: 
       none: No selection
       c-lightning: C-Lightning
       lnd: LND
@@ -139,19 +136,5 @@ lightning:
   default: none
   variants:
     none: {}
-    lnd:
-      connection-settings:
-        type: pointer
-        name: LND Local Address
-        description: The LAN IP address of your Internal Lightning Network Daemon service
-        subtype: app
-        app-id: lnd
-        target: lan-address
-    c-lightning:
-      connection-settings:
-        type: pointer
-        name: C-lightning Local Address
-        description: The LAN IP address of your Internal C-Lightning service
-        subtype: app
-        app-id: c-lightning
-        target: lan-address
+    lnd: {}
+    c-lightning: {}

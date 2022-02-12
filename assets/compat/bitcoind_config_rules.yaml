@@ -1,0 +1,6 @@
+- rule: "advanced.peers.listen?"
+  description: Peer port must be listening on the network.
+  suggestions:
+    - SET:
+        var: advanced.peers.listen
+        to-value: true
