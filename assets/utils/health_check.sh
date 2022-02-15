@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -ea
-
 check_synched(){
     AUTH=$(cat /datadir/nbxplorer/Main/.cookie | base64 -w 0)
     STATUS_RES=$(curl --silent --show-error --fail -H "Authorization: Basic $AUTH" -H "Content-Type: application/json" http://127.0.0.1:24444/v1/cryptos/BTC/status)
@@ -46,10 +44,10 @@ check_web(){
     if (($DURATION <= 30000 )); then 
         exit 60
     else
-        curl --silent --show-error --fail btcpayserver.embassy:23000
+        curl --silent --fail btcpayserver.embassy:23000
         RES=$?
         if test "$RES" != 0; then
-            echo "Web interface is unreachable"
+            echo "Web interface is unreachable" >&2
             exit 1
         fi
     fi
