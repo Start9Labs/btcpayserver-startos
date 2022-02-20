@@ -44,7 +44,7 @@ check_web(){
     if (($DURATION <= 30000 )); then 
         exit 60
     else
-        curl --silent --fail btcpayserver.embassy:23000
+        curl --silent --fail btcpayserver.embassy:23000 &>/dev/null
         RES=$?
         if test "$RES" != 0; then
             echo "Web interface is unreachable" >&2
