@@ -32,7 +32,7 @@ main:
 health-checks:
   explorer-synced:
     name: Explorer Synced
-    description: Ensures the UTXO tracker is synced to the tip of the Bitcoin blockchain.
+    success-message: The UTXO tracker is synced to the tip of the Bitcoin blockchain
     type: docker
     image: main
     entrypoint: health_check.sh
@@ -40,8 +40,8 @@ health-checks:
     inject: true
     io-format: json
   web-ui:
-    name: Web Interface
-    description: Ensures the network interface is accessible via HTTP.
+    name: Web UI
+    success-message: The Web UI is ready to visit from a web browser
     type: docker
     image: main
     entrypoint: health_check.sh
@@ -50,7 +50,7 @@ health-checks:
     inject: true
   api:
     name: Data Interface
-    description: Checks the health status of the instance via its API.
+    success-message: The API is operational
     type: docker
     image: main
     entrypoint: health_check.sh
