@@ -132,7 +132,6 @@ dependencies:
     requirement:
       type: "opt-in"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node.
-    critical: true
     description: Used for the P2P connection interface.
     config:
       check:
