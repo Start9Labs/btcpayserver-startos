@@ -12,27 +12,38 @@ _term() {
   kill -TERM "$btcpayserver_process" 2>/dev/null
 }
 
-if ! test -d /mnt/lnd then
-  echo "LND mountpoint does not exist"
-  exit 0
-fi
+lightning_type=$(yq e '.lightning.type' /datadir/start9/config.yaml)
+if [[ $lightning_type = "lnd" ]]
+then
 
-if ! test -d /mnt/c-lightning then
-  echo "C-Lightning mountpoint does not exist"
-  exit 0
-fi
+  if ! test -d /mnt/lnd
+  then
+    echo "LND mountpoint does not exist"
+    exit 0
+  fi
 
-while ! test -f /mnt/lnd/admin.macaroon
-do
-  echo "Waiting for LND admin macaroon to be generated..."
-  sleep 1
-done
-
-while ! test -S /mnt/c-lightning/shared/lightning-rpc
-do
-    echo "Waiting for bitcoin RPC socket..."
+  while ! test -f /mnt/lnd/admin.macaroon
+  do
+    echo "Waiting for LND admin macaroon to be generated..."
     sleep 1
-done
+  done
+fi
+
+if [[ $lightning_type = "c-lightning" ]]
+then
+
+  if ! test -d /mnt/c-lightning
+  then
+    echo "c-lightning mountpoint does not exist"
+    exit 0
+  fi
+
+  while ! test -S /mnt/c-lightning/shared/lightning-rpc
+  do
+      echo "Waiting for c-lightning RPC socket..."
+      sleep 1
+  done
+fi
 
 configurator > .env 
 source .env

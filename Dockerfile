@@ -20,7 +20,9 @@ COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
 
 RUN apt-get update && \
-    apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc
+    apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_arm.tar.gz -O - |\
+  tar xz && mv yq_linux_arm /usr/bin/yq
 
 RUN locale-gen en_US.UTF-8
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
