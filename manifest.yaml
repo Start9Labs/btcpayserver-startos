@@ -9,7 +9,6 @@ support-site: "https://docs.btcpayserver.org/Support/"
 marketing-site: "https://btcpayserver.org/"
 donation-url: "https://btcpayserver.org/donate/"
 build: ["make"]
-min-os-version: "0.3.0"
 description:
   short: BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It is secure, private, censorship-resistant and free.
   long: |
@@ -41,7 +40,7 @@ health-checks:
     io-format: json
   web-ui:
     name: Web UI
-    success-message: The Web UI is ready to visit from a web browser
+    success-message: BTCPay Server is ready to visit in a web browser
     type: docker
     image: main
     entrypoint: health_check.sh
@@ -94,7 +93,6 @@ dependencies:
     requirement:
       type: "opt-in"
       how: Can alternatively configure an external bitcoind node.
-    critical: false
     description: Used to fetch validated blocks.
     config:
       check:
@@ -171,7 +169,6 @@ dependencies:
         io-format: yaml
   lnd:
     version: ">=0.13.3.1 <0.14.0"
-    critical: false
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
@@ -179,7 +176,6 @@ dependencies:
     config: ~
   c-lightning:
     version: ">=0.10.0.1 <0.11.0"
-    critical: false
     requirement:
       type: "opt-in"
       how: Optionally use c-lightning for internal lightning network node implementation.

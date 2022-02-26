@@ -47,7 +47,7 @@ check_web(){
         curl --silent --fail btcpayserver.embassy:23000 &>/dev/null
         RES=$?
         if test "$RES" != 0; then
-            echo "Web interface is unreachable" >&2
+            echo "The BTCPay Server UI is unreachable" >&2
             exit 1
         fi
     fi
