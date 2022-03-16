@@ -27,26 +27,23 @@ check_synched(){
 }
 
 check_api(){
-    SYNCHRONIZED=$(curl --silent --show-error --fail http://btcpayserver.embassy:23000/api/v1/health | jq .synchronized)
-
-    if [ "$SYNCHRONIZED" = true ]; then
-        exit 0
-    elif [ "$SYNCHRONIZED" = false ]; then
-        exit 1
-    else
-        # Starting
+    DURATION=$(</dev/stdin)
+    if (($DURATION <= 15000 )); then 
         exit 60
+    else
+        if ! curl --silent --show-error --fail http://btcpayserver.embassy:23000/api/v1/health &>/dev/null; then
+            echo "The BTCPay Server API is unreachable" >&2
+            exit 1
+        fi
     fi
 }
 
 check_web(){
     DURATION=$(</dev/stdin)
-    if (($DURATION <= 30000 )); then 
+    if (($DURATION <= 15000 )); then 
         exit 60
     else
-        curl --silent --fail btcpayserver.embassy:23000 &>/dev/null
-        RES=$?
-        if test "$RES" != 0; then
+        if ! curl --silent --fail btcpayserver.embassy:23000 &>/dev/null; then
             echo "The BTCPay Server UI is unreachable" >&2
             exit 1
         fi
