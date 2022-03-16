@@ -177,3 +177,17 @@ lightning:
     none: {}
     lnd: {}
     c-lightning: {}
+advanced: 
+  type: object
+  name: Advanced Settings
+  description: Advanced conifuration options to change if you know what you are doing
+  nullable: false
+  spec:
+    sync-start-height:
+      type: number
+      nullable: false
+      name: "Sync Start Height"
+      description: "The block explorer within BTCPay will start scanning from the configured start height (by default, the current blockchain height). This means that you might not see old payments from your HD key. If you need to see old payments, you need to configure the start height to a specific height of your choice."
+      range: "[-1,*)"
+      integral: true
+      default: -1

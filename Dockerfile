@@ -36,7 +36,7 @@ ENV LC_ALL=C
 EXPOSE 23000 80
 ADD ./configurator/target/aarch64-unknown-linux-musl/release/configurator /usr/local/bin/configurator
 COPY ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
-COPY actions/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
+COPY assets/utils/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
 COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
 RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 RUN chmod a+x /usr/local/bin/btcpay-admin.sh
