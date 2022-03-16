@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1.202 AS nbx-builder
+FROM mcr.microsoft.com/dotnet/sdk:6.0.101-bullseye-slim AS nbx-builder
 COPY NBXplorer/NBXplorer/NBXplorer.csproj NBXplorer/NBXplorer.csproj
 COPY NBXplorer/NBXplorer.Client/NBXplorer.Client.csproj NBXplorer.Client/NBXplorer.Client.csproj
 # Cache some dependencies
@@ -14,7 +14,7 @@ RUN dotnet restore "actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.1.2-arm64v8
+FROM btcpayserver/btcpayserver:1.4.7-arm64v8
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
