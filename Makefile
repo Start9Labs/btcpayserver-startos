@@ -1,7 +1,8 @@
 EMVER := $(shell yq e ".version" manifest.yaml)
 VERSION_TAG := $(shell git --git-dir=btcpayserver/.git describe --abbrev=0)
 VERSION := $(VERSION_TAG:v%=%)
-ASSET_PATHS := $(shell find ./assets/*)
+COMPAT_ASSET_PATHS := $(shell find ./assets/compat/*)
+UTILS_ASSET_PATHS := $(shell find ./assets/utils/*)
 DOC_ASSETS := $(shell find ./docs/assets)
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver/BTCPayServer)
 NBXPLORER_SRC := $(shell find ./NBXplorer)
@@ -15,13 +16,17 @@ S9PK_PATH=$(shell find . -name btcpayserver.s9pk -print)
 
 all: verify
 
+clean:
+	rm image.tar
+	rm btcpayserver.s9pk
+
 verify: btcpayserver.s9pk $(S9PK_PATH)
 	embassy-sdk verify s9pk $(S9PK_PATH)
 
-btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png $(ASSET_PATHS)
+btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png $(COMPAT_ASSET_PATHS)
 	embassy-sdk pack
 
-image.tar: docker_entrypoint.sh configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) $(BTCPAYSERVER_SRC) $(ACTIONS_SRC) $(ASSET_PATHS) Dockerfile
+image.tar: docker_entrypoint.sh configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) $(BTCPAYSERVER_SRC) $(ACTIONS_SRC) $(UTILS_ASSET_PATHS) Dockerfile
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8  --tag start9/btcpayserver/main:${EMVER} -o type=docker,dest=image.tar -f ./Dockerfile . 
 
 configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
@@ -29,6 +34,3 @@ configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURA
 
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
-
-clean:
-	rm image.tar

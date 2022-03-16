@@ -20,19 +20,40 @@ bitcoin:
         id: type
         name: Type
         variant-names:
-          internal: Internal
+          internal: Internal (Bitcoin Core)
+          internal-proxy: Internal (Bitcoin Proxy)
           external: External
         description: |
           The Bitcoin Core node to connect to:
-            - internal: The Bitcoin Core and Proxy services installed to your Embassy
-            - external: An unpruned Bitcoin Core node running on a different device
-      default: internal
+            - internal: A full archival version of the Bitcoin Core service installed on your Embassy
+            - internal-proxy: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on your Embassy
+            - external: A full archival Bitcoin Core node running on a different device
+      default: internal-proxy
       variants:
         internal:
           rpc-user:
             type: pointer
             name: RPC Username
-            description: The username for the RPC user allocated to BTCPay
+            description: The username for Bitcoin Core's RPC interface
+            subtype: package
+            package-id: bitcoind
+            target: config
+            multi: false
+            selector: "$.rpc.username"
+          rpc-password:
+            type: pointer
+            name: RPC Password
+            description: The password for Bitcoin Core's RPC interface
+            subtype: package
+            package-id: bitcoind
+            target: config
+            multi: false
+            selector: "$.rpc.password"
+        internal-proxy:
+          rpc-user:
+            type: pointer
+            name: RPC Username
+            description: The username for Bitcoin Proxy's RPC user allocated to BTCPay
             subtype: package
             package-id: btc-rpc-proxy
             target: config
@@ -41,12 +62,21 @@ bitcoin:
           rpc-password:
             type: pointer
             name: RPC Password
-            description: The password for the RPC user allocated to BTCPay
+            description: The password Bitcoin Proxy's RPC user allocated to BTCPay
             subtype: package
             package-id: btc-rpc-proxy
             target: config
             multi: false
             selector: '$.users.[?(@.name == "btcpayserver")].password'
+          pruned:
+            type: pointer
+            name: Pruned status
+            description: Pruned status of the bitcoin node
+            subtype: package
+            package-id: bitcoind
+            target: config
+            multi: false
+            selector: '$.advanced.pruning.mode'
         external:
           connection-settings:
             type: union
@@ -100,8 +130,17 @@ bitcoin:
     bitcoind-p2p:
       type: union
       name: Bitcoin Core P2P
-      description: The Bitcoin Core node to connect to over the P2P interface
-      tag: type
+      description: The Bitcoin Core node to connect to over the peer-to-peer interface
+      tag:
+        id: type
+        name: Type
+        variant-names:
+          internal: Internal
+          external: External
+        description: |
+          The Bitcoin Core P2P node to connect to:
+            - internal: The Bitcoin Core service installed on your Embassy
+            - external: A Bitcoin Core node running on a different device
       default: internal
       variants:
         internal: {}
@@ -138,3 +177,17 @@ lightning:
     none: {}
     lnd: {}
     c-lightning: {}
+advanced: 
+  type: object
+  name: Advanced Settings
+  description: Advanced conifuration options to change if you know what you are doing
+  nullable: false
+  spec:
+    sync-start-height:
+      type: number
+      nullable: false
+      name: "Sync Start Height"
+      description: "The block explorer within BTCPay will start scanning from the configured start height. This means that you might not see old payments from your HD key. If you need to see old payments, you need to configure the start height to a specific height of your choice. By default, this value is '-1', which is used to indicate the current stored blockchain height."
+      range: "[-1,*)"
+      integral: true
+      default: -1

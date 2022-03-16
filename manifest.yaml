@@ -1,7 +1,12 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.1.2.4
-release-notes: "Upgrade to EmbassyOS v0.3.0"
+version: 1.4.7
+release-notes: |
+  - Updates to most current released version: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.4.7
+  - Breaking changes since last release: 
+    - If you activated plugins, you will need to update them
+  - Enables configuration for either a pruned or full archival internal Bitcoin Core node
+  - Sets advanced configuration for enabling block explorer rescan at a specific start height
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -128,11 +133,11 @@ dependencies:
           compat: /mnt/assets
         io-format: yaml
   bitcoind:
-    version: "^0.21.1.2"
+    version: ">=0.21.1.2 <23.0.0"
     requirement:
       type: "opt-in"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node.
-    description: Used for the P2P connection interface.
+    description: Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.
     config:
       check:
         type: docker
@@ -167,7 +172,7 @@ dependencies:
           main: /datadir
         io-format: yaml
   lnd:
-    version: ">=0.13.3.1 <0.14.0"
+    version: ">=0.13.3.1 <0.15.0"
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
@@ -256,18 +261,18 @@ backup:
       main: /datadir
     io-format: yaml
 actions:
-  reset-server-policy:
-    name: Reset Server Policies
+  enable-registrations:
+    name: Enable Registrations
     description: Resets the policies settings if you cannot create a new user because registrations are disabled.
     warning: |
-      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web interface using the register button. Running this command will also disable any other server policies currently configured.
+      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web UI using the register button. This action will RESTART the service.
     allowed-statuses:
       - running
     implementation:
       type: docker
       image: main
       entrypoint: docker_entrypoint.sh
-      args: ["reset-server-policy"]
+      args: ["enable-registrations"]
       inject: true
       io-format: json
   reset-admin-password:
@@ -282,6 +287,5 @@ actions:
       image: main
       entrypoint: docker_entrypoint.sh
       args: ["reset-admin-password"]
-      mounts:
-        main: /datadir
+      inject: true
       io-format: json
