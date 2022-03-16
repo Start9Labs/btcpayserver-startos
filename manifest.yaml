@@ -3,6 +3,8 @@ title: BTCPay Server
 version: 1.4.7
 release-notes: |
   - Updates to most current released version: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.4.7
+  - Breaking changes since last release: 
+    - If you activated plugins, you will need to update them
   - Enables configuration for either a pruned or full archival internal Bitcoin Core node
   - Sets advanced configuration for enabling block explorer rescan at a specific start height
 license: mit
