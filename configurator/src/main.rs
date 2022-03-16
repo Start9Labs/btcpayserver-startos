@@ -71,6 +71,11 @@ enum BitcoindRPCConfig {
         rpc_password: String,
     },
     #[serde(rename_all = "kebab-case")]
+    InternalProxy {
+        rpc_user: String,
+        rpc_password: String,
+    },
+    #[serde(rename_all = "kebab-case")]
     External {
         connection_settings: ExternalBitcoinCoreConfig,
     },
@@ -131,6 +136,10 @@ fn main() -> Result<(), anyhow::Error> {
     let (bitcoind_rpc_user, bitcoind_rpc_pass, bitcoind_rpc_host, bitcoind_rpc_port) =
         match config.bitcoin.bitcoind_rpc {
             BitcoindRPCConfig::Internal {
+                rpc_user,
+                rpc_password,
+            } => (rpc_user, rpc_password, "bitcoind.embassy".to_string(), 8332),
+            BitcoindRPCConfig::InternalProxy {
                 rpc_user,
                 rpc_password,
             } => (

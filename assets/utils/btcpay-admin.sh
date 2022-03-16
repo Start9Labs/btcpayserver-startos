@@ -31,23 +31,40 @@ create_password() {
 }
 
 case "$1" in
+    # not enabled in manifest - needs updating
     disable-multifactor)
         query "DELETE FROM \"U2FDevices\" WHERE \"ApplicationUserId\" = (SELECT \"Id\" FROM \"AspNetUsers\" WHERE upper('$2') = \"NormalizedEmail\")"
         query "UPDATE public.\"AspNetUsers\" SET \"TwoFactorEnabled\"=false WHERE upper('\$2') = \"NormalizedEmail\""
         ;;
+    # not enabled in manifest - needs updating
 	set-user-admin)
         query "INSERT INTO \"AspNetUserRoles\" Values ( (SELECT \"Id\" FROM \"AspNetUsers\" WHERE upper('$2') = \"NormalizedEmail\"), (SELECT \"Id\" FROM \"AspNetRoles\" WHERE \"NormalizedName\"='SERVERADMIN'))"
         ;;
-    reset-server-policy)
-        query "DELETE FROM \"Settings\" WHERE \"Id\" = 'BTCPayServer.Services.PoliciesSettings'"
-        RESULT="    {
-            \"version\": \"0\",
-            \"message\": \"Registrations are now enabled on your server.\",
-            \"value\": null,
-            \"copyable\": false,
-            \"qr\": false
-        }"
-        echo $RESULT
+    enable-registrations)
+        query "SELECT Value from \"settings\" WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" | jq > res.json
+        tmp=$(mktemp)
+        jq '.LockSubscription = false' res.json > "$tmp" && mv "$tmp" res.json
+        TO_SET=$(cat res.json)
+        if ! query "UPDATE \"settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null; then
+            RESULT="    {
+                \"version\": \"0\",
+                \"message\": \"There was an error disabling registrations.\",
+                \"value\": null,
+                \"copyable\": false,
+                \"qr\": false
+            }"
+            echo $RESULT
+        else 
+            RESULT="    {
+                \"version\": \"0\",
+                \"message\": \"Registrations are now enabled.\",
+                \"value\": null,
+                \"copyable\": false,
+                \"qr\": false
+            }"
+            echo $RESULT
+            pkill -f "dotnet ./BTCPayServer.dll"
+        fi
         ;;
     reset-admin-password)
         create_password
@@ -58,7 +75,7 @@ case "$1" in
         echo "Commands:"
         echo "         disable-multifactor <email>"
         echo "         set-user-admin <email>"
-        echo "         reset-server-policy"
+        echo "         enable-registrations"
         echo "         reset-admin password"
 esac
 

@@ -48,7 +48,8 @@ fi
 configurator > .env 
 source .env
 
-dotnet /nbxplorer/NBXplorer.dll &
+start_height=$(yq e '.advanced.sync-start-height' /datadir/start9/config.yaml)
+dotnet /nbxplorer/NBXplorer.dll --btcrescan=1 --btcstartheight=$(echo $start_height) &
 nbxplorer_process=$!
 
 dotnet ./BTCPayServer.dll &
