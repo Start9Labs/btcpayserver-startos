@@ -1,6 +1,11 @@
+# sets either lnd or c-lightning as required dependency if selected
 lnd:
   condition: '''lightning.type = "lnd"'
   health_checks: []
 c-lightning:
   condition: '''lightning.type = "c-lightning"'
+  health_checks: []
+# sets internal bitcoin node or internal bitcoin proxy as required dependency if selected
+bitcoin:
+  condition: '''bitcoin.bitcoind-rpc.type = "internal" OR ''bitcoin.bitcoind-rpc.type = "internal-proxy"'
   health_checks: []
