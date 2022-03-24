@@ -133,7 +133,7 @@ dependencies:
           compat: /mnt/assets
         io-format: yaml
   bitcoind:
-    version: ">=0.21.1.2 <0.23.0"
+    version: ">=0.21.1.2 <23.0.0"
     requirement:
       type: "opt-in"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node.
