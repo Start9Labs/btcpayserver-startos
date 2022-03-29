@@ -137,7 +137,7 @@ dependencies:
     requirement:
       type: "opt-in"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node.
-    description: Used for the P2P connection interface.
+    description: Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.
     config:
       check:
         type: docker
@@ -261,18 +261,18 @@ backup:
       main: /datadir
     io-format: yaml
 actions:
-  reset-server-policy:
-    name: Reset Server Policies
+  enable-registrations:
+    name: Enable Registrations
     description: Resets the policies settings if you cannot create a new user because registrations are disabled.
     warning: |
-      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web interface using the register button. Running this command will also disable any other server policies currently configured.
+      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web UI using the register button. This action will RESTART the service.
     allowed-statuses:
       - running
     implementation:
       type: docker
       image: main
       entrypoint: docker_entrypoint.sh
-      args: ["reset-server-policy"]
+      args: ["enable-registrations"]
       inject: true
       io-format: json
   reset-admin-password:
