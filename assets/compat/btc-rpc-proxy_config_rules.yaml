@@ -119,13 +119,13 @@
     - PUSH:
         to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
         value: "scantxoutset"
-- rule: '(!(''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal-proxy") AND !(''[btcpayserver].bitcoin.bitcoin-rpc.pruned = "disabled")) OR users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
+- rule: '!((''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal-proxy") AND (''[btcpayserver].bitcoin.bitcoind-rpc.pruned = "disabled")) OR users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
   description: RPC user "btcpayserver" must have "Fetch Blocks" disabled if bitcoind is a full archival node
   suggestions:
     - SET:
         var: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks'
         to-value: false
-- rule: '(!(''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal-proxy") AND (!(''[btcpayserver].bitcoin.bitcoin-rpc.pruned = "automatic") OR !(''[btcpayserver].bitcoin.bitcoin-rpc.pruned = "manual"))) OR users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
+- rule: '!((''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal-proxy") AND ((''[btcpayserver].bitcoin.bitcoind-rpc.pruned = "automatic") OR (''[btcpayserver].bitcoin.bitcoind-rpc.pruned = "manual"))) OR users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
   description: RPC user "btcpayserver" must have "Fetch Blocks" enabled if bitcoind is a pruned node
   suggestions:
     - SET:
