@@ -62,8 +62,8 @@ case "$1" in
                 \"copyable\": false,
                 \"qr\": false
             }"
-            # kill -TERM "$1" 2>/dev/null 
             echo $RESULT
+            pkill -f "dotnet ./BTCPayServer.dll"
         fi
         ;;
     reset-admin-password)
