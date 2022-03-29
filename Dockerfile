@@ -7,7 +7,7 @@ COPY NBXplorer .
 RUN cd NBXplorer && \
     dotnet publish --output /app/ --configuration Release
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1.202 AS actions-builder
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
 COPY . .
 RUN dotnet restore "actions/actions.csproj"
