@@ -6,6 +6,6 @@ c-lightning:
   condition: '''lightning.type = "c-lightning"'
   health_checks: []
 # sets internal bitcoin node or internal bitcoin proxy as required dependency if selected
-bitcoin:
-  condition: '''bitcoin.bitcoind-rpc.type = "internal" OR ''bitcoin.bitcoind-rpc.type = "internal-proxy"'
+bitcoind:
+  condition: '''bitcoin.bitcoind-p2p.type = "internal"'
   health_checks: []
