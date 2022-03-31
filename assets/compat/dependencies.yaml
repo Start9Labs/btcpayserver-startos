@@ -1,11 +1,11 @@
-# sets either lnd or c-lightning as required dependency if selected
+# Sets either LND or C-lightning as required dependency if selected in the UI config
 lnd:
   condition: '''lightning.type = "lnd"'
   health_checks: []
 c-lightning:
   condition: '''lightning.type = "c-lightning"'
   health_checks: []
-# sets internal bitcoin node or internal bitcoin proxy as required dependency if selected
+# If internal bitcoin node or internal bitcoin proxy are selected as the RPC dependency, no need to specify a condition here since they utilize config pointers and will then appear as required dependencies in the UI. However, since there are no config pointers when the P2P bitcoin dependency is internal, we need this condition to make it required if selected in the UI config
 bitcoind:
   condition: '''bitcoin.bitcoind-p2p.type = "internal"'
   health_checks: []

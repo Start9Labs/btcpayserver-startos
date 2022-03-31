@@ -68,15 +68,6 @@ bitcoin:
             target: config
             multi: false
             selector: '$.users.[?(@.name == "btcpayserver")].password'
-          pruned:
-            type: pointer
-            name: Pruned status
-            description: Pruned status of the bitcoin node
-            subtype: package
-            package-id: bitcoind
-            target: config
-            multi: false
-            selector: '$.advanced.pruning.mode'
         external:
           connection-settings:
             type: union
