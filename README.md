@@ -8,7 +8,7 @@
 - [docker-buildx](https://docs.docker.com/buildx/working-with-buildx/)
 - [yq](https://mikefarah.gitbook.io/yq)
 - [toml](https://crates.io/crates/toml-cli)
-- [appmgr](https://github.com/Start9Labs/appmgr)
+- [embassy-sdk](https://github.com/Start9Labs/embassy-os/blob/master/backend/install-sdk.sh)
 - [make](https://www.gnu.org/software/make/)
 - [md-packer](https://github.com/Start9Labs/md-packer)
 
@@ -24,18 +24,15 @@ git submodule update --init --recursive
 
 ## Building
 
-To build the project, run the following commands:
-
 ```
 make
 ```
 
 ## Installing (on Embassy)
 
-SSH into a device running EmbassyOS.
-`scp` the `.s9pk` to any directory from your local machine.
-Run the following command to determine successful install:
-
 ```
-appmgr install btcpayserver.s9pk
+scp btcpayserver.s9pk root@embassy-<id>.local:/embassy-data/package-data/tmp # Copy S9PK to the external disk. Make sure to create the directory if it doesn't already exist
+ssh root@embassy-<id>.local
+embassy-cli auth login
+embassy-cli package install /embassy-data/pacakge-data/tmp/btcpayserver.s9pk # Install the sideloaded package
 ```
