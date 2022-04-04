@@ -290,3 +290,24 @@ actions:
       args: ["reset-admin-password"]
       inject: true
       io-format: json
+migrations:
+  from:
+    "<1.4.7":
+      type: docker
+      image: main
+      system: false
+      entrypoint: /usr/local/bin/migrations/from_lt_1_4_7.sh
+      args: []
+      mounts:
+        main: /datadir
+      io-format: json
+  to:
+    "<1.4.7":
+      type: docker
+      image: main
+      system: false
+      entrypoint: /usr/local/bin/migrations/to_lt_1_4_7.sh
+      args: []
+      mounts:
+        main: /datadir
+      io-format: json
