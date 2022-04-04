@@ -41,4 +41,7 @@ COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
 RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 RUN chmod a+x /usr/local/bin/btcpay-admin.sh
 RUN chmod a+x /usr/local/bin/health_check.sh
+ADD ./migrations /usr/local/bin/migrations
+RUN chmod a+x /usr/local/bin/migrations/*
+
 ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]
