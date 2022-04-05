@@ -7,7 +7,7 @@ release-notes: |
     - If you activated plugins, you will need to update them
   - Enables configuration for either a pruned or full archival internal Bitcoin Core node
   - Sets advanced configuration for enabling block explorer rescan at a specific start height
-  - Renames "Reset Server Policy" action to "Enable Registrations"
+  - Renames Reset Server Policy action to Enable Registrations
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
