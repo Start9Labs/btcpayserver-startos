@@ -38,7 +38,7 @@ then
     exit 0
   fi
 
-  while ! test -S /mnt/c-lightning/shared/lightning-rpc
+  while ! test -S /mnt/c-lightning/lightning-rpc
   do
       echo "Waiting for c-lightning RPC socket..."
       sleep 1
