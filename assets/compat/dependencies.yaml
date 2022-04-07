@@ -6,7 +6,6 @@ c-lightning:
   condition: '''lightning.type = "c-lightning"'
   health_checks: []
 # If internal bitcoin node or internal bitcoin proxy are selected as the RPC dependency, no need to specify a condition here since they utilize config pointers and will then appear as required dependencies in the UI. However, since there are no config pointers when the P2P bitcoin dependency is internal, we need this condition to make it required if selected in the UI config
-# also, bitcoind is required if our fetchblocks user is disabled
 bitcoind:
-  condition: '''bitcoin.bitcoind-p2p.type = "internal" OR ''bitcoin.bitcoind-rpc.type = "internal-proxy" AND !(bitcoin.bitcoind-rpc.fetch-blocks?)'
+  condition: '''bitcoin.bitcoind-p2p.type = "internal"'
   health_checks: []

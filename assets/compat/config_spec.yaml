@@ -66,15 +66,6 @@ bitcoin:
             target: config
             multi: false
             selector: '$.users.[?(@.name == "btcpayserver")].password'
-          # this is solely here to allow us to inspect proxy's config as if it was our own
-          fetch-blocks:
-            name: Proxy fetch-blocks enabled
-            type: pointer
-            subtype: package
-            package-id: btc-rpc-proxy
-            target: config
-            multi: false
-            selector: '$.users.[?(@.name == "btcpayserver")].fetch-blocks'
     bitcoind-p2p:
       type: union
       name: Bitcoin Core P2P

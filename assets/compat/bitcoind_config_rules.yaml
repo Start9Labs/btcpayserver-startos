@@ -4,10 +4,9 @@
     - SET:
         var: advanced.peers.listen
         to-value: true
-# must be configured to use proxy with fetchblocks enabled or bitcoind has to have pruning disabled
-- rule: '(!(''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal") AND [btcpayserver].bitcoin.bitcoind-rpc.fetch-blocks?) OR (''[bitcoind].advanced.pruning.mode = "disabled")'
+- rule: '!(''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal") OR ''[bitcoind].advanced.pruning.mode = "disabled"'
   description: Pruning must be disabled if internal Bitcoin Core node is being used without Bitcoin Proxy (ie. must be a full archival node)
   suggestions:
     - SET:
-        var: "advanced.pruning.mode"
+        var: advanced.pruning.mode
         to-value: disabled
