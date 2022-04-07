@@ -119,7 +119,7 @@
     - PUSH:
         to: 'users.[first(item => ''item.name = "btcpayserver")].allowed-calls'
         value: "scantxoutset"
-- rule: '!((''[btcpayserver].bitcoin.bitcoind-rpc.type = "internal-proxy") AND ((''[bitcoind].advanced.pruning.mode = "automatic") OR (''[bitcoind].advanced.pruning.mode = "manual"))) OR users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
+- rule: 'users.[first(item => ''item.name = "btcpayserver")].fetch-blocks?'
   description: RPC user "btcpayserver" must have "Fetch Blocks" enabled if bitcoind is a pruned node
   suggestions:
     - SET:
