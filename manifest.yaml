@@ -1,14 +1,10 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7
+version: 1.5.1
 release-notes: |
-  - Updates to most current released version: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.4.7
-  - Breaking changes since last release: 
-    - If you activated plugins, you will need to update them
-  - Enables configuration for either a pruned or full archival internal Bitcoin Core node
-  - Sets advanced configuration for enabling block explorer rescan at a specific start height
-  - Renames Reset Server Policy action to Enable Registrations
-  - Remove external bitcoind connection
+  - Bugfix release: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.5.1
+  - Includes new features for minor version release: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.5.0
+  - Updates NBXplorer to latest: https://github.com/dgarage/NBXplorer/releases/tag/v2.3.22
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
