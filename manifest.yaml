@@ -59,6 +59,25 @@ health-checks:
     args: ["api"]
     io-format: json
     inject: true
+migrations:
+  from:
+    ">=1.4.7 <1.6.0":
+      type: docker
+      image: main
+      system: false
+      entrypoint: "/bin/echo"
+      args: ['{"configured": true}']
+      io-format: json
+      inject: false
+  to:
+    ">=1.4.7 <1.6.0":
+      type: docker
+      image: main
+      system: false
+      entrypoint: "/bin/echo"
+      args: ['{"configured": true}']
+      io-format: json
+      inject: false
 config:
   get:
     type: docker
