@@ -14,7 +14,7 @@ RUN dotnet restore "actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.4.7-arm64v8
+FROM btcpayserver/btcpayserver:1.5.2-arm64v8
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
