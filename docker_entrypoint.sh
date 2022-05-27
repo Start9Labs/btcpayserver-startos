@@ -34,13 +34,13 @@ then
 
   if ! test -d /mnt/c-lightning
   then
-    echo "c-lightning mountpoint does not exist"
+    echo "Core Lightning mountpoint does not exist"
     exit 0
   fi
 
   while ! test -S /mnt/c-lightning/lightning-rpc
   do
-      echo "Waiting for c-lightning RPC socket..."
+      echo "Waiting for Core Lightning RPC socket..."
       sleep 1
   done
 fi

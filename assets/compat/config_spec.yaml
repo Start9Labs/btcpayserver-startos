@@ -107,10 +107,10 @@ lightning:
     description: Enables BTCPay to use the selected internal lightning node.
     variant-names:
       none: No selection
-      c-lightning: C-Lightning
+      c-lightning: Core Lightning
       lnd: LND
   name: Embassy Lightning Node
-  description: Use this setting to grant BTCPay access to your Embassy's LND or c-lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, leave this setting blank. Please see the "Instructions" page for more details.
+  description: Use this setting to grant BTCPay access to your Embassy's LND or Core Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, leave this setting blank. Please see the "Instructions" page for more details.
   default: none
   variants:
     none: {}

@@ -1,14 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7
+version: 1.4.7.1
 release-notes: |
-  - Updates to most current released version: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.4.7
-  - Breaking changes since last release: 
-    - If you activated plugins, you will need to update them
-  - Enables configuration for either a pruned or full archival internal Bitcoin Core node
-  - Sets advanced configuration for enabling block explorer rescan at a specific start height
-  - Renames Reset Server Policy action to Enable Registrations
-  - Remove external bitcoind connection
+  - Bumps version requirement for Core Lightning to allow update to v0.11.1
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -181,10 +175,10 @@ dependencies:
     description: Used to communicate with the Lightning Network.
     config: ~
   c-lightning:
-    version: ">=0.10.0.1 <0.11.0"
+    version: ">=0.10.0.1 <0.12.0"
     requirement:
       type: "opt-in"
-      how: Optionally use c-lightning for internal lightning network node implementation.
+      how: Optionally use Core Lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
 volumes:
