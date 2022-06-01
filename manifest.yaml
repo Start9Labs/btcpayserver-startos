@@ -90,9 +90,9 @@ config:
     io-format: yaml
 dependencies:
   btc-rpc-proxy:
-    version: ">=0.3.2.1 <0.3.3"
+    version: ">=0.3.2.1 <0.4.0"
     requirement:
-      type: "opt-in"
+      type: "opt-out"
       how: Can alternatively use the internal Bitcoin Core if it is unpruned (ie. is a full archival node).
     description: Used for creating a permissioned RPC user and to fetch validated blocks on demand.
     config:
@@ -129,7 +129,7 @@ dependencies:
           compat: /mnt/assets
         io-format: yaml
   bitcoind:
-    version: ">=0.21.1.2 <23.0.0"
+    version: ">=0.21.1.2 <24.0.0"
     requirement:
       type: "opt-in"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node for P2P connections. RPC connections require using the internal full archival Bitcoin Core node, or Bitcoin Proxy and a pruned Bitcoin Core node.
