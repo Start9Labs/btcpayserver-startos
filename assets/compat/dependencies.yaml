@@ -1,4 +1,4 @@
-# Sets either LND or C-lightning as required dependency if selected in the UI config
+# Sets either LND or Core Lightning as required dependency if selected in the UI config
 lnd:
   condition: '''lightning.type = "lnd"'
   health_checks: []
