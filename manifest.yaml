@@ -3,6 +3,7 @@ title: BTCPay Server
 version: 1.4.7.1
 release-notes: |
   - Bumps version requirement for Core Lightning to allow update to v0.11.1
+  - Bump proxy and bitcoind version requirements
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
