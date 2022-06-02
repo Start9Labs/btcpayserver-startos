@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7.1
+version: 1.4.7.2
 release-notes: |
   - Bumps version requirement for Core Lightning to allow update to v0.11.1
   - Bump proxy and bitcoind version requirements
@@ -297,6 +297,14 @@ migrations:
       mounts:
         main: /datadir
       io-format: json
+    "=1.4.7":
+      type: docker
+      image: main
+      system: false
+      entrypoint: "/bin/echo"
+      args: ['{"configured": true}']
+      io-format: json
+      inject: false
   to:
     "<1.4.7":
       type: docker
@@ -307,3 +315,11 @@ migrations:
       mounts:
         main: /datadir
       io-format: json
+    "=1.4.7":
+      type: docker
+      image: main
+      system: false
+      entrypoint: "/bin/echo"
+      args: ['{"configured": true}']
+      io-format: json
+      inject: false
