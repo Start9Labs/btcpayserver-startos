@@ -297,7 +297,7 @@ migrations:
       mounts:
         main: /datadir
       io-format: json
-    "=1.4.7":
+    ">=1.4.7":
       type: docker
       image: main
       system: false
@@ -315,7 +315,7 @@ migrations:
       mounts:
         main: /datadir
       io-format: json
-    "=1.4.7":
+    ">=1.4.7":
       type: docker
       image: main
       system: false
