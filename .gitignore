@@ -1,8 +1,8 @@
 *.s9pk
 image.tar
 configurator/target
-publish-s9pk
 actions/obj
 actions/bin
 instructions.md
 .vscode/*
+scripts/embassy.js

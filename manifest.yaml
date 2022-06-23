@@ -60,35 +60,9 @@ health-checks:
     inject: true
 config:
   get:
-    type: docker
-    image: compat
-    system: true
-    entrypoint: compat
-    args:
-      - config
-      - get
-      - /datadir
-      - "/mnt/assets/config_spec.yaml"
-    mounts:
-      compat: /mnt/assets
-      main: /datadir
-    io-format: yaml
+    type: script
   set:
-    type: docker
-    image: compat
-    system: true
-    entrypoint: compat
-    args:
-      - config
-      - set
-      - btcpayserver
-      - /datadir
-      - "/mnt/assets/config_rules.yaml"
-      - "/mnt/assets/dependencies.yaml"
-    mounts:
-      compat: /mnt/assets
-      main: /datadir
-    io-format: yaml
+    type: script
 dependencies:
   btc-rpc-proxy:
     version: ">=0.3.2.1 <0.4.0"
@@ -98,37 +72,9 @@ dependencies:
     description: Used for creating a permissioned RPC user and to fetch validated blocks on demand.
     config:
       check:
-        type: docker
-        image: compat
-        system: true
-        entrypoint: compat
-        args:
-          - dependency
-          - check
-          - btcpayserver
-          - "btc-rpc-proxy"
-          - /datadir
-          - "/mnt/assets/btc-rpc-proxy_config_rules.yaml"
-        mounts:
-          main: /datadir
-          compat: /mnt/assets
-        io-format: yaml
+        type: script
       auto-configure:
-        type: docker
-        image: compat
-        system: true
-        entrypoint: compat
-        args:
-          - dependency
-          - "auto-configure"
-          - btcpayserver
-          - "btc-rpc-proxy"
-          - /datadir
-          - "/mnt/assets/btc-rpc-proxy_config_rules.yaml"
-        mounts:
-          main: /datadir
-          compat: /mnt/assets
-        io-format: yaml
+        type: script
   bitcoind:
     version: ">=0.21.1.2 <24.0.0"
     requirement:
@@ -137,37 +83,9 @@ dependencies:
     description: Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.
     config:
       check:
-        type: docker
-        image: compat
-        system: true
-        entrypoint: compat
-        args:
-          - dependency
-          - check
-          - btcpayserver
-          - bitcoind
-          - /datadir
-          - "/mnt/assets/bitcoind_config_rules.yaml"
-        mounts:
-          main: /datadir
-          compat: /mnt/assets
-        io-format: yaml
+        type: script
       auto-configure:
-        type: docker
-        image: compat
-        system: true
-        entrypoint: compat
-        args:
-          - dependency
-          - "auto-configure"
-          - btcpayserver
-          - bitcoind
-          - /datadir
-          - "/mnt/assets/bitcoind_config_rules.yaml"
-        mounts:
-          compat: /mnt/assets
-          main: /datadir
-        io-format: yaml
+        type: script
   lnd:
     version: ">=0.13.3.1 <0.15.0"
     requirement:
