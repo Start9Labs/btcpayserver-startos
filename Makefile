@@ -1,7 +1,6 @@
 EMVER := $(shell yq e ".version" manifest.yaml)
 VERSION_TAG := $(shell git --git-dir=btcpayserver/.git describe --abbrev=0)
 VERSION := $(VERSION_TAG:v%=%)
-COMPAT_ASSET_PATHS := $(shell find ./assets/compat/*)
 UTILS_ASSET_PATHS := $(shell find ./assets/utils/*)
 DOC_ASSETS := $(shell find ./docs/assets)
 BTCPAYSERVER_SRC := $(shell find ./btcpayserver/BTCPayServer)
@@ -24,7 +23,7 @@ clean:
 verify: btcpayserver.s9pk $(S9PK_PATH)
 	embassy-sdk verify s9pk $(S9PK_PATH)
 
-btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png scripts/embassy.js $(COMPAT_ASSET_PATHS)
+btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png scripts/embassy.js scripts/embassy.js
 	embassy-sdk pack
 
 image.tar: docker_entrypoint.sh configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) $(BTCPAYSERVER_SRC) $(ACTIONS_SRC) $(MIGRATIONS_SRC) $(UTILS_ASSET_PATHS) Dockerfile
