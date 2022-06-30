@@ -2,7 +2,7 @@ id: btcpayserver
 title: BTCPay Server
 version: 1.4.7.3
 release-notes: |
-  * Switch to using new EOS APIs for faster configuration and properties
+  * Switch to using new eOS APIs for faster configuration and properties
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
