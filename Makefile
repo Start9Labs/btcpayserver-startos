@@ -23,7 +23,7 @@ clean:
 verify: btcpayserver.s9pk $(S9PK_PATH)
 	embassy-sdk verify s9pk $(S9PK_PATH)
 
-btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png scripts/embassy.js scripts/embassy.js
+btcpayserver.s9pk: manifest.yaml image.tar instructions.md LICENSE icon.png scripts/embassy.js
 	embassy-sdk pack
 
 image.tar: docker_entrypoint.sh configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) $(BTCPAYSERVER_SRC) $(ACTIONS_SRC) $(MIGRATIONS_SRC) $(UTILS_ASSET_PATHS) Dockerfile

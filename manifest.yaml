@@ -1,9 +1,7 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7.2
+version: 1.4.7.3
 release-notes: |
-  * Bumps version requirement for Core Lightning to allow update to v0.11.1
-  * Bump proxy and bitcoind version requirements
   * Switch to using new EOS APIs for faster configuration and properties
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
@@ -103,8 +101,6 @@ dependencies:
 volumes:
   main:
     type: data
-  compat:
-    type: assets
   utils:
     type: assets
   lnd:
