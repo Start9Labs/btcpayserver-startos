@@ -23,12 +23,12 @@ export const getConfig = compat.getConfig({
           "id": "type",
           "name": "Type",
           "variant-names": {
-            "internal": "Internal (Bitcoin Core)",
-            "internal-proxy": "Internal (Bitcoin Proxy)"
+            "internal": "Bitcoin Core",
+            "internal-proxy": "Bitcoin Proxy"
           },
-          "description": "The Bitcoin Core node to connect to:\n  - internal: A full archival version of the Bitcoin Core service installed on your Embassy\n  - internal-proxy: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on your Embassy\n"
+          "description": "<p>The Bitcoin Core node to connect to:</p><ul><li><strong>Bitcoin Core</strong>: A full archival version of the Bitcoin Core service installed on your Embassy</li><li><strong>Bitcoin Proxy</strong>: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on your Embassy</li></ul>"
         },
-        "default": "internal-proxy",
+        "default": "proxy",
         "variants": {
           "internal": {
             "rpc-user": {
@@ -84,10 +84,10 @@ export const getConfig = compat.getConfig({
           "id": "type",
           "name": "Type",
           "variant-names": {
-            "internal": "Internal",
-            "external": "External"
+            "internal": "Bitcoin Core",
+            "external": "External Node"
           },
-          "description": "The Bitcoin Core P2P node to connect to:\n  - internal: The Bitcoin Core service installed on your Embassy\n  - external: A Bitcoin Core node running on a different device\n"
+          "description": "<p>The Bitcoin Core P2P node to connect to</p>:<ul><li><strong>Bitcoin Core</strong>: The Bitcoin Core service installed on your Embassy</li><li><strong>External Node</strong>: A Bitcoin node running on a different device</li></ul>"
         },
         "default": "internal",
         "variants": {
