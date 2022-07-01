@@ -1,4 +1,4 @@
-import { Effects, ExpectedExports, Config, matches, YAML } from "../deps.ts";
+import { types as T, matches, YAML } from "../deps.ts";
 
 const { arrayOf, boolean, dictionary, shape, string, any } = matches;
 
@@ -28,7 +28,7 @@ function randomItemString(input: string) {
   return input[Math.floor(Math.random() * input.length)];
 }
 
-async function readConfig(effects: Effects): Promise<Config> {
+async function readConfig(effects: T.Effects): Promise<T.Config> {
   const configMatcher = dictionary([string, any]);
   const config = configMatcher.unsafeCast(
     await effects.readFile(
@@ -46,12 +46,12 @@ async function readConfig(effects: Effects): Promise<Config> {
 const serviceName = "btcpayserver";
 const fullChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 type Check = {
-  currentError(config: Config): string | void;
-  fix(config: Config): void;
+  currentError(config: T.Config): string | void;
+  fix(config: T.Config): void;
 };
 type CheckWithSelfConfig = {
-  currentError(config: Config, selfConfig: Config): string | void;
-  fix(config: Config): void;
+  currentError(config: T.Config, selfConfig: T.Config): string | void;
+  fix(config: T.Config): void;
 };
 
 const checks: Array<Check> = [
@@ -66,6 +66,9 @@ const checks: Array<Check> = [
       return `Must have an RPC user named "${serviceName}"`;
     },
     fix(config) {
+      if (!matchProxyConfig.test(config)) {
+        return
+      }
       config.users.push({
         name: serviceName,
         "allowed-calls": [],
@@ -91,7 +94,7 @@ const checks: Array<Check> = [
     "signrawtransactionwithkey",
     "generatetoaddress",
     "validateaddress",
-    "scantxoutset",
+    "scantxoutset"
   ].map(
     (operator): Check => ({
       currentError(config) {
@@ -120,7 +123,7 @@ const checks: Array<Check> = [
       if (!matchProxyConfig.test(config)) {
         return "Config is not the correct shape";
       }
-      if (config.users.find((x) => x.name === serviceName)?.["fetch-blocks"] ?? false) {
+      if (config.users.find((x) => x.name === serviceName)?.["fetch-blocks"] !== false) {
         return;
       }
       return `RPC user "${serviceName}" must have "Fetch Blocks" enabled`;
@@ -175,6 +178,9 @@ const bitcoindChecks: Array<CheckWithSelfConfig> = [
       return;
     },
     fix(config) {
+      if (!matchBitcoindConfig.test(config)) {
+        return
+      }
       config.rpc.enable = true;
     },
   },
@@ -192,6 +198,9 @@ const bitcoindChecks: Array<CheckWithSelfConfig> = [
       return;
     },
     fix(config) {
+      if (!matchBitcoindConfig.test(config)) {
+        return
+      }
       config.rpc.enable = true;
     },
   },
@@ -206,6 +215,9 @@ const bitcoindChecks: Array<CheckWithSelfConfig> = [
       return;
     },
     fix(config) {
+      if (!matchBitcoindConfig.test(config)) {
+        return
+      }
       config.advanced.peers.listen = true;
     },
   },
@@ -220,13 +232,17 @@ const bitcoindChecks: Array<CheckWithSelfConfig> = [
       return;
     },
     fix(config) {
+      if (!matchBitcoindConfig.test(config)) {
+        return;
+      }
       config.advanced.pruning.mode = "disabled";
     },
   },
 ];
 
-export const dependencies: ExpectedExports.dependencies = {
+export const dependencies: T.ExpectedExports.dependencies = {
   "btc-rpc-proxy": {
+    // deno-lint-ignore require-await
     async check(effects, configInput) {
       effects.info("check btc-rpc-proxy");
       for (const checker of checks) {
@@ -238,6 +254,7 @@ export const dependencies: ExpectedExports.dependencies = {
       }
       return { result: null };
     },
+    // deno-lint-ignore require-await
     async autoConfigure(effects, configInput) {
       effects.info("autoconfigure btc-rpc-proxy");
       for (const checker of checks) {
@@ -252,7 +269,7 @@ export const dependencies: ExpectedExports.dependencies = {
   bitcoind: {
     async check(effects, bitcoindConfig) {
       effects.info("check bitcoind");
-      const btcpsConfig = readConfig(effects);
+      const btcpsConfig = await readConfig(effects);
       for (const checker of bitcoindChecks) {
         const error = checker.currentError(bitcoindConfig, btcpsConfig);
         if (error) {
@@ -264,7 +281,7 @@ export const dependencies: ExpectedExports.dependencies = {
     },
     async autoConfigure(effects, bitcoindConfig) {
       effects.info("autoconfigure bitcoind");
-      const btcpsConfig = readConfig(effects);
+      const btcpsConfig = await readConfig(effects);
       for (const checker of bitcoindChecks) {
         const error = checker.currentError(bitcoindConfig, btcpsConfig);
         if (error) {

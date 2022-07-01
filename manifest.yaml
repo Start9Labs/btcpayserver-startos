@@ -1,10 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7.2
+version: 1.4.7.3
 release-notes: |
-  * Bumps version requirement for Core Lightning to allow update to v0.11.1
-  * Bump proxy and bitcoind version requirements
-  * Switch to using new EOS APIs for faster configuration and properties
+  * Switch to using new eOS APIs for faster configuration and properties
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -13,7 +11,7 @@ marketing-site: "https://btcpayserver.org/"
 donation-url: "https://btcpayserver.org/donate/"
 build: ["make"]
 description:
-  short: BTCPay Server is a self-hosted, open-source cryptocurrency payment processor. It is secure, private, censorship-resistant and free.
+  short: Bitcoin and cryptocurrency payment processor and POS system.
   long: |
     BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
 assets:
@@ -103,8 +101,6 @@ dependencies:
 volumes:
   main:
     type: data
-  compat:
-    type: assets
   utils:
     type: assets
   lnd:
