@@ -10,6 +10,7 @@ _term() {
   echo "Caught SIGTERM signal!" 
   kill -TERM "$nbxplorer_process" 2>/dev/null
   kill -TERM "$btcpayserver_process" 2>/dev/null
+  kill -TERM "$postgres_process" 2>/dev/null
 }
 
 lightning_type=$(yq e '.lightning.type' /datadir/start9/config.yaml)
@@ -48,6 +49,9 @@ fi
 configurator > .env 
 source .env
 
+pg_ctlcluster 13 main start &
+postgres_process=$!
+
 start_height=$(yq e '.advanced.sync-start-height' /datadir/start9/config.yaml)
 dotnet /nbxplorer/NBXplorer.dll --btcrescan=1 --btcstartheight=$(echo $start_height) &
 nbxplorer_process=$!
@@ -57,4 +61,4 @@ btcpayserver_process=$!
 
 trap _term SIGTERM
 
-wait -n $btcpayserver_process $nbxplorer_process
+wait -n $btcpayserver_process $nbxplorer_process $postgres_process
