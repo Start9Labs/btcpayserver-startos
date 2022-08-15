@@ -41,15 +41,29 @@ then
 
   while ! test -S /mnt/c-lightning/lightning-rpc
   do
-      echo "Waiting for Core Lightning RPC socket..."
-      sleep 1
+    echo "Waiting for Core Lightning RPC socket..."
+    sleep 1
   done
 fi
 
 configurator > .env 
 source .env
 
-pg_ctlcluster 13 main start &
+if test -f /datadir/postgresql/data/postgresql.conf
+then
+  echo "postgres already initialized"
+else 
+  echo "initializing postgres..."
+  chmod 777 /datadir
+  mkdir -p /datadir/postgresql/data
+  chmod 777 /datadir/postgresql
+  chown -R postgres:postgres /datadir/postgresql/data
+  sudo -u postgres /usr/lib/postgresql/13/bin/initdb -D /datadir/postgresql/data
+  echo "postgres initialization complete"
+fi
+
+# start postgres with specified data directory
+sudo -u postgres /usr/lib/postgresql/13/bin/postgres -D /datadir/postgresql/data &
 postgres_process=$!
 
 start_height=$(yq e '.advanced.sync-start-height' /datadir/start9/config.yaml)

@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.6.2
+version: 1.6.6
 release-notes: |
   * Update NBXplorer to latest and migration database to postgres
   * Update BTCPay Server to latest: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.6.2

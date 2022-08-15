@@ -1,3 +1,10 @@
+####Server Commands####
+port=24444
+bind=127.0.0.1
+mainnet=1
+
+####Common Commands####
+####All those options can be passed by through command like arguments (ie `-port=19382`)####
 ## This is the RPC Connection to your node
 btc.rpc.url=http://{btc_rpc_proxy_rpc_host}:{btc_rpc_proxy_port}/
 #By user name and password
