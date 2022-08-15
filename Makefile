@@ -11,6 +11,7 @@ BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
 BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
 CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
 S9PK_PATH=$(shell find . -name btcpayserver.s9pk -print)
+SCRIPTS_SRC := $(shell find ./scripts -name '*.ts')
 
 .DELETE_ON_ERROR:
 
@@ -35,5 +36,5 @@ configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURA
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
 
-scripts/embassy.js: scripts/**/*.ts
+scripts/embassy.js: $(SCRIPTS_SRC)
 	deno bundle scripts/embassy.ts scripts/embassy.js

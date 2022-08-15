@@ -206,6 +206,8 @@ migrations:
   from:
     "*":
       type: script
+      args: ["from"]
   to:
     "*":
       type: script
+      args: ["to"]
