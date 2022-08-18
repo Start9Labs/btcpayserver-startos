@@ -45,13 +45,14 @@ set-user-admin)
     tmp=$(mktemp)
     jq '.LockSubscription = false' res.json > "$tmp" && mv "$tmp" res.json
     TO_SET=$(cat res.json)
-    if ! query "UPDATE \"settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null; then
+    if ! query "UPDATE \"settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null
+    then
       RESULT="    {
-          \"version\": \"0\",
-          \"message\": \"There was an error disabling registrations.\",
-          \"value\": null,
-          \"copyable\": false,
-          \"qr\": false
+        \"version\": \"0\",
+        \"message\": \"There was an error disabling registrations.\",
+        \"value\": null,
+        \"copyable\": false,
+        \"qr\": false
       }"
       echo $RESULT
     else 
