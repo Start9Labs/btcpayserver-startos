@@ -15,7 +15,9 @@ build: ["make"]
 description:
   short: Bitcoin and cryptocurrency payment processor and POS system.
   long: |
-    BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
+    BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. 
+    
+    BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
 assets:
   license: LICENSE
   icon: icon.png
@@ -24,7 +26,7 @@ assets:
 main:
   type: docker
   image: main
-  entrypoint: "docker_entrypoint.sh"
+  entrypoint: "/init"
   args: []
   mounts:
     lnd: /mnt/lnd
@@ -118,17 +120,20 @@ volumes:
     path: "/shared"
     readonly: true
 alerts:
-  install: |
-    BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!
+  install: 
+    <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>
 
-    The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.
+    <p>The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.</p>
 
-    **PLEASE READ** the **INSTRUCTIONS** after installation!
-  uninstall: |
-    **READ CAREFULLY!**
-
-    Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
-  restore: "Restoring BTCPay will overwrite its current data. \n\nAny stores or invoices created since the last backup will be not be recognized.\n"
+   <p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>
+  uninstall: 
+    <p><b>READ CAREFULLY!</b></p>
+    
+    <p>Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.</p>
+  restore: 
+    Restoring BTCPay will overwrite its current data.
+    
+    Any stores or invoices created since the last backup will be not be recognized.
 interfaces:
   main:
     name: Web Interface
@@ -184,7 +189,7 @@ actions:
     implementation:
       type: docker
       image: main
-      entrypoint: docker_entrypoint.sh
+      entrypoint: btcpay-admin.sh 
       args: ["enable-registrations"]
       inject: true
       io-format: json
@@ -198,7 +203,7 @@ actions:
     implementation:
       type: docker
       image: main
-      entrypoint: docker_entrypoint.sh
+      entrypoint: btcpay-admin.sh 
       args: ["reset-admin-password"]
       inject: true
       io-format: json

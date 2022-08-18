@@ -1,4 +1,4 @@
-FROM nicolasdorier/nbxplorer:2.3.33 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.3.33-arm64v8 as nbx-builder
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
@@ -12,11 +12,27 @@ FROM btcpayserver/btcpayserver:1.6.6-arm64v8
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
 
+# install package dependencies
 RUN apt-get update && \
-  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 sudo
+  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 sudo xz-utils 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_arm.tar.gz -O - |\
   tar xz && mv yq_linux_arm /usr/bin/yq
 
+# install S6 overlay for proces mgmt
+# https://github.com/just-containers/s6-overlay
+ARG S6_OVERLAY_VERSION=3.1.1.2
+#  needed to run s6-overlay
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+# extract the necessary binaries from the s6 ecosystem
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-aarch64.tar.xz
+
+# Adding services to the S6 overlay expected locations
+COPY assets/s6-overlay/services /etc/s6-overlay/s6-rc.d
+COPY assets/s6-overlay/contents.d/ /etc/s6-overlay/s6-rc.d/user/contents.d/
+
+# various env setup
 RUN locale-gen en_US.UTF-8
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV BTCPAY_DATADIR=/datadir/btcpayserver
@@ -46,10 +62,13 @@ ADD ./configurator/target/aarch64-unknown-linux-musl/release/configurator /usr/l
 COPY ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 COPY assets/utils/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
 COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
+COPY assets/utils/postgres-init.sh /etc/s6-overlay/script/postgres-init
+COPY assets/utils/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
+COPY assets/utils/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
 RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 RUN chmod a+x /usr/local/bin/btcpay-admin.sh
 RUN chmod a+x /usr/local/bin/health_check.sh
-ADD ./migrations /usr/local/bin/migrations
-RUN chmod a+x /usr/local/bin/migrations/*
+RUN chmod a+x /etc/s6-overlay/script/*
+RUN chmod a+x /etc/cont-finish.d/*
 
-ENTRYPOINT ["/usr/local/bin/docker_entrypoint.sh"]
+ENTRYPOINT ["/init"]
