@@ -183,7 +183,9 @@ actions:
     name: Enable Registrations
     description: Resets the policies settings if you cannot create a new user because registrations are disabled.
     warning: |
-      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web UI using the register button. This action will RESTART the service.
+      <p>Skip this action if you <b>can</b> create a new user in the web UI using the register button.</p>
+      <p> Only if you <b>cannot</b> create a new user because registrations are disabled in the <code>Server Settings > Policies</code> do you need to preform this action.</p>
+      <p><b>Please note:</b> This action will <i>restart</i> the BTCPay service.</p>
     allowed-statuses:
       - running
     implementation:
@@ -197,13 +199,14 @@ actions:
     name: Reset Admin Password
     description: Resets the admin user with a temporary password.
     warning: |
-      This action will fail if more than one admin user is present. If another admin user exists, please login to this admin account to add SMTP settings to utilize the default "Forgot Password" flow.
+      <p>This action will fail if more than one admin user is present.</p>
+      <p>If another admin user exists, please login to this admin account, add SMTP email settings, and utilize the default <code>Forgot Password</code> flow on the login screen instead.</p>
     allowed-statuses:
       - running
     implementation:
       type: docker
       image: main
-      entrypoint: btcpay-admin.sh 
+      entrypoint: btcpay-admin.sh
       args: ["reset-admin-password"]
       inject: true
       io-format: json

@@ -27,6 +27,8 @@ RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
 # extract the necessary binaries from the s6 ecosystem
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-aarch64.tar.xz
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-symlinks-arch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz
 
 # Adding services to the S6 overlay expected locations
 COPY assets/s6-overlay/services /etc/s6-overlay/s6-rc.d

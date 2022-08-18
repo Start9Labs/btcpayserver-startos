@@ -63,7 +63,8 @@ case "$1" in
                 \"qr\": false
             }"
             echo $RESULT
-            pkill -f "dotnet ./BTCPayServer.dll"
+            # send SIGTERM to gracefully restart btcpay so change is reflected in the UI
+            s6-svc -t /run/s6-rc/servicedirs/btcpayserver
         fi
         ;;
     reset-admin-password)
