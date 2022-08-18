@@ -26,7 +26,7 @@ Email configuration is recommended for:
 1. Receiving invoice/payment notifications
 1. Capturing store related events, such as sending invoices.
 
-Since you are running your own instance, if you want to receive email notifications, you will have to send them yourself. This can be done from your own SMTP server, or by using an account with a hosted SMTP server, such as Gmail, Yahoo, Mailgun, Office365, SendGrid, etc. For specific instructions on how to configure these settings, please visit the official [documentation](https://docs.btcpayserver.org/Notifications/#smtp-email-setup).
+Since you are running your own instance, if you want to receive email notifications, you will have to send them yourself. This can be done from your own SMTP server, or by using an account with a hosted SMTP server, such as Yahoo, Mailgun, Office365, SendGrid, etc. For specific instructions on how to configure these settings, please visit the official [documentation](https://docs.btcpayserver.org/Notifications/#smtp-email-setup).
 
 ## Forgot Password
 
