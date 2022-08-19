@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.6.6
+version: 1.6.9
 release-notes: |
   * KNOWN ISSUE: pull payments section of UI is throwing an error and not displaying - issue created on upstream repo
   * Update NBXplorer to latest and migration database to postgres (NOTE: this process can take from 5 - 40 minutes, depending on the size of your instance's database)
