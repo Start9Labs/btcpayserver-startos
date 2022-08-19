@@ -16,8 +16,12 @@ const matchAdvanced = shape({
 
 export const migration_up_1_4_7 = (config: T.Config): T.Config => {
 
+  if (Object.keys(config).length === 0) {
+    // service was never configured
+    return config
+  }
   if (!matchBitcoin.test(config)) {
-    throw `Could not find bitcond key in config: ${matchBitcoin.errorMessage(config)}`
+    throw `Could not find bitcoind key in config: ${matchBitcoin.errorMessage(config)}`
   }
 
   // if bitcoin is configured to internal (ie. pointer to proxy), upgrade should ensure it remains proxy. As of 1.4.7, internal means bitcoin core. 
