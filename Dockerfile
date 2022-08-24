@@ -61,16 +61,15 @@ EXPOSE 23000 80
 
 # start9 specific steps
 ADD ./configurator/target/aarch64-unknown-linux-musl/release/configurator /usr/local/bin/configurator
-COPY ./docker_entrypoint.sh /usr/local/bin/docker_entrypoint.sh
 COPY assets/utils/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
 COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
 COPY assets/utils/postgres-init.sh /etc/s6-overlay/script/postgres-init
 COPY assets/utils/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
 COPY assets/utils/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
-RUN chmod a+x /usr/local/bin/docker_entrypoint.sh
 RUN chmod a+x /usr/local/bin/btcpay-admin.sh
 RUN chmod a+x /usr/local/bin/health_check.sh
 RUN chmod a+x /etc/s6-overlay/script/*
 RUN chmod a+x /etc/cont-finish.d/*
 
+# initalize with s6-overlay initialization
 ENTRYPOINT ["/init"]
