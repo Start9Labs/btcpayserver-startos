@@ -1,8 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7
+version: 1.4.7.1
 release-notes: |
   - Updates to most current released version: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.4.7
+  - Fixes configuration for future system version compatibility
   - Breaking changes since last release: 
     - If you activated plugins, you will need to update them
   - Enables configuration for either a pruned or full archival internal Bitcoin Core node
