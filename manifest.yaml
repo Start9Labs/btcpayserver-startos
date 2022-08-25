@@ -1,7 +1,7 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.1.2.4
-release-notes: "Upgrade to EmbassyOS v0.3.0"
+version: 1.1.2.5
+release-notes: "Upgrade to EmbassyOS v0.3.0 and fix configuration for future system version compatibility"
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
