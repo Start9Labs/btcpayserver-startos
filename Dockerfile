@@ -14,7 +14,7 @@ COPY --from=actions-builder "/actions/build" /actions
 
 # install package dependencies
 RUN apt-get update && \
-  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 sudo xz-utils 
+  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_arm.tar.gz -O - |\
   tar xz && mv yq_linux_arm /usr/bin/yq
 
