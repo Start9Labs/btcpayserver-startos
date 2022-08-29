@@ -1,17 +1,11 @@
-#!/bin/bash
+#!/command/with-contenv bash
+# ^ allows access to the Docker container's environment variables
 
+# -a  Mark variables which are modified or created for export
+# -e  Exit immediately if a command exits with a non-zero status
 set -ea
 
-if [ "$#" -ne "0" ]; then
-  exec btcpay-admin.sh $@
-fi
-
-_term() { 
-  echo "Caught SIGTERM signal!" 
-  kill -TERM "$nbxplorer_process" 2>/dev/null
-  kill -TERM "$btcpayserver_process" 2>/dev/null
-}
-
+#  check readiness of lightning connections if configured to use
 lightning_type=$(yq e '.lightning.type' /datadir/start9/config.yaml)
 if [[ $lightning_type = "lnd" ]]
 then
@@ -40,21 +34,15 @@ then
 
   while ! test -S /mnt/c-lightning/lightning-rpc
   do
-      echo "Waiting for Core Lightning RPC socket..."
-      sleep 1
+    echo "Waiting for Core Lightning RPC socket..."
+    sleep 1
   done
 fi
 
+
+# configure templates and load environment variables generated for lightning connections 
 configurator > .env 
 source .env
 
-start_height=$(yq e '.advanced.sync-start-height' /datadir/start9/config.yaml)
-dotnet /nbxplorer/NBXplorer.dll --btcrescan=1 --btcstartheight=$(echo $start_height) &
-nbxplorer_process=$!
-
-dotnet ./BTCPayServer.dll &
-btcpayserver_process=$!
-
-trap _term SIGTERM
-
-wait -n $btcpayserver_process $nbxplorer_process
+# start btcpayserver, copying stderr onto stdout
+exec dotnet /app/BTCPayServer.dll 2>&1

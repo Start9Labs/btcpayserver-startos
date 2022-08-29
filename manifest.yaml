@@ -1,8 +1,10 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.4.7.4
+version: 1.6.10
 release-notes: |
-  * Update version requirements for compatibility with CLN 0.12 and LND 0.15
+  * Update NBXplorer to latest and migrate database to postgres (NOTE: this process can take from 5 - 40 minutes, depending on the size of your instance's database)
+  * Update BTCPay Server to v1.6.10: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.6.10
+  * Update docker initialization system to run multiple processes more efficiently
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -13,7 +15,9 @@ build: ["make"]
 description:
   short: Bitcoin and cryptocurrency payment processor and POS system.
   long: |
-    BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
+    BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. 
+    
+    BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
 assets:
   license: LICENSE
   icon: icon.png
@@ -22,7 +26,7 @@ assets:
 main:
   type: docker
   image: main
-  entrypoint: "docker_entrypoint.sh"
+  entrypoint: "/init"
   args: []
   mounts:
     lnd: /mnt/lnd
@@ -116,17 +120,20 @@ volumes:
     path: "/shared"
     readonly: true
 alerts:
-  install: |
-    BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!
+  install: 
+    <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>
 
-    The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.
+    <p>The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.</p>
 
-    **PLEASE READ** the **INSTRUCTIONS** after installation!
-  uninstall: |
-    **READ CAREFULLY!**
-
-    Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.
-  restore: "Restoring BTCPay will overwrite its current data. \n\nAny stores or invoices created since the last backup will be not be recognized.\n"
+   <p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>
+  uninstall: 
+    <p><b>READ CAREFULLY!</b></p>
+    
+    <p>Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.</p>
+  restore: 
+    Restoring BTCPay will overwrite its current data.
+    
+    Any stores or invoices created since the last backup will be not be recognized.
 interfaces:
   main:
     name: Web Interface
@@ -176,13 +183,15 @@ actions:
     name: Enable Registrations
     description: Resets the policies settings if you cannot create a new user because registrations are disabled.
     warning: |
-      If you can't create a new user because registrations are disabled in your Server Settings > Policies, you need to reset the policies settings. Please skip this step if you can create a new user in the web UI using the register button. This action will RESTART the service.
+      <p>Skip this action if you <b>can</b> create a new user in the web UI using the register button.</p>
+      <p> Only if you <b>cannot</b> create a new user because registrations are disabled in the <code>Server Settings > Policies</code> do you need to preform this action.</p>
+      <p><b>Please note:</b> This action will <i>restart</i> the BTCPay service.</p>
     allowed-statuses:
       - running
     implementation:
       type: docker
       image: main
-      entrypoint: docker_entrypoint.sh
+      entrypoint: btcpay-admin.sh 
       args: ["enable-registrations"]
       inject: true
       io-format: json
@@ -190,50 +199,23 @@ actions:
     name: Reset Admin Password
     description: Resets the admin user with a temporary password.
     warning: |
-      This action will fail if more than one admin user is present. If another admin user exists, please login to this admin account to add SMTP settings to utilize the default "Forgot Password" flow.
+      <p>This action will fail if more than one admin user is present.</p>
+      <p>If another admin user exists, please login to this admin account, add SMTP email settings, and utilize the default <code>Forgot Password</code> flow on the login screen instead.</p>
     allowed-statuses:
       - running
     implementation:
       type: docker
       image: main
-      entrypoint: docker_entrypoint.sh
+      entrypoint: btcpay-admin.sh
       args: ["reset-admin-password"]
       inject: true
       io-format: json
 migrations:
   from:
-    "<1.4.7":
-      type: docker
-      image: main
-      system: false
-      entrypoint: /usr/local/bin/migrations/from_lt_1_4_7.sh
-      args: []
-      mounts:
-        main: /datadir
-      io-format: json
-    ">=1.4.7":
-      type: docker
-      image: main
-      system: false
-      entrypoint: "/bin/echo"
-      args: ['{"configured": true}']
-      io-format: json
-      inject: false
+    "*":
+      type: script
+      args: ["from"]
   to:
-    "<1.4.7":
-      type: docker
-      image: main
-      system: false
-      entrypoint: /usr/local/bin/migrations/to_lt_1_4_7.sh
-      args: []
-      mounts:
-        main: /datadir
-      io-format: json
-    ">=1.4.7":
-      type: docker
-      image: main
-      system: false
-      entrypoint: "/bin/echo"
-      args: ['{"configured": true}']
-      io-format: json
-      inject: false
+    "*":
+      type: script
+      args: ["to"]

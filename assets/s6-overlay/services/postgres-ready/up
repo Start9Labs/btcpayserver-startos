@@ -1,0 +1,3 @@
+#!/usr/bin/execlineb 
+
+/etc/s6-overlay/script/postgres-ready

@@ -1,0 +1,11 @@
+#!/command/with-contenv bash
+# ^ allows access to the Docker container's environment variables
+
+# -a  Mark variables which are modified or created for export
+# -e  Exit immediately if a command exits with a non-zero status
+# set -ea
+
+# capture start height from configuration - used to reset scanner to a certain block height, or the tip, if corrupted
+start_height=$(yq e '.advanced.sync-start-height' /datadir/start9/config.yaml)
+# start nbxplorer, copying stderr onto stdout
+exec dotnet /nbxplorer/NBXplorer.dll --btcrescan=1 --btcstartheight=$(echo $start_height) 2>&1
