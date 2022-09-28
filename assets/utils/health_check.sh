@@ -13,12 +13,12 @@ check_synched(){
     exit 0
   elif [[ $IS_NBX_SYNCED == false && $IS_BTC_SYNCED == false ]]; then
     PERCENTAGE=$(bc -l <<<"100*$BTC_VERIFICATION_PROGRESS")
-    echo "Bitcoin node syncing. This must complete before the UTXO explorer can sync. Verification progress: $(printf "%.2f" $PERCENTAGE)%" >&2
+    echo "Bitcoin node syncing. This must complete before the UTXO tracker can sync. Verification progress: $(printf "%.2f" $PERCENTAGE)%" >&2
     exit 61 # Loading
   elif [[ $IS_NBX_SYNCED == false && $IS_BTC_SYNCED == true ]]; then
     PROGRESS=$(echo "scale=6; $SYNC_HEIGHT / $CHAIN_HEIGHT" | bc)
     PERCENTAGE=$(bc -l <<<"100*$PROGRESS")
-    echo "UTXO explorer syncing. Progress: $(printf "%.2f" $PERCENTAGE)%" >&2
+    echo "UTXO tracker syncing. Progress: $(printf "%.2f" $PERCENTAGE)%" >&2
     exit 61 # Loading
   else
     exit 60 # Starting
