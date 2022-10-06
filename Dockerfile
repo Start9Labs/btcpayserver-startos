@@ -20,7 +20,7 @@ RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_arm.t
 
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
-ARG S6_OVERLAY_VERSION=3.1.1.2
+ARG S6_OVERLAY_VERSION=3.1.2.1
 #  needed to run s6-overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
