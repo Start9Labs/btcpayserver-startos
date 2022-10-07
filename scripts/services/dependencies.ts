@@ -222,11 +222,14 @@ const bitcoindChecks: Array<CheckWithSelfConfig> = [
     },
   },
   {
-    currentError(config) {
+    currentError(config, selfConfig) {
       if (!matchBitcoindConfig.test(config)) {
         return "Config is not the correct shape";
       }
-      if (config.advanced.pruning.mode !== "disabled") {
+      if (!matchBtcpsConfig.test(selfConfig)) {
+        return "BTCPS config is not the correct shape";
+      }
+      if (selfConfig.bitcoin["bitcoind-rpc"].type === "internal" && config.advanced.pruning.mode !== "disabled") {
         return "Pruning must be disabled (must be an archival node)";
       }
       return;
