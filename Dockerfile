@@ -15,8 +15,8 @@ COPY --from=actions-builder "/actions/build" /actions
 # install package dependencies
 RUN apt-get update && \
   apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils 
-RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_arm.tar.gz -O - |\
-  tar xz && mv yq_linux_arm /usr/bin/yq
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_amd64.tar.gz -O - |\
+  tar xz && mv yq_linux_amd64 /usr/bin/yq
 
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
@@ -25,8 +25,8 @@ ARG S6_OVERLAY_VERSION=3.1.2.1
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
 # extract the necessary binaries from the s6 ecosystem
-ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz /tmp
-RUN tar -C / -Jxpf /tmp/s6-overlay-aarch64.tar.xz
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-symlinks-arch.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz
 
@@ -62,7 +62,7 @@ ENV BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Applicati
 EXPOSE 23000 80
 
 # start9 specific steps
-ADD ./configurator/target/aarch64-unknown-linux-musl/release/configurator /usr/local/bin/configurator
+ADD ./configurator/target/x86_64-unknown-linux-musl/release/configurator /usr/local/bin/configurator
 COPY assets/utils/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
 COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
 COPY assets/utils/postgres-init.sh /etc/s6-overlay/script/postgres-init
