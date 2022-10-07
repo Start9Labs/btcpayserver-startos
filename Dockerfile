@@ -35,6 +35,8 @@ COPY assets/s6-overlay/services /etc/s6-overlay/s6-rc.d
 COPY assets/s6-overlay/contents.d/ /etc/s6-overlay/s6-rc.d/user/contents.d/
 
 # various env setup
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
+ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME 0
 RUN locale-gen en_US.UTF-8
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV BTCPAY_DATADIR=/datadir/btcpayserver
