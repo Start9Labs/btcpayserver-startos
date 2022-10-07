@@ -43,8 +43,8 @@ docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/releas
 configurator/target/x86_64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
 	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:x86_64-musl cargo +beta build --release
 
-configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo +beta build --release
+configurator/target/x86_64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
+	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:x86_64-musl cargo +beta build --release
 
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
