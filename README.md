@@ -1,6 +1,8 @@
-# Wrapper for BTCPay Server
+# Wrapper for btcpayserver
 
-[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free.
+[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free. This repository creates the `s9pk` package that is installed to run `btcpayserver` on [embassyOS](https://github.com/Start9Labs/embassy-os/).
+
+## Embassy Service Pre-Requisites: 
 
 ## Dependencies
 
@@ -14,7 +16,7 @@
 
 ## Cloning
 
-Clone the project locally. Note the submodule link to the original project(s). 
+Clone the project locally. Note the submodule link to the original projects. 
 
 ```
 git clone git@github.com:elvece/btcpayserver-wrapper.git
@@ -24,15 +26,36 @@ git submodule update --init --recursive
 
 ## Building
 
+To build the `btcpayserver` package, run the following command:
+
 ```
 make
 ```
 
-## Installing (on Embassy)
+## Installing (on embassyOS)
+
+Run the following commands to install:
+
+> :information_source: Change embassy-server-name.local to your Embassy address
 
 ```
-scp btcpayserver.s9pk root@embassy-<id>.local:/embassy-data/package-data/tmp # Copy S9PK to the external disk. Make sure to create the directory if it doesn't already exist
-ssh root@embassy-<id>.local
 embassy-cli auth login
-embassy-cli package install /embassy-data/pacakge-data/tmp/btcpayserver.s9pk # Install the sideloaded package
+# Enter your embassy password
+embassy-cli --host https://embassy-server-name.local package install btcpayserver.s9pk
 ```
+
+If you already have your `embassy-cli` config file setup with a default `host`,
+you can install simply by running:
+
+```
+make install
+```
+
+> **Tip:** You can also install the btcpayserver.s9pk using **Sideload Service** under
+the **Embassy > Settings** section.
+
+## Verify Install
+
+Go to your Embassy Services page, select **BTCPay Server**, configure and start the service. Then, verify it's interfaces are accessible.
+
+**Done!** 
