@@ -7,3 +7,4 @@ instructions.md
 .vscode/*
 scripts/embassy.js
 .DS_Store
+docker-images
