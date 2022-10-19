@@ -3,9 +3,9 @@ FROM nicolasdorier/nbxplorer:2.3.40 as nbx-builder
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
 COPY . .
-RUN dotnet restore "actions/actions.csproj"
+RUN dotnet restore "utils/actions/actions.csproj"
 WORKDIR "/actions"
-RUN dotnet build "actions/actions.csproj" -c Release -o /actions/build
+RUN dotnet build "utils/actions/actions.csproj" -c Release -o /actions/build
 
 FROM btcpayserver/btcpayserver:1.6.12
 
@@ -36,8 +36,8 @@ ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLA
 RUN tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz
 
 # Adding services to the S6 overlay expected locations
-COPY assets/s6-overlay/services /etc/s6-overlay/s6-rc.d
-COPY assets/s6-overlay/contents.d/ /etc/s6-overlay/s6-rc.d/user/contents.d/
+COPY utils/s6-overlay/services /etc/s6-overlay/s6-rc.d
+COPY utils/s6-overlay/contents.d/ /etc/s6-overlay/s6-rc.d/user/contents.d/
 
 # various env setup
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
@@ -68,15 +68,12 @@ EXPOSE 23000 80
 
 # start9 specific steps
 ADD ./configurator/target/${ARCH}-unknown-linux-musl/release/configurator /usr/local/bin/configurator
-COPY assets/utils/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
-COPY assets/utils/health_check.sh /usr/local/bin/health_check.sh
-COPY assets/utils/postgres-init.sh /etc/s6-overlay/script/postgres-init
-COPY assets/utils/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
-COPY assets/utils/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
-RUN chmod a+x /usr/local/bin/btcpay-admin.sh
-RUN chmod a+x /usr/local/bin/health_check.sh
-RUN chmod a+x /etc/s6-overlay/script/*
-RUN chmod a+x /etc/cont-finish.d/*
+COPY utils/scripts/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
+COPY utils/scripts/health_check.sh /usr/local/bin/health_check.sh
+COPY utils/scripts/postgres-init.sh /etc/s6-overlay/script/postgres-init
+COPY utils/scripts/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
+COPY utils/scripts/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
+RUN chmod a+x /usr/local/bin/btcpay-admin.sh /usr/local/bin/health_check.sh /etc/s6-overlay/script/* /etc/cont-finish.d/*
 
 # s6-overlay initialization
 ENTRYPOINT ["/init"]

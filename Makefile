@@ -1,15 +1,10 @@
 PKG_ID := $(shell yq e ".id" manifest.yaml)
 PKG_VERSION := $(shell yq e ".version" manifest.yaml)
-UTILS_ASSET_PATHS := $(shell find ./assets/utils/*)
-DOC_ASSETS := $(shell find ./docs/assets)
-BTCPAYSERVER_SRC := $(shell find ./btcpayserver/BTCPayServer/**/*.cs)
-NBXPLORER_SRC := $(shell find ./NBXplorer)
-ACTIONS_SRC := $(shell find ./actions)
-BTCPAYSERVER_GIT_REF := $(shell cat .git/modules/btcpayserver/HEAD)
-BTCPAYSERVER_GIT_FILE := $(addprefix .git/modules/btcpayserver/,$(if $(filter ref:%,$(BTCPAYSERVER_GIT_REF)),$(lastword $(BTCPAYSERVER_GIT_REF)),HEAD))
-CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
+UPSTREAM_VERSION :=$(shell ./utils/scripts/get_upstream_version.sh ${PKG_VERSION})
 SCRIPTS_SRC := $(shell find ./scripts -name '*.ts')
-S6_SRC := $(shell find ./assets/s6-overlay)
+DOC_ASSETS := $(shell find ./docs/assets)
+CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
+UTILS_SRC := $(shell find ./utils/**/*)
 
 .DELETE_ON_ERROR:
 
@@ -17,9 +12,10 @@ all: verify
 
 clean:
 	rm -rf docker-images
-	rm image.tar
-	rm $(PKG_ID).s9pk
-	rm -f scripts/*.js
+	rm -f image.tar
+	rm -f $(PKG_ID).s9pk
+	rm -f js/*.js
+	rm -f LICENSE
 
 verify: $(PKG_ID).s9pk
 	embassy-sdk verify s9pk $(PKG_ID).s9pk
@@ -32,13 +28,13 @@ $(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.j
 	if ! [ -z "$(ARCH)" ]; then cp docker-images/$(ARCH).tar image.tar; fi
 	embassy-sdk pack
 
-docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) $(BTCPAYSERVER_SRC) $(ACTIONS_SRC) $(UTILS_ASSET_PATHS) $(S6_SRC) Dockerfile
+docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
 	mkdir -p docker-images
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/amd64 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 -o type=docker,dest=docker-images/x86_64.tar -f ./Dockerfile .
 
-docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(BTCPAYSERVER_GIT_FILE) $(NBXPLORER_SRC) $(BTCPAYSERVER_SRC) $(ACTIONS_SRC) $(UTILS_ASSET_PATHS) $(S6_SRC) Dockerfile
+docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
 	mkdir -p docker-images
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --build-arg PLATFORM=arm64 -o type=docker,dest=docker-images/aarch64.tar -f ./Dockerfile . 
+	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --build-arg PLATFORM=arm64 -o type=docker,dest=docker-images/aarch64.tar -f ./Dockerfile .
 
 configurator/target/x86_64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
 	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:x86_64-musl cargo +beta build --release
@@ -51,3 +47,6 @@ instructions.md: docs/instructions.md $(DOC_ASSETS)
 
 scripts/embassy.js: $(SCRIPTS_SRC)
 	deno bundle scripts/embassy.ts scripts/embassy.js
+
+LICENSE:
+	wget https://raw.githubusercontent.com/btcpayserver/btcpayserver/v$(UPSTREAM_VERSION)/LICENSE -O - > LICENSE

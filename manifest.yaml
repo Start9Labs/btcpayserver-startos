@@ -102,8 +102,6 @@ dependencies:
 volumes:
   main:
     type: data
-  utils:
-    type: assets
   lnd:
     type: pointer
     package-id: lnd
