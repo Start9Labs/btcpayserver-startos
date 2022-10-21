@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-The following set of dependencies are required to build this project. You can find detailed steps to setup your environment in the service packaging [documentation](https://github.com/Start9Labs/service-pipeline#development-environment).
+Install the system dependencies below to build this project by following the instructions in the provided links. You can also find detailed steps to setup your environment in the service packaging [documentation](https://github.com/Start9Labs/service-pipeline#development-environment).
 
 - [docker](https://docs.docker.com/get-docker)
 - [docker-buildx](https://docs.docker.com/buildx/working-with-buildx/)
@@ -12,7 +12,7 @@ The following set of dependencies are required to build this project. You can fi
 - [embassy-sdk](https://github.com/Start9Labs/embassy-os/blob/master/backend/install-sdk.sh)
 - [make](https://www.gnu.org/software/make/)
 - [md-packer](https://github.com/Start9Labs/md-packer)
-- [deno](https://deno.land/)
+- [deno](https://deno.land/#installation)
 - [wget](https://command-not-found.com/wget)
 
 ## Cloning
