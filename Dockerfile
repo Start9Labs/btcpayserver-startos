@@ -1,4 +1,4 @@
-FROM nicolasdorier/nbxplorer:2.3.33-arm64v8 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.3.40-arm64v8 as nbx-builder
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
@@ -7,7 +7,7 @@ RUN dotnet restore "actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.6.10-arm64v8
+FROM btcpayserver/btcpayserver:1.6.12-arm64v8
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -20,7 +20,7 @@ RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_arm.t
 
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
-ARG S6_OVERLAY_VERSION=3.1.1.2
+ARG S6_OVERLAY_VERSION=3.1.2.1
 #  needed to run s6-overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
 RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
@@ -35,6 +35,8 @@ COPY assets/s6-overlay/services /etc/s6-overlay/s6-rc.d
 COPY assets/s6-overlay/contents.d/ /etc/s6-overlay/s6-rc.d/user/contents.d/
 
 # various env setup
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
+ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME 0
 RUN locale-gen en_US.UTF-8
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV BTCPAY_DATADIR=/datadir/btcpayserver
