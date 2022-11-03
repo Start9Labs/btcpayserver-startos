@@ -6,6 +6,7 @@ release-notes: |
   * Update NBXplorer to v2.3.40
   * Update BTCPay Server to v1.6.12: https://github.com/btcpayserver/btcpayserver/releases/tag/v1.6.12
   * Fixes dependency requirement when using a pruned Bitcoin node with Bitcoin Proxy
+  * Update instructions for Vault integration
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"

@@ -6,8 +6,6 @@ The instance of BTCPay Server running on your Embassy is your *own*, self-hosted
 
 This service provides an enormous amount of functionality surrounding creating stores, generating invoices, and accepting payments. Please visit the visit the official [documentation](https://docs.btcpayserver.org/Guide/) for details on the full capabilities.
 
-BTCPayServer Vault is not yet supported for hardware wallet integration.
-
 Using the Shopify plugin will only work over Tor (ie. Shopify users will be redirected to an onion address when submitting payment) unless you set up a reverse proxy to Tor. See more details in the Advanced section below. 
 
 ## Creating your Account
@@ -63,6 +61,14 @@ Next, **enable lightning** for a particular store's wallet using the connection 
 <!-- MD_PACKER_INLINE END -->
 
 If you would like to connect to an external lightning node, select "Use custom node" when on the page above and follow the instructions.
+
+## Setting up BTCPayServer Vault
+
+BTCPayServer Vault yet supports hardware wallet integrations for stores. To use, you must [install](https://github.com/btcpayserver/BTCPayServer.Vault/releases) Vault and run it on a laptop/desktop machine. Then, access your BTCPay Server service in a browser on the same device. To reconfigure an existing store, open the BTCPay Server UI, select the store, navigate to `Wallets > Bitcoin`, and select the settings gear in the top right corner. Under `BTC Wallet Settings`, select `Actions > Replace Wallet`, confirm the action, and select "Setup new wallet". Finally, follow the on-screen instructions to "Connect an existing wallet".
+
+When creating a new store, select `Wallets > Bitcoin > Set up a wallet > Connect an existing wallet > Connect hardware wallet` and follow the on-screen instructions. 
+
+Check out the official [documentation](https://docs.btcpayserver.org/Vault/) and [blog post](https://blog.btcpayserver.org/btcpay-vault/) for more information. 
 
 ## Updates
 
