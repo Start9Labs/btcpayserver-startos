@@ -19,24 +19,28 @@ assets:
   license: LICENSE
   icon: icon.png
   instructions: instructions.md
-  docker-images: image.tar
 main:
-  type: script
-containers:
-  main:
-    image: main
-    mounts:
-      lnd: /mnt/lnd
-      c-lightning: "/mnt/c-lightning"
-      main: /datadir
+  type: docker
+  image: main
+  entrypoint: "/init"
+  args: []
+  mounts:
+    lnd: /mnt/lnd
+    c-lightning: "/mnt/c-lightning"
+    main: /datadir
 health-checks:
   explorer-synced:
     name: Explorer Synced
     success-message: The UTXO tracker is synced to the tip of the Bitcoin blockchain
-    type: script
+    type: docker
+    image: main
+    entrypoint: health_check.sh
+    args: ["nbx"]
+    inject: true
+    io-format: json
   web-ui:
     name: Web UI
-    success-message: Ready to visit in a web browser
+    success-message: BTCPay Server is ready to visit in a web browser
     type: docker
     image: main
     entrypoint: health_check.sh
