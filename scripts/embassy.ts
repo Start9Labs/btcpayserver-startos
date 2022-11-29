@@ -1,6 +1,6 @@
 import { compat } from "./deps.ts";
-export { setConfig } from "./services/setConfig.ts";
-export { dependencies } from "./services/dependencies.ts";
+export { setConfig } from "./procedures/setConfig.ts";
+export { dependencies } from "./procedures/dependencies.ts";
 export const properties = compat.properties;
-export { getConfig } from "./services/getConfig.ts";
-export { migration } from "./services/migrations.ts";
+export { getConfig } from "./procedures/getConfig.ts";
+export { migration } from "./procedures/migrations.ts";
