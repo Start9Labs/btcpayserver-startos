@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.6.12.2
+version: 1.6.12.1
 release-notes: Update to run on x86_64 architecture
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
