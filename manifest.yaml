@@ -74,7 +74,7 @@ dependencies:
       auto-configure:
         type: script
   bitcoind:
-    version: ">=0.21.1.2 <24.0.0"
+    version: ">=0.21.1.2 <26.0.0"
     requirement:
       type: "opt-in"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node for P2P connections. RPC connections require using the internal full archival Bitcoin Core node, or Bitcoin Proxy and a pruned Bitcoin Core node.
