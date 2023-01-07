@@ -1,7 +1,7 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.6.12.1
-release-notes: Update to run on x86_64 architecture
+version: 1.6.12.2
+release-notes: Fix LAN configuration for proper https redirects
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -138,6 +138,9 @@ interfaces:
     lan-config:
       443:
         ssl: true
+        internal: 23000
+      80:
+        ssl: false
         internal: 23000
     ui: true
     protocols:
