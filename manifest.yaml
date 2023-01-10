@@ -136,7 +136,7 @@ interfaces:
     description: User interface for interacting with BTCPay Server in a browser.
     tor-config:
       port-mapping:
-        80: "80"
+        80: "23000"
     lan-config:
       443:
         ssl: true
