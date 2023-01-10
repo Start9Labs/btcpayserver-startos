@@ -1,7 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.6.12.2
-release-notes: Fix LAN configuration for proper https redirects
+version: 1.7.3
+release-notes: |
+  * Fix LAN configuration for proper https redirects
+  * Update upstream to v1.7.3, [release notes](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.3)
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -134,14 +136,11 @@ interfaces:
     description: User interface for interacting with BTCPay Server in a browser.
     tor-config:
       port-mapping:
-        80: "23000"
+        80: "80"
     lan-config:
       443:
         ssl: true
-        internal: 23000
-      80:
-        ssl: false
-        internal: 23000
+        internal: 80
     ui: true
     protocols:
       - tcp

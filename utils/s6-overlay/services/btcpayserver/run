@@ -44,5 +44,7 @@ fi
 configurator > .env 
 source .env
 
+/etc/init.d/nginx restart
+
 # start btcpayserver, copying stderr onto stdout
 exec dotnet /app/BTCPayServer.dll 2>&1
