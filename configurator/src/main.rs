@@ -153,6 +153,8 @@ fn main() -> Result<(), anyhow::Error> {
     match addr.first() {
         Some(x) => {
             print!("{}", format!("export BTCPAY_HOST='https://{}.local/'\n", x));
+            print!("{}", format!("export REVERSEPROXY_DEFAULT_HOST='http://{}.local/'\n", x));
+            print!("{}", format!("export BTCPAY_ADDITIONAL_HOSTS='https://{}.local/,http://{}.local/'\n", x, x));
         }
         None => {}
     }

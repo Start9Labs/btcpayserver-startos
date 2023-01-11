@@ -28,7 +28,7 @@ export const getConfig = compat.getConfig({
           },
           "description": "<p>The Bitcoin Core node to connect to:</p><ul><li><strong>Bitcoin Core</strong>: A full archival version of the Bitcoin Core service installed on your Embassy</li><li><strong>Bitcoin Proxy</strong>: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on your Embassy</li></ul>"
         },
-        "default": "internal-proxy",
+        "default": "internal",
         "variants": {
           "internal": {
             "rpc-user": {

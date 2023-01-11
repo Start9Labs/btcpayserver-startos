@@ -1,4 +1,4 @@
-FROM nicolasdorier/nbxplorer:2.3.40 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.3.54 as nbx-builder
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
@@ -7,7 +7,7 @@ RUN dotnet restore "utils/actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.6.12
+FROM btcpayserver/btcpayserver:1.7.3
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -19,7 +19,7 @@ ARG ARCH
 
 # install package dependencies
 RUN apt-get update && \
-  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils 
+  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils nginx vim
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
 
@@ -50,6 +50,10 @@ RUN touch btcpay.log
 ENV BTCPAY_DEBUGLOG=btcpay.log
 ENV BTCPAY_ENABLE_SSH=false
 ENV LC_ALL=C
+ENV BTCPAY_PROTOCOL=https
+ENV REVERSEPROXY_HTTP_PORT=80
+ENV REVERSEPROXY_HTTPS_PORT=443
+ENV REVERSEPROXY_DEFAULT_HOST=none
 
 # postgres setup
 RUN groupadd -r postgres --gid=999; \
@@ -70,6 +74,7 @@ EXPOSE 23000 80
 ADD ./configurator/target/${ARCH}-unknown-linux-musl/release/configurator /usr/local/bin/configurator
 COPY utils/scripts/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
 COPY utils/scripts/health_check.sh /usr/local/bin/health_check.sh
+COPY utils/nginx.conf /etc/nginx/sites-available/default
 COPY utils/scripts/postgres-init.sh /etc/s6-overlay/script/postgres-init
 COPY utils/scripts/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
 COPY utils/scripts/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
