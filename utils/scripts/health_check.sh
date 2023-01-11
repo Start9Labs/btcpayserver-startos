@@ -27,7 +27,7 @@ check_synched(){
 
 check_api(){
   DURATION=$(</dev/stdin)
-  if (($DURATION <= 10000 )); then 
+  if (($DURATION <= 15000 )); then 
     exit 60
   else
     if ! curl --silent --show-error --fail http://btcpayserver.embassy:23000/api/v1/health &>/dev/null; then
@@ -39,7 +39,7 @@ check_api(){
 
 check_web(){
   DURATION=$(</dev/stdin)
-  if (($DURATION <= 10000 )); then 
+  if (($DURATION <= 15000 )); then 
     exit 60
   else
     if ! curl --silent --fail btcpayserver.embassy:23000 &>/dev/null; then
