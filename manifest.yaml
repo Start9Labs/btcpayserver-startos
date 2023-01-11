@@ -3,7 +3,7 @@ title: BTCPay Server
 version: 1.7.3
 release-notes: |
   * Fix LAN configuration for proper https redirects
-  * Update upstream to v1.7.3, [release notes](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.3)
+  * Update upstream to [v1.7.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.3)
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -67,7 +67,7 @@ dependencies:
   btc-rpc-proxy:
     version: ">=0.3.2.1 <0.4.0"
     requirement:
-      type: "opt-out"
+      type: "opt-in"
       how: Can alternatively use the internal Bitcoin Core if it is unpruned (ie. is a full archival node).
     description: Used for creating a permissioned RPC user and to fetch validated blocks on demand.
     config:
@@ -78,7 +78,7 @@ dependencies:
   bitcoind:
     version: ">=0.21.1.2 <26.0.0"
     requirement:
-      type: "opt-in"
+      type: "opt-out"
       how: Internal node is recommended, but you can alternatively configure an external bitcoin node for P2P connections. RPC connections require using the internal full archival Bitcoin Core node, or Bitcoin Proxy and a pruned Bitcoin Core node.
     description: Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.
     config:
