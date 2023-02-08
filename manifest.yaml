@@ -150,33 +150,9 @@ interfaces:
       - http
 backup:
   create:
-    type: docker
-    image: compat
-    system: true
-    entrypoint: compat
-    args:
-      - duplicity
-      - create
-      - /mnt/backup
-      - /datadir
-    mounts:
-      BACKUP: /mnt/backup
-      main: /datadir
-    io-format: yaml
+    type: script
   restore:
-    type: docker
-    image: compat
-    system: true
-    entrypoint: compat
-    args:
-      - duplicity
-      - restore
-      - /mnt/backup
-      - /datadir
-    mounts:
-      BACKUP: /mnt/backup
-      main: /datadir
-    io-format: yaml
+    type: script
 actions:
   enable-registrations:
     name: Enable Registrations

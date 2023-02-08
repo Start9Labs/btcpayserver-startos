@@ -1,7 +1,6 @@
 use std::io::Write;
 use std::{
     fs::{self, File},
-    path::Path,
 };
 
 use anyhow::Context;
@@ -17,22 +16,6 @@ fn deserialize_parse<'de, D: Deserializer<'de>, T: std::str::FromStr>(
     let s: String = Deserialize::deserialize(deserializer)?;
     s.parse()
         .map_err(|_| DeserializeError::invalid_value(Unexpected::Str(&s), &"a valid URI"))
-}
-
-fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), anyhow::Error> {
-    let auth = url
-        .authority()
-        .ok_or_else(|| anyhow::anyhow!("invalid Quick Connect URL"))?;
-    let mut auth_split = auth.as_str().split(|c| c == ':' || c == '@');
-    let user = auth_split
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("missing user"))?;
-    let pass = auth_split
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("missing pass"))?;
-    let host = url.host().unwrap();
-    let port = url.port_u16().unwrap_or(8332);
-    Ok((user.to_owned(), pass.to_owned(), host.to_owned(), port))
 }
 
 #[derive(serde::Deserialize)]
@@ -172,13 +155,6 @@ fn main() -> Result<(), anyhow::Error> {
         }
         LightningConfig::None => {}
     }
-
-    // write backup ignore to the root of the mounted volume
-    std::fs::write(
-        Path::new("/datadir/.backupignore.tmp"),
-        include_str!("./templates/.backupignore.template"),
-    )?;
-    std::fs::rename("/datadir/.backupignore.tmp", "/datadir/.backupignore")?;
 
     Ok(())
 }
