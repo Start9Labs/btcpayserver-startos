@@ -22,11 +22,7 @@ export const getConfig = compat.getConfig({
         "tag": {
           "id": "type",
           "name": "Bitcoin Core RPC",
-<<<<<<< HEAD
           "description": "<p>The Bitcoin Core node to connect to over the RPC interface:</p><ul><li><strong>Bitcoin Core</strong>: A full archival version of the Bitcoin Core service installed on this device</li><li><strong>Bitcoin Proxy</strong>: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on this device</li></ul>",
-=======
-          "description": "<p>The Bitcoin Core node to connect to over the RPC interface:</p><ul><li><strong>Bitcoin Core</strong>: A full archival version of the Bitcoin Core service installed on your Embassy</li><li><strong>Bitcoin Proxy</strong>: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on your Embassy</li></ul>",
->>>>>>> adjust config union types
           "variant-names": {
             "internal": "Bitcoin Core",
             "internal-proxy": "Bitcoin Proxy"
@@ -82,6 +78,8 @@ export const getConfig = compat.getConfig({
       },
       "bitcoind-p2p": {
         "type": "union",
+        "name": "Bitcoin Core P2P",
+        "description": "The Bitcoin Core node to connect to over the peer-to-peer interface",
         "tag": {
           "id": "type",
           "name": "Bitcoin Core P2P",
