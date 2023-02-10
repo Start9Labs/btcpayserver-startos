@@ -22,7 +22,7 @@ export const getConfig = compat.getConfig({
         "tag": {
           "id": "type",
           "name": "Bitcoin Core RPC",
-          "description": "<p>The Bitcoin Core node to connect to over the RPC interface:</p><ul><li><strong>Bitcoin Core</strong>: A full archival version of the Bitcoin Core service installed on your Embassy</li><li><strong>Bitcoin Proxy</strong>: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on your Embassy</li></ul>",
+          "description": "<p>The Bitcoin Core node to connect to over the RPC interface:</p><ul><li><strong>Bitcoin Core</strong>: A full archival version of the Bitcoin Core service installed on this device</li><li><strong>Bitcoin Proxy</strong>: A pruned version of Bitcoin Core and the Bitcoin Proxy service installed on this device</li></ul>",
           "variant-names": {
             "internal": "Bitcoin Core",
             "internal-proxy": "Bitcoin Proxy"
@@ -78,10 +78,12 @@ export const getConfig = compat.getConfig({
       },
       "bitcoind-p2p": {
         "type": "union",
+        "name": "Bitcoin Core P2P",
+        "description": "The Bitcoin Core node to connect to over the peer-to-peer interface",
         "tag": {
           "id": "type",
           "name": "Bitcoin Core P2P",
-          "description": "<p>The Bitcoin Core node to connect to over the peer-to-peer (P2P) interface:</p><ul><li><strong>Bitcoin Core</strong>: The Bitcoin Core service installed on your Embassy</li><li><strong>External Node</strong>: A Bitcoin node running on a different device</li></ul>",
+          "description": "<p>The Bitcoin Core node to connect to over the peer-to-peer (P2P) interface:</p><ul><li><strong>Bitcoin Core</strong>: The Bitcoin Core service installed on this device</li><li><strong>External Node</strong>: A Bitcoin node running on a different device</li></ul>",
           "variant-names": {
             "internal": "Bitcoin Core",
             "external": "External Node"
@@ -125,6 +127,8 @@ export const getConfig = compat.getConfig({
         "lnd": "LND"
       }
     },
+    "name": "Lightning Node",
+    "description": "Use this setting to grant BTCPay access to your internal LND or Core Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, leave this setting blank. Please see the \"Instructions\" page for more details.",
     "default": "none",
     "variants": {
       "none": {},
