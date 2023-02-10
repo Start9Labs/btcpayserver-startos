@@ -1,9 +1,12 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.7.3
+version: 1.7.7
 release-notes: |
-  * Fix LAN configuration for proper https redirects
-  * Update upstream to [v1.7.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.3)
+  * Includes upstream releases for: 
+    - [v1.7.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.4), which recommends updating plugins. 
+    - [v1.7.5](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.5), which includes several bugfixes.
+    - [v1.7.6](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.6), which includes two vulnerability fixes. 
+    - [v1.7.7](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.7), which includes several bugfixes for the prior release.
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -94,7 +97,7 @@ dependencies:
     description: Used to communicate with the Lightning Network.
     config: ~
   c-lightning:
-    version: ">=0.10.0.1 <0.13.0"
+    version: ">=0.10.0.1 <23.0"
     requirement:
       type: "opt-in"
       how: Optionally use Core Lightning for internal lightning network node implementation.
