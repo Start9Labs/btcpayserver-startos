@@ -29,6 +29,6 @@ export const migration: T.ExpectedExports.migration = async (effects, version, .
         },
         // 1.4.7.3: no migration needed - note: JS config/properties conversion occurred
       },
-      "1.7.7",
+      "1.7.9",
     )(effects, version, ...args)
 }

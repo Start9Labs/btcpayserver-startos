@@ -7,7 +7,7 @@ RUN dotnet restore "utils/actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.7.7
+FROM btcpayserver/btcpayserver:1.7.9
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -67,6 +67,7 @@ ENV POSTGRES_HOST_AUTH_METHOD=trust
 ENV NBXPLORER_AUTOMIGRATE=1
 ENV NBXPLORER_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer"
 ENV BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer"
+ENV BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver"
 
 EXPOSE 23000 80
 

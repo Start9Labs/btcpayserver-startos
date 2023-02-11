@@ -1,12 +1,11 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.7.7
+version: 1.7.9
 release-notes: |
   * Includes upstream releases for: 
-    - [v1.7.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.4), which recommends updating plugins. 
-    - [v1.7.5](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.5), which includes several bugfixes.
-    - [v1.7.6](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.6), which includes two vulnerability fixes. 
-    - [v1.7.7](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.7), which includes several bugfixes for the prior release.
+    - [v1.7.8](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.8), which includes migration to postgres database. 
+    - [v1.7.9](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.9), which includes several bugfixes.
+  * Migrates database to postgres since sqlite is no longer supported - migration does not include plugin data.
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
