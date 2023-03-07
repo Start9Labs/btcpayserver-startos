@@ -1,4 +1,4 @@
-FROM nicolasdorier/nbxplorer:2.3.60 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.3.62 as nbx-builder
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
@@ -7,7 +7,7 @@ RUN dotnet restore "utils/actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.7.11
+FROM btcpayserver/btcpayserver:1.8.1
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
