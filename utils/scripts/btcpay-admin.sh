@@ -18,7 +18,7 @@ create_password() {
     ADMIN=( ${ADMIN_USERS[0]} ); echo ${ADMIN[1]}  
     PW=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | fold -w ${1:-10} | head -n 1)
     HASH=$(dotnet /actions/actions.dll "$PW")
-    query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'"
+    query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'" &>/dev/null
     RESULT="    {
       \"version\": \"0\",
       \"message\": \"This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in. Your new temporary password is:\",
