@@ -3,7 +3,7 @@
 set -ea
 
 query() {
-  sqlite3 /datadir/btcpayserver/sqlite.db "$*"
+  psql -U postgres -h localhost -d btcpayserver -t -c "$*"
 }
 
 create_password() {
@@ -41,11 +41,11 @@ set-user-admin)
     query "INSERT INTO \"AspNetUserRoles\" Values ( (SELECT \"Id\" FROM \"AspNetUsers\" WHERE upper('$2') = \"NormalizedEmail\"), (SELECT \"Id\" FROM \"AspNetRoles\" WHERE \"NormalizedName\"='SERVERADMIN'))"
     ;;
   enable-registrations)
-    query "SELECT Value from \"settings\" WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" | jq > res.json
+    query "SELECT \"Value\" from \"Settings\" WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" | jq > res.json
     tmp=$(mktemp)
     jq '.LockSubscription = false' res.json > "$tmp" && mv "$tmp" res.json
     TO_SET=$(cat res.json)
-    if ! query "UPDATE \"settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null
+    if ! query "UPDATE \"Settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null
     then
       RESULT="    {
         \"version\": \"0\",
