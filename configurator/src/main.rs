@@ -154,7 +154,8 @@ fn main() -> Result<(), anyhow::Error> {
         Some(x) => {
             print!("{}", format!("export BTCPAY_HOST='https://{}.local/'\n", x));
             print!("{}", format!("export REVERSEPROXY_DEFAULT_HOST='http://{}.local/'\n", x));
-            print!("{}", format!("export BTCPAY_ADDITIONAL_HOSTS='https://{}.local/,http://{}.local/'\n", x, x));
+            print!("{}", format!("export BTCPAY_ADDITIONAL_HOSTS='https://{}.local/,http://{}.local/,http://{}.onion/'\n", x, x, x));
+            print!("{}", "export BTCPAY_SOCKSENDPOINT='embassy:9050'\n");
         }
         None => {}
     }
