@@ -1,12 +1,18 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.7.7
+version: 1.8.3
 release-notes: |
   * Includes upstream releases for: 
-    - [v1.7.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.4), which recommends updating plugins. 
-    - [v1.7.5](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.5), which includes several bugfixes.
-    - [v1.7.6](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.6), which includes two vulnerability fixes. 
-    - [v1.7.7](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.7), which includes several bugfixes for the prior release.
+    - [v1.7.8](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.8) - includes migration to postgres database
+    - [v1.7.9](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.9) - several bugfixes
+    - [v1.7.10](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.10 - migration fix for restarts
+    - [v1.7.11](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.11) - misc fixes
+    - [v1.7.12](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.12) - misc bugfixes
+    - [v1.8.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.0) - major store updates and other UI improvements
+    - [v1.8.1](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.1) - misc bugfixes
+    - [v1.8.2](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.2) - database migration bugfix
+    - [v1.8.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.3) - security bugfix
+  * Migrates database to postgres since sqlite is no longer supported - migration does not include plugin data
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"

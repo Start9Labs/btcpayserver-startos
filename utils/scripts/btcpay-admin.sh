@@ -3,7 +3,7 @@
 set -ea
 
 query() {
-  sqlite3 /datadir/btcpayserver/sqlite.db "$*"
+  psql -U postgres -h localhost -d btcpayserver -t -c "$*"
 }
 
 create_password() {
@@ -18,7 +18,7 @@ create_password() {
     ADMIN=( ${ADMIN_USERS[0]} ); echo ${ADMIN[1]}  
     PW=$(LC_ALL=C tr -dc A-Za-z0-9 < /dev/urandom | fold -w ${1:-10} | head -n 1)
     HASH=$(dotnet /actions/actions.dll "$PW")
-    query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'"
+    query "UPDATE \"AspNetUsers\" SET \"PasswordHash\"='$HASH' WHERE \"Id\"='$ADMIN'" &>/dev/null
     RESULT="    {
       \"version\": \"0\",
       \"message\": \"This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in. Your new temporary password is:\",
@@ -41,11 +41,11 @@ set-user-admin)
     query "INSERT INTO \"AspNetUserRoles\" Values ( (SELECT \"Id\" FROM \"AspNetUsers\" WHERE upper('$2') = \"NormalizedEmail\"), (SELECT \"Id\" FROM \"AspNetRoles\" WHERE \"NormalizedName\"='SERVERADMIN'))"
     ;;
   enable-registrations)
-    query "SELECT Value from \"settings\" WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" | jq > res.json
+    query "SELECT \"Value\" from \"Settings\" WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" | jq > res.json
     tmp=$(mktemp)
     jq '.LockSubscription = false' res.json > "$tmp" && mv "$tmp" res.json
     TO_SET=$(cat res.json)
-    if ! query "UPDATE \"settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null
+    if ! query "UPDATE \"Settings\" SET \"Value\"='$TO_SET' WHERE \"Id\"='BTCPayServer.Services.PoliciesSettings'" &>/dev/null
     then
       RESULT="    {
         \"version\": \"0\",
@@ -58,7 +58,7 @@ set-user-admin)
     else 
       RESULT="    {
         \"version\": \"0\",
-        \"message\": \"Registrations are now enabled.\",
+        \"message\": \"Registrations are now enabled. The service will automatically restart.\",
         \"value\": null,
         \"copyable\": false,
         \"qr\": false
