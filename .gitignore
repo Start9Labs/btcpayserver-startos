@@ -8,5 +8,4 @@ instructions.md
 scripts/embassy.js
 .DS_Store
 docker-images
-LICENSE
 utils/actions/obj
