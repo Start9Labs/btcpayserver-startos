@@ -19,8 +19,8 @@ ARG ARCH
 
 # install package dependencies
 RUN apt-get update && \
-  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils nginx vim
-RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
+  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils nginx vim && \
+  wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
 
 # install S6 overlay for proces mgmt
@@ -28,48 +28,47 @@ RUN wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLA
 ARG S6_OVERLAY_VERSION=3.1.2.1
 #  needed to run s6-overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
-RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
 # extract the necessary binaries from the s6 ecosystem
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}.tar.xz /tmp
-RUN tar -C / -Jxpf /tmp/s6-overlay-${ARCH}.tar.xz
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-symlinks-arch.tar.xz /tmp
-RUN tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
+  tar -C / -Jxpf /tmp/s6-overlay-${ARCH}.tar.xz && \
+  tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz
 
 # Adding services to the S6 overlay expected locations
 COPY utils/s6-overlay/services /etc/s6-overlay/s6-rc.d
 COPY utils/s6-overlay/contents.d/ /etc/s6-overlay/s6-rc.d/user/contents.d/
 
 # various env setup
-ENV S6_BEHAVIOUR_IF_STAGE2_FAILS 2
-ENV S6_CMD_WAIT_FOR_SERVICES_MAXTIME 0
-RUN locale-gen en_US.UTF-8
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-ENV BTCPAY_DATADIR=/datadir/btcpayserver
-ENV NBXPLORER_DATADIR=/datadir/nbxplorer
-RUN touch btcpay.log
-ENV BTCPAY_DEBUGLOG=btcpay.log
-ENV BTCPAY_ENABLE_SSH=false
-ENV LC_ALL=C
-ENV BTCPAY_PROTOCOL=https
-ENV REVERSEPROXY_HTTP_PORT=80
-ENV REVERSEPROXY_HTTPS_PORT=443
-ENV REVERSEPROXY_DEFAULT_HOST=none
+RUN locale-gen en_US.UTF-8 && touch btcpay.log
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \ 
+  S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
+  DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+  BTCPAY_DATADIR=/datadir/btcpayserver \
+  NBXPLORER_DATADIR=/datadir/nbxplorer \
+  BTCPAY_DEBUGLOG=btcpay.log \
+  BTCPAY_ENABLE_SSH=false \
+  LC_ALL=C \
+  BTCPAY_PROTOCOL=https \
+  REVERSEPROXY_HTTP_PORT=80 \
+  REVERSEPROXY_HTTPS_PORT=443 \
+  REVERSEPROXY_DEFAULT_HOST=none
 
 # postgres setup
 RUN groupadd -r postgres --gid=999; \
   useradd -r -g postgres --gid=999 --home-dir=/var/lib/postgresql --shell=/bin/bash postgres; \
   mkdir -p /var/lib/postgresql; \
-  chown -R postgres:postgres /var/lib/postgresql
-RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 2777 /var/run/postgresql
+  chown -R postgres:postgres /var/lib/postgresql; \
+  mkdir -p /var/run/postgresql; \
+  chown -R postgres:postgres /var/run/postgresql; \
+  chmod 2777 /var/run/postgresql;
 
 # project specific postgres env vars
-ENV POSTGRES_HOST_AUTH_METHOD=trust
-ENV NBXPLORER_AUTOMIGRATE=1
-ENV NBXPLORER_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer"
-ENV BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer"
-ENV BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver"
-
-EXPOSE 23000 80
+ENV POSTGRES_HOST_AUTH_METHOD=trust \
+  NBXPLORER_AUTOMIGRATE=1 \
+  NBXPLORER_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
+  BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
+  BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver"
 
 # start9 specific steps
 ADD ./configurator/target/${ARCH}-unknown-linux-musl/release/configurator /usr/local/bin/configurator
