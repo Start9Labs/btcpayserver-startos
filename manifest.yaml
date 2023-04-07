@@ -2,7 +2,7 @@ id: btcpayserver
 title: BTCPay Server
 version: 1.8.4.1
 release-notes: |
-  * Bumps version for LND
+  * Bumps version for LND and CLN
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
