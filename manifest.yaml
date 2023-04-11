@@ -1,19 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.8.4
+version: 1.8.4.1
 release-notes: |
-  * Includes upstream releases for: 
-    - [v1.7.8](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.8) - includes migration to postgres database
-    - [v1.7.9](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.9) - several bugfixes
-    - [v1.7.10](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.10) - migration fix for restarts
-    - [v1.7.11](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.11) - misc fixes
-    - [v1.7.12](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.7.12) - misc bugfixes
-    - [v1.8.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.0) - major store updates and other UI improvements
-    - [v1.8.1](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.1) - misc bugfixes
-    - [v1.8.2](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.2) - database migration bugfix
-    - [v1.8.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.3) - security bugfix
-    - [v1.8.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.8.4) - several bugfixes
-  * Migrates database to postgres since sqlite is no longer supported - migration does not include plugin data
+  * Bumps version for LND and CLN
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -97,14 +86,14 @@ dependencies:
       auto-configure:
         type: script
   lnd:
-    version: ">=0.13.3.1 <0.16.0"
+    version: ">=0.13.3.1 <0.17.0"
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
   c-lightning:
-    version: ">=0.10.0.1 <23.0"
+    version: ">=0.10.0.1 <24.0"
     requirement:
       type: "opt-in"
       how: Optionally use Core Lightning for internal lightning network node implementation.
