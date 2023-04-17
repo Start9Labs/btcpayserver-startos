@@ -1,8 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.9.0
+version: 1.9.1
 release-notes: |
-  * Updates to upstream release of [v1.9.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.9.0)
+  * Updates to upstream release of [v1.9.1](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.9.1) which includes the minor release of [v1.9.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.9.0)
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
