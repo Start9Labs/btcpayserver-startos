@@ -1,11 +1,10 @@
 *.s9pk
-image.tar
 configurator/target
 actions/obj
 actions/bin
-instructions.md
 .vscode/*
-scripts/embassy.js
 .DS_Store
 docker-images
 utils/actions/obj
+procedures/*.js
+node_modules/

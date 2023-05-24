@@ -1,4 +1,4 @@
-import { types as T, matches } from "../deps.ts"
+import { types as T, matches } from "../../scripts/deps.js"
 
 const { shape, string, any } = matches
 

@@ -1,4 +1,4 @@
-import { compat } from "../deps.ts";
+import { compat } from "../../scripts/deps.js";
 
 export const getConfig = compat.getConfig({
   "tor-address": {
