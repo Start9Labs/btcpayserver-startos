@@ -1,5 +1,4 @@
 import { sdk } from '../../sdk'
-import { getSecretPhrase } from '../../utils'
 import { setInterfaces } from '../interfaces'
 import { yamlFile } from './file-models/nbx-settings.config'
 import { configSpec } from './spec'

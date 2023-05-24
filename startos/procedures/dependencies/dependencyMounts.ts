@@ -5,14 +5,14 @@ import { manifest as clnManifest } from 'c-lightning/startos/manifest'
 export const dependencyMounts = sdk
   .setupDependencyMounts()
   .addPath({
-    name: 'dataDir',
+    name: 'public',
     manifest: lndManifest,
     volume: 'main',
     path: '/public',
     readonly: true,
   })
   .addPath({
-    name: 'dataDir',
+    name: 'shared',
     manifest: clnManifest,
     volume: 'main',
     path: '/shared',

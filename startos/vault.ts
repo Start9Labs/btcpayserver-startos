@@ -1,1 +1,3 @@
-export interface Vault extends Record<string, string> {}
+export type Vault = {
+  btcRpcPassword: string
+}
