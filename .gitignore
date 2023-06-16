@@ -9,3 +9,4 @@ scripts/embassy.js
 .DS_Store
 docker-images
 utils/actions/obj
+node_modules
