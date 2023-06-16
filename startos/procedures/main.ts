@@ -159,7 +159,7 @@ const nbxHealthCheck = (res: NbxStatusRes): CheckResult => {
 
   if (isFullySynched) {
     return {
-      // @TODO starting/loading status
+      // @TODO loading status
       status: 'passing',
       message: 'Synced to the tip of the Bitcoin blockchain',
     }
@@ -177,7 +177,7 @@ const nbxHealthCheck = (res: NbxStatusRes): CheckResult => {
     }
   } else {
     return {
-      // @TODO should be starting
+      // @TODO should be loading
       status: 'passing',
     }
   }
