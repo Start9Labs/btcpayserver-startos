@@ -78,8 +78,6 @@ export const getConfig = compat.getConfig({
       },
       "bitcoind-p2p": {
         "type": "union",
-        "name": "Bitcoin Core P2P",
-        "description": "The Bitcoin Core node to connect to over the peer-to-peer interface",
         "tag": {
           "id": "type",
           "name": "Bitcoin Core P2P",
