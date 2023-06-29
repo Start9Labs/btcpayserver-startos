@@ -5,7 +5,6 @@ use std::{
 };
 
 use anyhow::Context;
-use http::Uri;
 use serde::{
     de::{Deserializer, Error as DeserializeError, Unexpected},
     Deserialize,
@@ -19,28 +18,13 @@ fn deserialize_parse<'de, D: Deserializer<'de>, T: std::str::FromStr>(
         .map_err(|_| DeserializeError::invalid_value(Unexpected::Str(&s), &"a valid URI"))
 }
 
-fn parse_quick_connect_url(url: Uri) -> Result<(String, String, String, u16), anyhow::Error> {
-    let auth = url
-        .authority()
-        .ok_or_else(|| anyhow::anyhow!("invalid Quick Connect URL"))?;
-    let mut auth_split = auth.as_str().split(|c| c == ':' || c == '@');
-    let user = auth_split
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("missing user"))?;
-    let pass = auth_split
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("missing pass"))?;
-    let host = url.host().unwrap();
-    let port = url.port_u16().unwrap_or(8332);
-    Ok((user.to_owned(), pass.to_owned(), host.to_owned(), port))
-}
-
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
 struct Config {
     tor_address: String,
-    bitcoin: BitcoindConfig,
     lightning: LightningConfig,
+    bitcoin_rpc_user: String,
+    bitcoin_rpc_password: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -53,41 +37,6 @@ enum LightningConfig {
     Lnd,
     #[serde(rename_all = "kebab-case")]
     CLightning,
-}
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "kebab-case")]
-struct BitcoindConfig {
-    bitcoind_rpc: BitcoindRPCConfig,
-    bitcoind_p2p: BitcoindP2PConfig,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(tag = "type")]
-#[serde(rename_all = "kebab-case")]
-enum BitcoindRPCConfig {
-    #[serde(rename_all = "kebab-case")]
-    Internal {
-        rpc_user: String,
-        rpc_password: String,
-    },
-    #[serde(rename_all = "kebab-case")]
-    InternalProxy {
-        rpc_user: String,
-        rpc_password: String,
-    },
-}
-#[derive(serde::Deserialize)]
-#[serde(tag = "type")]
-#[serde(rename_all = "kebab-case")]
-enum BitcoindP2PConfig {
-    #[serde(rename_all = "kebab-case")]
-    Internal {},
-    #[serde(rename_all = "kebab-case")]
-    External {
-        #[serde(deserialize_with = "deserialize_parse")]
-        p2p_host: Uri,
-        p2p_port: u16,
-    },
 }
 #[derive(serde::Serialize)]
 pub struct Property<T> {
@@ -111,38 +60,17 @@ fn main() -> Result<(), anyhow::Error> {
         .with_context(|| "/datadir/nbxplorer/mainnet/settings.config")?;
     let mut btcpay_config = File::create("/datadir/btcpayserver/Main/settings.config")
         .with_context(|| "/datadir/btcpayserver/btcpay.config")?;
-    let (bitcoind_rpc_user, bitcoind_rpc_pass, bitcoind_rpc_host, bitcoind_rpc_port) =
-        match config.bitcoin.bitcoind_rpc {
-            BitcoindRPCConfig::Internal {
-                rpc_user,
-                rpc_password,
-            } => (rpc_user, rpc_password, "bitcoind.embassy".to_string(), 8332),
-            BitcoindRPCConfig::InternalProxy {
-                rpc_user,
-                rpc_password,
-            } => (
-                rpc_user,
-                rpc_password,
-                "btc-rpc-proxy.embassy".to_string(),
-                8332,
-            ),
-        };
-    let (bitcoind_p2p_host, bitcoind_p2p_port) = match config.bitcoin.bitcoind_p2p {
-        BitcoindP2PConfig::Internal {} => ("bitcoind.embassy".to_string(), 8333),
-        BitcoindP2PConfig::External { p2p_host, p2p_port } => {
-            (format!("{}", p2p_host.host().unwrap()), p2p_port)
-        }
-    };
+    let bitcoin_host = "bitcoind.embassy".to_string();
 
     write!(
         nbx_config,
         include_str!("templates/settings-nbx.config.template"),
-        btc_rpc_proxy_rpc_host = bitcoind_rpc_host,
-        btc_rpc_proxy_port = bitcoind_rpc_port,
-        btc_rpc_proxy_rpc_password = bitcoind_rpc_pass,
-        btc_rpc_proxy_rpc_user = bitcoind_rpc_user,
-        btc_p2p_host = bitcoind_p2p_host,
-        btc_p2p_port = bitcoind_p2p_port,
+        rpc_host = bitcoin_host,
+        rpc_port = 8332,
+        rpc_password = config.bitcoin_rpc_password,
+        rpc_user = config.bitcoin_rpc_user,
+        p2p_host= bitcoin_host,
+        p2p_port = 8333
     )?;
     write!(
         btcpay_config,

@@ -1,6 +1,7 @@
 import { types as T, compat } from "../deps.ts"
 import { migration_up_1_4_7 } from "../migrations/1_4_7_up_migration.ts";
 import { migration_down_1_4_7 } from "../migrations/1_4_7_down_migration.ts";
+import { migration_up_1_10_3 } from "../migrations/1_10_3_up_migration.ts";
 
 export const migration: T.ExpectedExports.migration = async (effects, version, ...args) => {
   await effects.createDir({
@@ -28,7 +29,25 @@ export const migration: T.ExpectedExports.migration = async (effects, version, .
           ),
         },
         // 1.4.7.3: no migration needed - note: JS config/properties conversion occurred
+        "1.10.2": {
+          up: compat.migrations.updateConfig(
+            (config) => {
+              return migration_up_1_10_3(config)
+            },
+            false,
+            { version: "1.10.2", type: "up"}
+          ),
+          down: compat.migrations.updateConfig(
+            (_config) => {
+              throw new Error(
+                "Cannot downgrade this version"
+              )
+            },
+            true,
+            { version: "1.10.2", type: "down" },
+          ),
+        },
       },
-      "1.10.2",
+      "1.10.3",
     )(effects, version, ...args)
 }

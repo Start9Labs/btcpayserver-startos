@@ -6,17 +6,13 @@ mainnet=1
 ####Common Commands####
 ####All those options can be passed by through command like arguments (ie `-port=19382`)####
 ## This is the RPC Connection to your node
-btc.rpc.url=http://{btc_rpc_proxy_rpc_host}:{btc_rpc_proxy_port}/
+btc.rpc.url=http://{rpc_host}:{rpc_port}/
 #By user name and password
-btc.rpc.user={btc_rpc_proxy_rpc_user}
-btc.rpc.password={btc_rpc_proxy_rpc_password}
-#By cookie file
-#btc.rpc.cookiefile=yourbitcoinfolder/.cookie
-#By raw authentication string
-#btc.rpc.auth=walletuser:password
+btc.rpc.user={rpc_user}
+btc.rpc.password={rpc_password}
 
 ## This is the connection to your node through P2P
-btc.node.endpoint={btc_p2p_host}:{btc_p2p_port}
+btc.node.endpoint={p2p_host}:{p2p_port}
 
 ## minutxovalue defines the minimum value allowed for a utxo to be tracked
 #btc.minutxovalue=1

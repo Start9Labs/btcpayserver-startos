@@ -10,3 +10,4 @@ scripts/embassy.js
 docker-images
 utils/actions/obj
 node_modules
+notes.md
