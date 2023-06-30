@@ -34,8 +34,8 @@ export const getConfig = compat.getConfig({
     "type": "union",
     "tag": {
       "id": "type",
-      "name": "Internal Lightning Node",
-      "description": "Use this setting to grant access to the selected internal Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, leave this setting blank. Please see the \"Instructions\" page for more details.",
+      "name": "Lightning Node",
+      "description": "Use this setting to grant access to the selected lightning node running on your server. If you prefer to use an external Lightning node, or you do not intend to use Lightning, leave this setting blank. Please see the \"Instructions\" page for more details.",
       "variant-names": {
         "none": "No selection",
         "c-lightning": "Core Lightning",
