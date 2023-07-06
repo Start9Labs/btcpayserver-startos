@@ -1,9 +1,10 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.10.2
+version: 1.10.3
 release-notes: |
-  * Updates to the upstream release of [v1.10.2](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.10.2)
-  * Includes the minor release of [v1.10.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.10.0) which has some great new features!
+  * Updates to the upstream release of [v1.10.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.10.3)
+  * Removes deprecated optional dependency of BTC RPC Proxy
+  * Uses Bitcoin Core as direct dependency in pruned or full archival mode
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -64,23 +65,11 @@ config:
   set:
     type: script
 dependencies:
-  btc-rpc-proxy:
-    version: ">=0.3.2.1 <0.4.0"
-    requirement:
-      type: "opt-in"
-      how: Can alternatively use the internal Bitcoin Core if it is unpruned (ie. is a full archival node).
-    description: Used for creating a permissioned RPC user and to fetch validated blocks on demand.
-    config:
-      check:
-        type: script
-      auto-configure:
-        type: script
   bitcoind:
-    version: ">=0.21.1.2 <26.0.0"
+    version: ">=0.21.1.2 <27.0.0"
     requirement:
-      type: "opt-out"
-      how: Internal node is recommended, but you can alternatively configure an external bitcoin node for P2P connections. RPC connections require using the internal full archival Bitcoin Core node, or Bitcoin Proxy and a pruned Bitcoin Core node.
-    description: Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.
+      type: "required"
+    description: Used for the RPC and P2P connection interfaces.
     config:
       check:
         type: script
