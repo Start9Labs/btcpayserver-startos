@@ -28,13 +28,13 @@ export const migration: T.ExpectedExports.migration = async (effects, version, .
             { version: "1.4.7.1", type: "down" },
           ),
         },
-        // 1.4.7.3: no migration needed - note: JS config/properties conversion occurred
+        // 1.4.7.3: JS config/properties conversion occurred
         "1.10.2": {
           up: compat.migrations.updateConfig(
             (config) => {
               return migration_up_1_10_3(config)
             },
-            false,
+            true,
             { version: "1.10.2", type: "up"}
           ),
           down: compat.migrations.updateConfig(
