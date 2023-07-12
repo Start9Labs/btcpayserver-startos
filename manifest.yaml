@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.10.3
+version: 1.10.3.1
 release-notes: |
   * Updates to the upstream release of [v1.10.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.10.3)
   * Removes deprecated optional dependency of BTC RPC Proxy

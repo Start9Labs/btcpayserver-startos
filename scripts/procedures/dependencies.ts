@@ -35,6 +35,19 @@ const matchBitcoindConfig = shape({
   }),
 });
 
+const matchOldBitcoindConfig = shape({
+  rpc: shape({
+    advanced: shape({
+      serialversion: matches.any
+    }),
+  }),
+  advanced: shape({
+    pruning: shape({
+      mode: string,
+    }),
+  }),
+})
+
 
 const bitcoindChecks: Array<Check> = [
   {
@@ -69,6 +82,20 @@ const bitcoindChecks: Array<Check> = [
         return
       }
       config.advanced.peers.listen = true;
+    },
+  },
+  {
+    currentError(config) {
+      if (matchOldBitcoindConfig.test(config) && config.advanced.pruning.mode !== "disabled") {
+        return 'Pruning must be disabled to use with <= 24.0.1 of Bitcoin Core. To use with a pruned node, update Bitcoin Core to >= 25.0.0~2.';
+      }
+      return;
+    },
+    fix(config) {
+      if (!matchOldBitcoindConfig.test(config)) {
+        return
+      }
+      config.advanced.pruning.mode = "disabled"
     },
   }
 ];
