@@ -1,6 +1,6 @@
-# Wrapper for btcpayserver
+# BTCPay Server for StartOS
 
-[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free. This repository creates the `s9pk` package that is installed to run `btcpayserver` on [embassyOS](https://github.com/Start9Labs/embassy-os/).
+[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free. This repository creates the `s9pk` package that is installed to run `btcpayserver` on [StartOS](https://github.com/Start9Labs/embassy-os/).
 
 ## Dependencies
 
@@ -32,16 +32,16 @@ After setting up your environment, build the `btcpayserver` package by running:
 make
 ```
 
-## Installing (on embassyOS)
+## Installing (on StartOS)
 
 Run the following commands to install:
 
-> :information_source: Change embassy-server-name.local to your Embassy address
+> :information_source: Change adjective-noun.local to your Start9 Server LAN address
 
 ```
 embassy-cli auth login
-# Enter your embassy password
-embassy-cli --host https://embassy-server-name.local package install btcpayserver.s9pk
+# Enter your server's master password
+embassy-cli --host https://adjective-noun.local package install btcpayserver.s9pk
 ```
 
 If you already have your `embassy-cli` config file setup with a default `host`,
@@ -52,10 +52,10 @@ make install
 ```
 
 > **Tip:** You can also install the btcpayserver.s9pk using **Sideload Service** under
-the **Embassy > Settings** section.
+the **System > Settings** section.
 
 ### Verify Install
 
-Go to your Embassy Services page, select **BTCPay Server**, configure and start the service. Then, verify its interfaces are accessible.
+Go to your Start9 Server Services page, select **BTCPay Server**, configure and start the service. Then, verify its interfaces are accessible.
 
 **Done!** 
