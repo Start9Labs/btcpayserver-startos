@@ -1,10 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.10.3.1
+version: 1.11.4
 release-notes: |
-  * Updates to the upstream release of [v1.10.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.10.3)
-  * Removes deprecated optional dependency of BTC RPC Proxy
-  * Uses Bitcoin Core as direct dependency in pruned or full archival mode
+  * Updates to the upstream release of [v1.11.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.11.4)
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
