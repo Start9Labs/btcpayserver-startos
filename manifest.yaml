@@ -1,8 +1,10 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.11.6
+version: 1.11.7
 release-notes: |
-  * Updates to the upstream release of [v1.11.6](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.11.6)
+  * Updates to the upstream release of [v1.11.7](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.11.7)
+  * Fixes a bug with saving installed plugins on restart
+  * Bumps version bounds for LND
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -74,7 +76,7 @@ dependencies:
       auto-configure:
         type: script
   lnd:
-    version: ">=0.13.3.1 <0.17.0"
+    version: ">=0.13.3.1 <0.18.0"
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
