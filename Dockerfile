@@ -7,7 +7,7 @@ RUN dotnet restore "utils/actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.11.6
+FROM btcpayserver/btcpayserver:1.11.7
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -52,7 +52,9 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
   BTCPAY_PROTOCOL=https \
   REVERSEPROXY_HTTP_PORT=80 \
   REVERSEPROXY_HTTPS_PORT=443 \
-  REVERSEPROXY_DEFAULT_HOST=none
+  REVERSEPROXY_DEFAULT_HOST=none \
+  BTCPAY_DOCKERDEPLOYMENT=false \
+  BTCPAY_PLUGINDIR=/datadir/plugins
 
 # postgres setup
 RUN groupadd -r postgres --gid=999; \
