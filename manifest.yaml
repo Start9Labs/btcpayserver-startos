@@ -1,10 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.11.7
+version: 1.12.3
 release-notes: |
-  * Updates to the upstream release of [v1.11.7](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.11.7)
-  * Fixes a bug with saving installed plugins on restart
-  * Bumps version bounds for LND
+  * Updates to the upstream release of [v1.12.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.12.3), which includes the minor release [v1.12.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.12.0)
+  * Any installed plugins will need to be updated to the compatible version. See "Manage Plugins" section.
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -108,7 +107,7 @@ alerts:
   install: 
     <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>
 
-    <p>The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.</p>
+    <p>The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Vaultwarden.</p>
 
    <p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>
   uninstall: 
