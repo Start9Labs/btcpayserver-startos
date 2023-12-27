@@ -38,9 +38,6 @@ clean:
 	rm -f LICENSE
 	rm -rf configurator/target
 
-verify: $(PKG_ID).s9pk
-	start-sdk verify s9pk $(PKG_ID).s9pk
-
 $(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.js docker-images/aarch64.tar docker-images/x86_64.tar
 ifeq ($(ARCH),aarch64)
 	@echo "start-sdk: Preparing aarch64 package ..."

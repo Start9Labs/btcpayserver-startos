@@ -19,12 +19,20 @@ jobs:
       - name: Checkout services repository
         uses: actions/checkout@v3
 
+      - name: Checkout cross build
+        uses: actions/checkout@v2
+        with:
+          repository: Start9Labs/rust-musl-cross
+
       - name: Build the service package
         id: build
         run: |
           git submodule update --init --recursive
           start-sdk init
           cargo install --git=https://github.com/Start9Labs/md-packer.git --branch=main
+          "${{ github.action_path }}/build.sh"
+          rust-musl-builder cargo build --release
+          rust-musl-builder musl-strip target/aarch64-unknown-linux-musl/release/<bin-name>
           make
           PACKAGE_ID=$(yq -oy ".id" manifest.*)
           echo "::set-output name=package_id::$PACKAGE_ID"
