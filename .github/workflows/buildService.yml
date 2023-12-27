@@ -30,7 +30,7 @@ jobs:
           git submodule update --init --recursive
           start-sdk init
           cargo install --git=https://github.com/Start9Labs/md-packer.git --branch=main
-          "${{ github.action_path }}/build.sh"
+          sh "${{ github.action_path }}/rust-musl-cross/build.sh"
           rust-musl-builder cargo build --release
           rust-musl-builder musl-strip target/aarch64-unknown-linux-musl/release/<bin-name>
           make
