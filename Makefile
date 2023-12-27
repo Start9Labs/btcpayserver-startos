@@ -1,7 +1,7 @@
 PKG_ID := $(shell yq e ".id" manifest.yaml)
 PKG_VERSION := $(shell yq e ".version" manifest.yaml)
 UPSTREAM_VERSION :=$(shell ./utils/scripts/get_upstream_version.sh ${PKG_VERSION})
-TS_FILES := $(shell find ./scripts -name '*.ts')
+TS_FILES := $(shell find ./ -name \*.ts)
 DOC_ASSETS := $(shell find ./docs/assets)
 CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
 UTILS_SRC := $(shell find ./utils/**/*)
@@ -9,6 +9,26 @@ UTILS_SRC := $(shell find ./utils/**/*)
 .DELETE_ON_ERROR:
 
 all: verify
+
+arm:
+	@rm -f docker-images/x86_64.tar
+	@ARCH=aarch64 $(MAKE)
+
+x86:
+	@rm -f docker-images/aarch64.tar
+	@ARCH=x86_64 $(MAKE)
+
+verify: $(PKG_ID).s9pk
+	@start-sdk verify s9pk $(PKG_ID).s9pk
+	@echo " Done!"
+	@echo "   Filesize: $(shell du -h $(PKG_ID).s9pk) is ready"
+
+install:
+ifeq (,$(wildcard ~/.embassy/config.yaml))
+	@echo; echo "You must define \"host: http://server-name.local\" in ~/.embassy/config.yaml config file first"; echo
+else
+	start-cli package install $(PKG_ID).s9pk
+endif
 
 clean:
 	rm -rf docker-images
@@ -21,12 +41,15 @@ clean:
 verify: $(PKG_ID).s9pk
 	start-sdk verify s9pk $(PKG_ID).s9pk
 
-# assumes /etc/embassy/config.yaml exists on local system with `host: "http://embassy-server-name.local"` configured
-install: $(PKG_ID).s9pk
-	start-cli package install $(PKG_ID).s9pk
-
 $(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.js docker-images/aarch64.tar docker-images/x86_64.tar
-	start-sdk pack
+ifeq ($(ARCH),aarch64)
+	@echo "start-sdk: Preparing aarch64 package ..."
+else ifeq ($(ARCH),x86_64)
+	@echo "start-sdk: Preparing x86_64 package ..."
+else
+	@echo "start-sdk: Preparing Universal Package ..."
+endif
+	@start-sdk pack
 
 docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
 ifeq ($(ARCH),aarch64)
