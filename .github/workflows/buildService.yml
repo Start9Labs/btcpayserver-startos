@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: Start9Labs/rust-musl-cross
+          path: rust-musl-cross
 
       - name: Build the service package
         id: build
@@ -30,7 +31,7 @@ jobs:
           git submodule update --init --recursive
           start-sdk init
           cargo install --git=https://github.com/Start9Labs/md-packer.git --branch=main
-          sh "${{ github.action_path }}/rust-musl-cross/build.sh"
+          sh ${GITHUB_WORKSPACE}/rust-musl-cross/build.sh"
           rust-musl-builder cargo build --release
           rust-musl-builder musl-strip target/aarch64-unknown-linux-musl/release/<bin-name>
           make
