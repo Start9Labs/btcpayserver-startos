@@ -1,7 +1,6 @@
 #!/bin/bash
 
-chown -R postgres:postgres /datadir/postgresql/data
-if test -f /datadir/postgresql/data/postgresql.conf
+if test -f /datadir/postgresql/data/postgresql.conf || chown -R postgres:postgres /datadir/postgresql/data
 then
   echo "postgres already initialized" >&2
 else 
