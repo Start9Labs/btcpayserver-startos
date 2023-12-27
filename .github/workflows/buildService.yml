@@ -24,6 +24,7 @@ jobs:
         run: |
           git submodule update --init --recursive
           start-sdk init
+          cargo install --git=https://github.com/Start9Labs/md-packer.git --branch=main
           make
           PACKAGE_ID=$(yq -oy ".id" manifest.*)
           echo "::set-output name=package_id::$PACKAGE_ID"
