@@ -24,13 +24,9 @@ jobs:
       
       - name: Build rust-musl-builder
         run: |
+          chmod a+x rust-musl-cross/build.sh
           cd rust-musl-cross
-          docker build . -t start9/rust-musl-cross:aarch64-musl
-          cat << 'EOF' | sudo tee /usr/local/bin/rust-aarch64-musl-builder
-          #!/bin/bash
-          docker run --rm -v "$HOME/.cargo/registry":/root/.cargo/registry -v $(pwd):/home/rust/src start9/rust-musl-cross:aarch64-musl $@
-          EOF
-          sudo chmod +x /usr/local/bin/rust-aarch64-musl-builder
+          ./build.sh
         shell: bash
 
       - name: Build md-packer
