@@ -1,4 +1,4 @@
-FROM nicolasdorier/nbxplorer:2.3.66 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.4.3 as nbx-builder
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS actions-builder
 WORKDIR /actions
@@ -7,7 +7,7 @@ RUN dotnet restore "utils/actions/actions.csproj"
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.11.7
+FROM btcpayserver/btcpayserver:1.12.3
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -19,7 +19,10 @@ ARG ARCH
 
 # install package dependencies
 RUN apt-get update && \
-  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common postgresql-13 xz-utils nginx vim && \
+  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common xz-utils nginx vim && \
+  curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+  sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+  apt-get update && apt-get install -y postgresql-13 && \
   wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
 
