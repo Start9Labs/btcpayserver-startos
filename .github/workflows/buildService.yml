@@ -24,8 +24,8 @@ jobs:
       
       - name: Build rust-musl-builder
         run: |
-          chmod a+x ${{ github.workspace }}/rust-musl-cross/build.sh
-          ./${{ github.workspace }}/rust-musl-cross/build.sh
+          chmod a+x build.sh
+          ./build.sh
         shell: bash
 
       - name: Build md-packer
