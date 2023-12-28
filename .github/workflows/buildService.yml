@@ -25,7 +25,7 @@ jobs:
       - name: Build rust-musl-builder
         run: |
           chmod a+x rust-musl-cross/build.sh
-          cd /rust-musl-cross
+          cd rust-musl-cross
           ./build.sh
         shell: bash
 
