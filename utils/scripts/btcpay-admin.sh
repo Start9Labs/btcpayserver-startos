@@ -58,7 +58,7 @@ set-user-admin)
     else 
       RESULT="    {
         \"version\": \"0\",
-        \"message\": \"Registrations are now enabled. The service will automatically restart.\",
+        \"message\": \"Registrations are now enabled. BTCPay Server will automatically restart.\",
         \"value\": null,
         \"copyable\": false,
         \"qr\": false
