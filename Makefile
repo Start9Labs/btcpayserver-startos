@@ -51,6 +51,7 @@ endif
 docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
 ifeq ($(ARCH),aarch64)
 else
+	@echo "Building package for x86_64..."
 	mkdir -p docker-images
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/amd64 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 -o type=docker,dest=docker-images/x86_64.tar -f ./Dockerfile .
 endif
@@ -58,6 +59,7 @@ endif
 docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
 ifeq ($(ARCH),x86_64)
 else
+	@echo "Building package for aarch64..."
 	mkdir -p docker-images
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --build-arg PLATFORM=arm64 -o type=docker,dest=docker-images/aarch64.tar -f ./Dockerfile .
 endif
