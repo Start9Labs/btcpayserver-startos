@@ -1,9 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.12.3.1
+version: 1.12.4
 release-notes: |
-  * Updates to the upstream release of [v1.12.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.12.3), which includes the minor release [v1.12.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.12.0)
-  * Any installed plugins will need to be updated to the compatible version. See "Manage Plugins" section.
+  * Updates to the upstream release of [v1.12.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.12.4), which includes the noteworthy minor release of [v1.12.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.12.0), as well as various bug fixes, improvements, and new features.
+  * If you are using plugins, you will most likely find them disabled after this update, because new versions compatible with BTCPay Server v1.12.x are required. Please see the "Manage Plugins" section once updated.
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
