@@ -81,7 +81,7 @@ dependencies:
     description: Used to communicate with the Lightning Network.
     config: ~
   c-lightning:
-    version: ">=0.10.0.1 <24.0"
+    version: ">=0.10.0.1 <26.0"
     requirement:
       type: "opt-in"
       how: Optionally use Core Lightning for internal lightning network node implementation.
