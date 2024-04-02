@@ -3,6 +3,7 @@ title: BTCPay Server
 version: 1.13.0
 release-notes: |
   * Updates to the upstream release of [v1.13.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.0), which includes various bug fixes, improvements, and new features.
+  * Bumps version bounds for C-Lightning
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
