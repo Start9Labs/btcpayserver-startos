@@ -62,6 +62,17 @@ Next, **enable lightning** for a particular store's wallet using the connection 
 
 If you would like to connect to an external lightning node, select "Use custom node" when on the page above and follow the instructions.
 
+## Enabling Altcoins
+
+Currently, Monero is the only altcoin available. This service can be installed on your server from the Community Marketplace, and enabled in config by toggling `Altcoins > Monero > Enable`. 
+
+Enabling Monero requires manual wallet setup. Fortunately, the community has put together some great guides to get this setup:
+
+- [SethForPrivacy Guide](https://sethforprivacy.com/guides/accepting-monero-via-btcpay-server/#setup-your-bitcoin-and-monero-wallets)
+- [Freedom Node Guide](https://freedomnode.com/blog/howto-accept-monero-for-your-services-btcpayserver/#create-a-view-only-monero-wallet-with-feather)
+
+Using these guides, setup a Feather wallet (recommended), then proceed to upload the wallet to BTCPay Server for your store by opening the store settings and finding the "Monero" tab across the top menu bar. 
+
 ## Setting up BTCPayServer Vault
 
 BTCPayServer Vault supports hardware wallet integrations for stores. To use, you must [install Vault](https://github.com/btcpayserver/BTCPayServer.Vault/releases) and run it on a laptop/desktop machine. Then, access your BTCPay Server service in a browser on the same device. 

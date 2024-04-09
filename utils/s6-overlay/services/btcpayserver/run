@@ -48,3 +48,4 @@ source .env
 
 # start btcpayserver, copying stderr onto stdout
 exec dotnet /app/BTCPayServer.dll 2>&1
+# exec dotnet run --no-launch-profile --no-build -c Altcoins-Release --project "BTCPayServer/BTCPayServer.csproj" -- $@ 2>&1

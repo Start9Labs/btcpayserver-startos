@@ -1,8 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.5
+version: 1.13.5.1
 release-notes: |
-  * Updates to the upstream release of [v1.13.5](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.5), which adds several improvements from [v1.13.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.4) as well as bug fixes.
+  * Adds Monero support
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -86,6 +86,13 @@ dependencies:
       type: "opt-in"
       how: Optionally use Core Lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
+    config: ~
+  monerod:
+    version: ">=0.18.3.2 <0.20.0"
+    requirement:
+      type: "opt-in"
+      how: Optionally use Monero.
+    description: Used as an alternative integration for payment processing.
     config: ~
 volumes:
   main:
