@@ -9,6 +9,7 @@ use serde::{
     de::{Deserializer, Error as DeserializeError, Unexpected},
     Deserialize,
 };
+use serde_yaml::{Mapping, Value};
 
 fn deserialize_parse<'de, D: Deserializer<'de>, T: std::str::FromStr>(
     deserializer: D,
@@ -25,6 +26,7 @@ struct Config {
     lightning: LightningConfig,
     bitcoin_rpc_user: String,
     bitcoin_rpc_password: String,
+    altcoins: AltcoinConfig
 }
 
 #[derive(serde::Deserialize)]
@@ -37,6 +39,19 @@ enum LightningConfig {
     Lnd,
     #[serde(rename_all = "kebab-case")]
     CLightning,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct AltcoinConfig {
+    monero: MoneroSpec
+}
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct MoneroSpec {
+    enabled: bool,
+    username: String,
+    password: String
 }
 #[derive(serde::Serialize)]
 pub struct Property<T> {
@@ -75,6 +90,8 @@ fn main() -> Result<(), anyhow::Error> {
     write!(
         btcpay_config,
         include_str!("templates/settings-btcpay.config.template"),
+        monero_username = config.altcoins.monero.username,
+        monero_password = config.altcoins.monero.password
     )?;
 
     let addr = tor_address.split('.').collect::<Vec<&str>>();
@@ -100,6 +117,12 @@ fn main() -> Result<(), anyhow::Error> {
                 ));
         }
         LightningConfig::None => {}
+    }
+
+    if config.altcoins.monero.enabled {
+        println!("{}", format!(
+            "export BTCPAYGEN_CRYPTO2='xmr'\n"
+            ));
     }
 
     // write backup ignore to the root of the mounted volume
