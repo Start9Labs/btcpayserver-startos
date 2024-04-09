@@ -88,6 +88,13 @@ dependencies:
       how: Optionally use Core Lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
+  monerod:
+    version: ">=0.18.3.2 <0.20.0"
+    requirement:
+      type: "opt-in"
+      how: Optionally use Monero.
+    description: Used as an alternative integration for payment processing.
+    config: ~
 volumes:
   main:
     type: data
