@@ -29,6 +29,7 @@ enum LightningConfig {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
 pub struct AltcoinConfig {
     monero: MoneroSpec,
@@ -40,6 +41,7 @@ pub struct MoneroSpec {
     username: String,
     password: String,
 }
+
 #[derive(serde::Serialize)]
 pub struct Property<T> {
     #[serde(rename = "type")]
@@ -74,12 +76,26 @@ fn main() -> Result<(), anyhow::Error> {
         p2p_host = bitcoin_host,
         p2p_port = 8333
     )?;
-    write!(
-        btcpay_config,
-        include_str!("templates/settings-btcpay.config.template"),
-        monero_username = config.altcoins.monero.username,
-        monero_password = config.altcoins.monero.password
-    )?;
+
+    match config.altcoins {
+        AltcoinConfig::Monero { username, password } => {
+            write!(
+                btcpay_config,
+                include_str!("templates/settings-btcpay.config.template"),
+                monero_username = username,
+                monero_password = password
+            )?;
+            println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
+        }
+        AltcoinConfig::None => {
+            write!(
+                btcpay_config,
+                include_str!("templates/settings-btcpay.config.template"),
+                monero_username = "",
+                monero_password = ""
+            )?;
+        }
+    }
 
     let addr = tor_address.split('.').collect::<Vec<&str>>();
     match addr.first() {
@@ -107,10 +123,6 @@ fn main() -> Result<(), anyhow::Error> {
                 ));
         }
         LightningConfig::None => {}
-    }
-
-    if config.altcoins.monero.enabled {
-        println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
     }
 
     // write backup ignore to the root of the mounted volume

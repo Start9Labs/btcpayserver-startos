@@ -4,6 +4,7 @@ version: 2.0.0
 release-notes: |
   * Major upstream release of [v2.0.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.0)! This release introduces many new features and some breaking changes. Please see the [blog post](https://blog.btcpayserver.org/btcpay-server-2-0/) for more details.
   * Please note: large instances may experience a few minutes of database migration.
+  * Adds optional Monero integration for payment processing
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -29,6 +30,7 @@ main:
   mounts:
     lnd: /mnt/lnd
     c-lightning: "/mnt/c-lightning"
+    monerod: "/mnt/monerod"
     main: /datadir
 health-checks:
   explorer-synced:
@@ -110,6 +112,12 @@ volumes:
     volume-id: main
     path: "/shared"
     readonly: true
+  monerod:
+    type: pointer
+    package-id: monerod
+    volume-id: main
+    path: "/data"
+    readonly: false
 alerts:
   install: 
     <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>

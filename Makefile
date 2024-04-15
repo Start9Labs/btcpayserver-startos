@@ -23,7 +23,7 @@ verify: $(PKG_ID).s9pk
 	@echo " Done!"
 	@echo "   Filesize: $(shell du -h $(PKG_ID).s9pk) is ready"
 
-install:
+install: $(PKG_ID).s9pk
 ifeq (,$(wildcard ~/.embassy/config.yaml))
 	@echo; echo "You must define \"host: http://server-name.local\" in ~/.embassy/config.yaml config file first"; echo
 else
