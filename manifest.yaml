@@ -1,9 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.0
+version: 1.13.0.1
 release-notes: |
-  * Updates to the upstream release of [v1.13.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.0), which includes various bug fixes, improvements, and new features.
-  * Bumps version bounds for C-Lightning
+  * Adds optional Monero integration for payment processing
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -29,6 +28,7 @@ main:
   mounts:
     lnd: /mnt/lnd
     c-lightning: "/mnt/c-lightning"
+    monerod: "/mnt/monerod"
     main: /datadir
 health-checks:
   explorer-synced:
@@ -88,6 +88,13 @@ dependencies:
       how: Optionally use Core Lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
+  monerod:
+    version: ">=0.18.3.2 <0.20.0"
+    requirement:
+      type: "opt-in"
+      how: Optionally use Monero.
+    description: Used as an alternative integration for payment processing.
+    config: ~
 volumes:
   main:
     type: data
@@ -103,6 +110,12 @@ volumes:
     volume-id: main
     path: "/shared"
     readonly: true
+  monerod:
+    type: pointer
+    package-id: monerod
+    volume-id: main
+    path: "/data"
+    readonly: false
 alerts:
   install: 
     <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>

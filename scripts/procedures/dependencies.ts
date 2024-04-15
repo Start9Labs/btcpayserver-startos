@@ -48,6 +48,34 @@ const matchOldBitcoindConfig = shape({
   }),
 })
 
+const matchMoneroConfig = shape({
+  rpc: shape({
+    credentials: shape({
+      enabled: boolean
+    }),
+  }),
+});
+
+
+const moneroChecks: Array<Check> = [
+  {
+    currentError(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return "Monero config is not the correct shape";
+      }
+      if (!config.rpc.credentials.enabled) {
+        return "Must have RPC enabled";
+      }
+      return;
+    },
+    fix(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return
+      }
+      config.rpc.credentials.enabled = true;
+    },
+  }]
+
 
 const bitcoindChecks: Array<Check> = [
   {

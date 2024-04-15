@@ -1,5 +1,6 @@
 ### Global settings ###
 network=mainnet
+chains=xmr
 
 ### Server settings ###
 port=23000
@@ -17,3 +18,11 @@ sqlitefile=sqlite.db
 BTC.explorer.cookiefile=/datadir/nbxplorer/Main/.cookie
 #BTC.lightning=/root/.lightning/lightning-rpc
 #BTC.lightning=https://apitoken:API_TOKEN_SECRET@charge.example.com/
+
+### Monero settings ###
+XMR_daemon_uri=http://monerod.embassy:18081
+XMR_wallet_daemon_uri=http://monerod.embassy:18082
+XMR_wallet_daemon_walletdir=/mnt/monerod/.bitmonero/wallets
+# Only use username and password if node's RPC is password protected
+XMR_daemon_username={monero_username}
+XMR_daemon_password={monero_password}

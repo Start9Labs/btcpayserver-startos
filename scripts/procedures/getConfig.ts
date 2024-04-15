@@ -51,6 +51,45 @@ export const getConfig = compat.getConfig({
       "c-lightning": {}
     }
   },
+  "altcoins": {
+    "type": "union",
+    "name": "Altcoin Integrations",
+    "description": "Choose which altcoins to enable. Please see the \"Instructions\" page for more details.",
+    "tag": {
+      "id": "type",
+      "name": "Integrations",
+      "variant-names": {
+        "monero": "Monero",
+        "none": "None"
+      }
+    },
+    "default": "none",
+    "variants": {
+      "none": {},
+      "monero": {
+        "username": {
+          "type": "pointer",
+          "name": "Monero RPC Username",
+          "description": "The username for Monero's RPC interface",
+          "subtype": "package",
+          "package-id": "monerod",
+          "target": "config",
+          "multi": false,
+          "selector": "$.rpc.credentials.username"
+        },
+        "password": {
+          "type": "pointer",
+          "name": "Monero RPC Password",
+          "description": "The password for Monero's RPC interface",
+          "subtype": "package",
+          "package-id": "monerod",
+          "target": "config",
+          "multi": false,
+          "selector": "$.rpc.credentials.password"
+        }
+      },
+    }
+  },
   "advanced": {
     "type": "object",
     "name": "Advanced Settings",

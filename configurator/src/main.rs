@@ -5,18 +5,6 @@ use std::{
 };
 
 use anyhow::Context;
-use serde::{
-    de::{Deserializer, Error as DeserializeError, Unexpected},
-    Deserialize,
-};
-
-fn deserialize_parse<'de, D: Deserializer<'de>, T: std::str::FromStr>(
-    deserializer: D,
-) -> Result<T, D::Error> {
-    let s: String = Deserialize::deserialize(deserializer)?;
-    s.parse()
-        .map_err(|_| DeserializeError::invalid_value(Unexpected::Str(&s), &"a valid URI"))
-}
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -25,6 +13,7 @@ struct Config {
     lightning: LightningConfig,
     bitcoin_rpc_user: String,
     bitcoin_rpc_password: String,
+    altcoins: AltcoinConfig,
 }
 
 #[derive(serde::Deserialize)]
@@ -38,6 +27,20 @@ enum LightningConfig {
     #[serde(rename_all = "kebab-case")]
     CLightning,
 }
+
+#[derive(serde::Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "kebab-case")]
+enum AltcoinConfig {
+    #[serde(rename_all = "kebab-case")]
+    None,
+    #[serde(rename_all = "kebab-case")]
+    Monero {
+        username: String,
+        password: String,
+    },
+}
+
 #[derive(serde::Serialize)]
 pub struct Property<T> {
     #[serde(rename = "type")]
@@ -69,19 +72,41 @@ fn main() -> Result<(), anyhow::Error> {
         rpc_port = 8332,
         rpc_password = config.bitcoin_rpc_password,
         rpc_user = config.bitcoin_rpc_user,
-        p2p_host= bitcoin_host,
+        p2p_host = bitcoin_host,
         p2p_port = 8333
     )?;
-    write!(
-        btcpay_config,
-        include_str!("templates/settings-btcpay.config.template"),
-    )?;
+
+    match config.altcoins {
+        AltcoinConfig::Monero {
+            username,
+            password,
+        } => {
+            write!(
+                btcpay_config,
+                include_str!("templates/settings-btcpay.config.template"),
+                monero_username = username,
+                monero_password = password
+            )?;
+            println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
+        }
+        AltcoinConfig::None => {
+            write!(
+                btcpay_config,
+                include_str!("templates/settings-btcpay.config.template"),
+                monero_username = "",
+                monero_password = ""
+            )?;
+        }
+    }
 
     let addr = tor_address.split('.').collect::<Vec<&str>>();
     match addr.first() {
         Some(x) => {
             print!("{}", format!("export BTCPAY_HOST='https://{}.local/'\n", x));
-            print!("{}", format!("export REVERSEPROXY_DEFAULT_HOST='http://{}.local/'\n", x));
+            print!(
+                "{}",
+                format!("export REVERSEPROXY_DEFAULT_HOST='http://{}.local/'\n", x)
+            );
             print!("{}", format!("export BTCPAY_ADDITIONAL_HOSTS='https://{}.local/,http://{}.local/,http://{}.onion/'\n", x, x, x));
             print!("{}", "export BTCPAY_SOCKSENDPOINT='embassy:9050'\n");
         }
