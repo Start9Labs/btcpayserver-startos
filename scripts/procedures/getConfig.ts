@@ -52,41 +52,41 @@ export const getConfig = compat.getConfig({
     }
   },
   "altcoins": {
-    "type": "object",
+    "type": "union",
     "name": "Altcoin Integrations",
     "description": "Choose which altcoins to enable. Please see the \"Instructions\" page for more details.",
-    "spec": {
+    "tag": {
+      "id": "type",
+      "name": "Integrations",
+      "variant-names": {
+        "monero": "Monero",
+        "none": "None"
+      }
+    },
+    "default": "none",
+    "variants": {
+      "none": {},
       "monero": {
-        "name": "Monero",
-        "type": "object",
-        "spec": {
-          "enabled": {
-            "type": "boolean",
-            "default": false,
-            "description": "Allow RPC requests to Monero.",
-            "name": "Enable",
-          },
-          "username": {
-            "type": "pointer",
-            "name": "Monero RPC Username",
-            "description": "The username for Monero's RPC interface",
-            "subtype": "package",
-            "package-id": "monerod",
-            "target": "config",
-            "multi": false,
-            "selector": "$.rpc.enabled.username"
-          },
-          "password": {
-            "type": "pointer",
-            "name": "Monero RPC Password",
-            "description": "The password for Monero's RPC interface",
-            "subtype": "package",
-            "package-id": "monerod",
-            "target": "config",
-            "multi": false,
-            "selector": "$.rpc.enabled.password"
-          }
-        }      
+        "username": {
+          "type": "pointer",
+          "name": "Monero RPC Username",
+          "description": "The username for Monero's RPC interface",
+          "subtype": "package",
+          "package-id": "monerod",
+          "target": "config",
+          "multi": false,
+          "selector": "$.rpc.credentials.username"
+        },
+        "password": {
+          "type": "pointer",
+          "name": "Monero RPC Password",
+          "description": "The password for Monero's RPC interface",
+          "subtype": "package",
+          "package-id": "monerod",
+          "target": "config",
+          "multi": false,
+          "selector": "$.rpc.credentials.password"
+        }
       },
     }
   },
