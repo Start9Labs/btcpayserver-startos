@@ -73,6 +73,8 @@ Enabling Monero requires manual wallet setup. Fortunately, the community has put
 
 Using these guides, setup a Feather wallet (recommended), then proceed to upload the wallet to BTCPay Server for your store by opening the store settings and finding the "Monero" tab across the top menu bar. 
 
+**Note**: If you are unable to open Feather on macOS, go to System Settings > Privacy & Security and scroll to find where "Feather" was blocked becuase it is not from an identified developer > "Open Anyway" > Enter password > Select "Open" regardless of security warning.
+
 ## Setting up BTCPayServer Vault
 
 BTCPayServer Vault supports hardware wallet integrations for stores. To use, you must [install Vault](https://github.com/btcpayserver/BTCPayServer.Vault/releases) and run it on a laptop/desktop machine. Then, access your BTCPay Server service in a browser on the same device. 
