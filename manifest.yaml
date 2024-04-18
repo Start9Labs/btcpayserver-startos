@@ -1,9 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.0
+version: 1.13.1
 release-notes: |
-  * Updates to the upstream release of [v1.13.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.0), which includes various bug fixes, improvements, and new features.
-  * Bumps version bounds for C-Lightning
+  * Updates to the upstream release of [v1.13.1](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.1), which includes some bug fixes and improvements.
+  * Bumps version bounds for Bitcoin Core
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -65,7 +65,7 @@ config:
     type: script
 dependencies:
   bitcoind:
-    version: ">=0.21.1.2 <27.0.0"
+    version: ">=0.21.1.2 <29.0.0"
     requirement:
       type: "required"
     description: Used for the RPC and P2P connection interfaces.
