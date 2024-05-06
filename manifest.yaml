@@ -96,7 +96,11 @@ dependencies:
       type: "opt-in"
       how: Optionally use Monero.
     description: Used as an alternative integration for payment processing.
-    config: ~
+    config:
+      check:
+        type: script
+      auto-configure:
+        type: script
 volumes:
   main:
     type: data
