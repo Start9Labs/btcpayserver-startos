@@ -1,6 +1,10 @@
 id: btcpayserver
 title: BTCPay Server
+<<<<<<< HEAD
 version: 1.13.5.1
+=======
+version: 1.13.1.2
+>>>>>>> db4dfd8 (fix version and migrations)
 release-notes: |
   * Adds optional Monero integration for payment processing
 license: mit

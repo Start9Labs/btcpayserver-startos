@@ -2,8 +2,8 @@ import { types as T, compat } from "../deps.ts"
 import { migration_up_1_4_7 } from "../migrations/1_4_7_up_migration.ts";
 import { migration_down_1_4_7 } from "../migrations/1_4_7_down_migration.ts";
 import { migration_up_1_10_3 } from "../migrations/1_10_3_up_migration.ts";
-import { migration_up_1_13_1_1 } from "../migrations/1_13_1_1_up_migration.ts";
-import { migration_down_1_13_1_1 } from "../migrations/1_13_1_1_down_migration.ts";
+import { migration_up_1_13_1_2 } from "../migrations/1_13_1_2_up_migration.ts";
+import { migration_down_1_13_1_2 } from "../migrations/1_13_1_2_down_migration.ts";
 
 export const migration: T.ExpectedExports.migration = async (effects, version, ...args) => {
   await effects.createDir({
@@ -49,20 +49,20 @@ export const migration: T.ExpectedExports.migration = async (effects, version, .
             { version: "1.10.2", type: "down" },
           ),
         },
-        "1.13.1.1": {
+        "1.13.1.2": {
           up: compat.migrations.updateConfig(
             (config) => {
-              return migration_up_1_13_1_1(config)
+              return migration_up_1_13_1_2(config)
             },
             true,
-            { version: "1.13.1.1", type: "up"}
+            { version: "1.13.1.2", type: "up"}
           ),
           down: compat.migrations.updateConfig(
             (config) => {
-              return migration_down_1_13_1_1(config)
+              return migration_down_1_13_1_2(config)
             },
             true,
-            { version: "1.13.1.1", type: "down" },
+            { version: "1.13.1.2", type: "down" },
           ),
         },
       },
