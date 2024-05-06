@@ -39,8 +39,19 @@ then
   done
 fi
 
+#  check readiness of altcoin connections if configured to use
+altcoins=$(yq e '.altcoins.type' /datadir/start9/config.yaml)
+if [[ $altcoins = "monero" ]]
+then
 
-# configure templates and load environment variables generated for lightning connections 
+  if ! test -d /mnt/monerod
+  then
+    echo "Monero mountpoint does not exist"
+    exit 0
+  fi
+fi
+
+# configure templates and load environment variables generated for dependency connections 
 configurator > .env 
 source .env
 
