@@ -116,7 +116,7 @@ volumes:
     type: pointer
     package-id: monerod
     volume-id: main
-    path: "/data"
+    path: "/"
     readonly: false
 alerts:
   install: 

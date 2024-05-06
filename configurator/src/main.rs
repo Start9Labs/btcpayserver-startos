@@ -83,7 +83,8 @@ fn main() -> Result<(), anyhow::Error> {
                 btcpay_config,
                 include_str!("templates/settings-btcpay.config.template"),
                 monero_username = username,
-                monero_password = password
+                monero_password = password,
+                chains = "btc,xmr"
             )?;
             println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
         }
@@ -92,7 +93,8 @@ fn main() -> Result<(), anyhow::Error> {
                 btcpay_config,
                 include_str!("templates/settings-btcpay.config.template"),
                 monero_username = "",
-                monero_password = ""
+                monero_password = "",
+                chains = "btc"
             )?;
         }
     }
