@@ -10,10 +10,6 @@ export const setConfig: T.ExpectedExports.setConfig = async (effects, input ) =>
   const depsCln: T.DependsOn = newConfig?.lightning?.type === "c-lightning" ? {"c-lightning": []} : {}
   const depsMonero: T.DependsOn = newConfig?.altcoins?.type === 'monero' ? {monerod: []} : {}
 
-  if (newConfig?.altcoins?.type === 'monero') {
-    await effects.createDir({ volumeId: "main", path: "/mnt/monerod/.bitmonero/wallets" })
-  }
-
   return await compat.setConfig(effects,input, {
     ...depsLnd,
     ...depsCln,

@@ -75,7 +75,7 @@ export const getConfig = compat.getConfig({
           "package-id": "monerod",
           "target": "config",
           "multi": false,
-          "selector": "$.rpc.credentials.username"
+          "selector": "$.rpc.rpc-credentials.username"
         },
         "password": {
           "type": "pointer",
@@ -85,7 +85,7 @@ export const getConfig = compat.getConfig({
           "package-id": "monerod",
           "target": "config",
           "multi": false,
-          "selector": "$.rpc.credentials.password"
+          "selector": "$.rpc.rpc-credentials.password"
         }
       },
     }
