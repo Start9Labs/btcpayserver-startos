@@ -64,14 +64,14 @@ If you would like to connect to an external lightning node, select "Use custom n
 
 ## Enabling Altcoins
 
-Currently, Monero is the only altcoin available. This service can be installed on your server from the Community Marketplace, and enabled in config by selecting Monero from the Integrations section. 
+Currently, Monero is the only altcoin available. This service can be installed on your server from the Community Marketplace and enabled in config by selecting Monero from the "Integrations" section. 
 
 Enabling Monero requires manual wallet setup. Fortunately, the community has put together some great guides to get this setup:
 
 - [SethForPrivacy Guide](https://sethforprivacy.com/guides/accepting-monero-via-btcpay-server/#setup-your-bitcoin-and-monero-wallets)
 - [Freedom Node Guide](https://freedomnode.com/blog/howto-accept-monero-for-your-services-btcpayserver/#create-a-view-only-monero-wallet-with-feather)
 
-Using these guides, setup a Feather wallet (recommended), then proceed to upload the wallet to BTCPay Server for your store by opening the store settings and finding the "Monero" tab across the top menu bar. 
+Using these guides, setup a Feather wallet (recommended), then proceed to upload the wallet to BTCPay Server for your store by opening the store settings and finding the "Monero" tab across the top menu bar. The Monero node will need to be fully synced before it is available to use in BTCPay Server.
 
 **Note**: If you are unable to open Feather on macOS, go to System Settings > Privacy & Security and scroll to find where "Feather" was blocked becuase it is not from an identified developer > "Open Anyway" > Enter password > Select "Open" regardless of security warning.
 
