@@ -1,3 +1,4 @@
+FROM btcpayserver/monero:0.18.3.1 as monero-wallet-rpc
 FROM nicolasdorier/nbxplorer:2.5.9 AS nbx-builder
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
@@ -12,6 +13,7 @@ FROM btcpayserver/btcpayserver:2.0.0-altcoins
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
+COPY --from=monero-wallet-rpc "/usr/local/bin/monero-wallet-rpc" /usr/local/bin
 
 # arm64 or amd64
 ARG PLATFORM
@@ -83,7 +85,8 @@ COPY utils/nginx.conf /etc/nginx/sites-available/default
 COPY utils/scripts/postgres-init.sh /etc/s6-overlay/script/postgres-init
 COPY utils/scripts/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
 COPY utils/scripts/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
-RUN chmod a+x /usr/local/bin/btcpay-admin.sh /usr/local/bin/health_check.sh /etc/s6-overlay/script/* /etc/cont-finish.d/*
+COPY utils/scripts/notifier.sh /usr/local/bin/notifier.sh
+RUN chmod a+x /usr/local/bin/btcpay-admin.sh /usr/local/bin/health_check.sh /etc/s6-overlay/script/* /etc/cont-finish.d/* /usr/local/bin/notifier.sh
 
 # s6-overlay initialization
 ENTRYPOINT ["/init"]
