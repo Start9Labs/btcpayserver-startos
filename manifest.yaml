@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.1.2
+version: 1.13.2.1
 release-notes: |
   * Adds optional Monero integration for payment processing
 license: mit
@@ -75,7 +75,7 @@ dependencies:
       auto-configure:
         type: script
   lnd:
-    version: ">=0.13.3.1 <0.18.0"
+    version: ">=0.13.3.1 <0.19.0"
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
