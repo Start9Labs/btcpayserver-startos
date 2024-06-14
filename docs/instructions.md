@@ -72,9 +72,6 @@ When creating a new store, select `Wallets > Bitcoin > Set up a wallet > Connect
 
 Check out the official [documentation](https://docs.btcpayserver.org/Vault/) and [blog post](https://blog.btcpayserver.org/btcpay-vault/) for more information. 
 
-## Migrating an instance
-
-
 ## Updates
 
 Manual maintenance updates are disabled. Updates for BTCPay Server will be delivered through the Start9 Marketplace.
