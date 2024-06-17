@@ -71,7 +71,6 @@ RUN groupadd -r postgres --gid=999; \
 
 # project specific postgres env vars
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
-  NBXPLORER_AUTOMIGRATE=1 \
   NBXPLORER_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
   BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
   BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver"
