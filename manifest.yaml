@@ -1,9 +1,10 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.1.1
+version: 1.13.3
 release-notes: |
-  * Updates to the upstream release of [v1.13.1](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.1), which includes some bug fixes and improvements.
-  * Bumps version bounds for Bitcoin Core
+  * Updates to the upstream release of [v1.13.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.3), which adds several new features from [v1.13.2](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.2) as well as bug fixes and improvements.
+  * Updates NBXplorer to latest v2.5.5
+  * Bumps version bounds for LND
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -75,7 +76,7 @@ dependencies:
       auto-configure:
         type: script
   lnd:
-    version: ">=0.13.3.1 <0.18.0"
+    version: ">=0.13.3.1 <0.19.0"
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.

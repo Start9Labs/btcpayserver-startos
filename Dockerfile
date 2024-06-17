@@ -1,4 +1,4 @@
-FROM nicolasdorier/nbxplorer:2.5.2 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.5.5 as nbx-builder
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
@@ -8,7 +8,7 @@ RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.13.1
+FROM btcpayserver/btcpayserver:1.13.3
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -71,7 +71,6 @@ RUN groupadd -r postgres --gid=999; \
 
 # project specific postgres env vars
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
-  NBXPLORER_AUTOMIGRATE=1 \
   NBXPLORER_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
   BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
   BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver"

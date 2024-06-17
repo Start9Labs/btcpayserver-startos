@@ -8,4 +8,4 @@
 # capture start height from configuration - used to reset scanner to a certain block height, or the tip, if corrupted
 start_height=$(yq e '.advanced.sync-start-height' /datadir/start9/config.yaml)
 # start nbxplorer, copying stderr onto stdout
-exec dotnet /nbxplorer/NBXplorer.dll --btcrescan=1 --btcstartheight=$(echo $start_height) --deleteaftermigration 2>&1
+exec dotnet /nbxplorer/NBXplorer.dll --btcrescan=1 --btcstartheight=$(echo $start_height) 2>&1
