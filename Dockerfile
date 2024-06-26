@@ -1,3 +1,5 @@
+FROM btcpayserver/monero:0.18.3.1 as monero-wallet-rpc
+
 FROM nicolasdorier/nbxplorer:2.5.2 as nbx-builder
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
@@ -12,6 +14,7 @@ FROM btcpayserver/btcpayserver:1.13.1-altcoins
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
+COPY --from=monero-wallet-rpc "/usr/local/bin/monero-wallet-rpc" /usr/local/bin/
 
 # arm64 or amd64
 ARG PLATFORM
@@ -68,6 +71,10 @@ RUN groupadd -r postgres --gid=999; \
   mkdir -p /var/run/postgresql; \
   chown -R postgres:postgres /var/run/postgresql; \
   chmod 2777 /var/run/postgresql;
+
+# monero setup
+RUN groupadd -r monero --gid=302340; \
+  useradd -r -g monero --uid=30234 --gid=302340 -M --home-dir=/dev/null --shell=/sbin/nologin monero
 
 # project specific postgres env vars
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
