@@ -49,6 +49,7 @@ then
     echo "Monero mountpoint does not exist"
     exit 0
   fi
+  
 fi
 
 # configure templates and load environment variables generated for dependency connections 

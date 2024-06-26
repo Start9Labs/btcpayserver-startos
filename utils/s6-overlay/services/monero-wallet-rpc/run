@@ -5,18 +5,35 @@
 # -e  Exit immediately if a command exits with a non-zero status
 set -ea
 
-#  check readiness of monero connection if configured to use
+#  check readiness of altcoin connections if configured to use
 altcoins=$(yq e '.altcoins.type' /datadir/start9/config.yaml)
-if [[ $altcoins = "monero" ]]
-then
 
-  if test -d /mnt/monerod
+if [[ "$altcoins" = "monero" ]]
+then
+  MONERO_MOUNT_DIR=/mnt/monerod
+  #Ensure that the monero wallet directory in general (and the btcpayserver wallet directory specifically) exists
+  MONERO_BTCPAY_WALLET_DIR=${MONERO_MOUNT_DIR}/wallets/btcpayserver
+  if ! test -d $MONERO_MOUNT_DIR
   then
-    # start monero-wallet-rpc, copying stderr onto stdout
-    # TODO get monero creds from config
-    exec monero-wallet-rpc --rpc-bind-ip=0.0.0.0 --disable-rpc-login --confirm-external-bind --rpc-bind-port=18082 --non-interactive --trusted-daemon  --daemon-login=monero:_T9E17vFLSzRxUZCcHq3lX --daemon-address=https://monerod.embassy:18081 --wallet-file=/mnt/monerod/wallets/wallet --password-file=/mnt/monerod/wallets/password --tx-notify="/bin/sh ./notifier.sh -X GET http://btcpayserver.embassy:49392/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s" 2>&1
-  else
     echo "Monero mountpoint does not exist"
     exit 0
+  else
+   mkdir -p $MONERO_BTCPAY_WALLET_DIR
+   chown monero:monero $MONERO_BTCPAY_WALLET_DIR
+   chmod 775 $MONERO_BTCPAY_WALLET_DIR
+   mwr_file=$MONERO_MOUNT_DIR/monero-wallet-rpc.18082.login
+   touch $mwr_file
+   chown monero:monero $mwr_file
   fi
+  monero_daemon_rpc_username=$(yq e '.altcoins.username' /datadir/start9/config.yaml)
+  #If a monero daemon RPC username has been setup:
+  if [[ -n "$monero_daemon_rpc_username" ]]
+  then
+    monero_daemon_rpc_password=$(yq e '.altcoins.password' /datadir/start9/config.yaml)
+    monero_daemon_rpc_credentials="--daemon-login=$monero_daemon_rpc_username:$monero_daemon_rpc_password"
+  fi
+
+ # start btcpayserver, copying stderr onto stdout
+ exec s6-setuidgid 30234:302340 /usr/local/bin/monero-wallet-rpc --non-interactive $monero_daemon_rpc_credentials --wallet-file=${MONERO_BTCPAY_WALLET_DIR}/wallet --password-file=${MONERO_BTCPAY_WALLET_DIR}/password --log-file=${MONERO_MOUNT_DIR}/logs/monero-wallet-rpc.btcpayserver.log --max-log-file-size=10000000 --max-log-files=2 --confirm-external-bind --rpc-bind-ip=127.0.0.1 --rpc-bind-port=18082 --trusted-daemon --daemon-host=monerod.embassy --daemon-port=18081 --tx-notify="/usr/bin/curl -X GET http://btcpayserver.embassy:49392/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s" 2>&1
+
 fi
