@@ -1,0 +1,24 @@
+#
+# Monero wallet RPC config file for BTCPayServer's XMR wallet.
+# Documentation: https://getmonero.dev/interacting/monero-wallet-rpc
+#
+
+trusted-daemon=1
+daemon-host=monerod.embassy
+daemon-port=18081
+
+wallet-file=MONERO_BTCPAY_WALLET_DIR/wallet
+password-file=MONERO_BTCPAY_WALLET_DIR/password
+log-file=MONERO_MOUNT_DIR/logs/monero-wallet-rpc.btcpayserver.log
+max-log-file-size=10000000 #10MiB
+max-log-files=2
+
+#confirm-external-bind=1
+rpc-bind-ip=127.0.0.1
+rpc-bind-port=MONERO_BTCPAY_WALLET_RPC_PORT
+
+shared-ringdb-dir=/datadir/btcpayserver/altcoins/monero
+
+MONERO_DAEMON_RPC_CREDENTIALS
+
+tx-notify=/usr/bin/curl -so /dev/null -X GET http://btcpayserver.embassy:49392/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s

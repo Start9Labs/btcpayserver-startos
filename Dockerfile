@@ -1,4 +1,4 @@
-FROM btcpayserver/monero:0.18.3.1 as monero-wallet-rpc
+FROM btcpayserver/monero:0.18.3.3 as monero-wallet-rpc
 
 FROM nicolasdorier/nbxplorer:2.5.5 as nbx-builder
 
@@ -22,13 +22,15 @@ ARG PLATFORM
 ARG ARCH
 
 # install package dependencies
+RUN sed -i "s|http://|https://|g" /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && \
   apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common xz-utils nginx vim && \
-  curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+  curl -so /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
   sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
   apt-get update && apt-get install -y postgresql-13 && \
   wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
-  tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq
+  tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq && \
+  apt-get upgrade -y
 
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
@@ -74,7 +76,8 @@ RUN groupadd -r postgres --gid=999; \
 
 # monero setup
 RUN groupadd -r monero --gid=302340; \
-  useradd -r -g monero --uid=30234 --gid=302340 -M --home-dir=/dev/null --shell=/sbin/nologin monero
+  useradd -r -g monero --uid=30234 --gid=302340 -M --home-dir=/datadir/monero/ --shell=/sbin/nologin monero ;
+  #mkdir -p /app/config/templates/
 
 # project specific postgres env vars
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
@@ -86,7 +89,8 @@ ENV POSTGRES_HOST_AUTH_METHOD=trust \
 ADD ./configurator/target/${ARCH}-unknown-linux-musl/release/configurator /usr/local/bin/configurator
 COPY utils/scripts/btcpay-admin.sh  /usr/local/bin/btcpay-admin.sh
 COPY utils/scripts/health_check.sh /usr/local/bin/health_check.sh
-COPY utils/nginx.conf /etc/nginx/sites-available/default
+COPY utils/config/nginx.conf /etc/nginx/sites-available/default
+COPY utils/config/monero-wallet-rpc.btcpayserver.conf.template /etc/
 COPY utils/scripts/postgres-init.sh /etc/s6-overlay/script/postgres-init
 COPY utils/scripts/postgres-ready.sh /etc/s6-overlay/script/postgres-ready
 COPY utils/scripts/postgres-shutdown.sh /etc/cont-finish.d/postgres-shutdown
