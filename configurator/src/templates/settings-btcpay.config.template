@@ -21,7 +21,7 @@ BTC.explorer.cookiefile=/datadir/nbxplorer/Main/.cookie
 
 ### Monero settings ###
 XMR_daemon_uri=http://monerod.embassy:18081
-XMR_wallet_daemon_uri=http://monerod.embassy:28088
+XMR_wallet_daemon_uri=http://127.0.0.1:18082
 XMR_wallet_daemon_walletdir=/mnt/monerod/wallets/btcpayserver
 # Only use username and password if Monero daemon's RPC is password protected
 XMR_daemon_username={monero_username}

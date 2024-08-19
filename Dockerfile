@@ -76,8 +76,7 @@ RUN groupadd -r postgres --gid=999; \
 
 # monero setup
 RUN groupadd -r monero --gid=302340; \
-  useradd -r -g monero --uid=30234 --gid=302340 -M --home-dir=/datadir/monero/ --shell=/sbin/nologin monero ;
-  #mkdir -p /app/config/templates/
+  useradd -r -g monero --uid=30235 --gid=302340 -M --home-dir=/dev/null --shell=/sbin/nologin monero
 
 # project specific postgres env vars
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
