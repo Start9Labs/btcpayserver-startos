@@ -1,10 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.3
+version: 1.13.5
 release-notes: |
-  * Updates to the upstream release of [v1.13.3](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.3), which adds several new features from [v1.13.2](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.2) as well as bug fixes and improvements.
-  * Updates NBXplorer to latest v2.5.5
-  * Bumps version bounds for LND
+  * Updates to the upstream release of [v1.13.5](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.5), which adds several improvements from [v1.13.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.4) as well as bug fixes.
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
