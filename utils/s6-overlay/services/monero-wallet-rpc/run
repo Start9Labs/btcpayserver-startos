@@ -11,7 +11,7 @@ if [[ "$altcoins" = "monero" ]]
 then
  MONERO_DIR=/datadir/btcpayserver/altcoins/monero
  mkdir -p $MONERO_DIR
- MONERO_UID=30235
+ MONERO_UID=30236
  MONERO_GID=302340
  chown $MONERO_UID:$MONERO_GID $MONERO_DIR
  CONF_FILENAME="monero-wallet-rpc.btcpayserver.conf"

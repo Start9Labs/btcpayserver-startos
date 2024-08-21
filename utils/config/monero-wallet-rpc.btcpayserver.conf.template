@@ -21,4 +21,4 @@ shared-ringdb-dir=/datadir/btcpayserver/altcoins/monero
 
 MONERO_DAEMON_RPC_CREDENTIALS
 
-tx-notify=/usr/bin/curl -so /dev/null -X GET http://btcpayserver.embassy:49392/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s
+tx-notify=/usr/bin/curl -so /dev/null -X GET http://127.0.0.1:23000/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s

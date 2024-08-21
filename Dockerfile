@@ -66,17 +66,16 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
   BTCPAY_PLUGINDIR=/datadir/plugins
 
 # postgres setup
-RUN groupadd -r postgres --gid=999; \
-  useradd -r -g postgres --gid=999 --home-dir=/var/lib/postgresql --shell=/bin/bash postgres; \
+RUN useradd -r -g postgres --home-dir=/var/lib/postgresql --shell=/bin/bash postgres; \
   mkdir -p /var/lib/postgresql; \
   chown -R postgres:postgres /var/lib/postgresql; \
   mkdir -p /var/run/postgresql; \
   chown -R postgres:postgres /var/run/postgresql; \
-  chmod 2777 /var/run/postgresql;
+  chmod 2770 /var/run/postgresql;
 
 # monero setup
 RUN groupadd -r monero --gid=302340; \
-  useradd -r -g monero --uid=30235 --gid=302340 -M --home-dir=/dev/null --shell=/sbin/nologin monero
+  useradd -r -g monero --uid=30236 --gid=302340 -M --home-dir=/dev/null --shell=/sbin/nologin monero
 
 # project specific postgres env vars
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
