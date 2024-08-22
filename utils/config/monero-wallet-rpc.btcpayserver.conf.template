@@ -14,7 +14,6 @@ max-log-file-size=10000000 #10MiB
 max-log-files=2
 
 #confirm-external-bind=1
-disable-rpc-login
 rpc-bind-ip=127.0.0.1
 rpc-bind-port=MONERO_BTCPAY_WALLET_RPC_PORT
 

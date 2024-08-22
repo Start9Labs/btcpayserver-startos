@@ -23,14 +23,19 @@ ARG ARCH
 
 # install package dependencies
 RUN sed -i "s|http://|https://|g" /etc/apt/sources.list.d/debian.sources
-RUN apt-get update && \
-  apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps postgresql-common xz-utils nginx vim && \
-  curl -so /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
-  sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
-  apt-get update && apt-get install -y postgresql-13 && \
-  wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
-  tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq && \
-  apt-get upgrade -y
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps xz-utils nginx vim \
+  && mkdir -p /usr/share/postgresql-common/pgdg \
+  && curl -so /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+  && sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+  && apt-get update && apt-get install -y postgresql-13 \
+  && wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
+  tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq \
+  && apt-get -y autoremove \
+  && apt-get clean autoclean \
+  && rm -rf /var/lib/apt/lists/*
+
 
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
