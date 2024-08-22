@@ -66,8 +66,8 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
   BTCPAY_PLUGINDIR=/datadir/plugins
 
 # postgres setup
-RUN useradd -r -g postgres --home-dir=/var/lib/postgresql --shell=/bin/bash postgres; \
-  mkdir -p /var/lib/postgresql; \
+#RUN useradd -r -g postgres --home-dir=/var/lib/postgresql --shell=/bin/bash postgres; \
+RUN  mkdir -p /var/lib/postgresql; \
   chown -R postgres:postgres /var/lib/postgresql; \
   mkdir -p /var/run/postgresql; \
   chown -R postgres:postgres /var/run/postgresql; \

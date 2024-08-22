@@ -6,8 +6,7 @@ then
 else 
   echo "initializing postgres..." >&2
   mkdir -p /datadir/postgresql/data
-  chmod 750 /datadir/postgresql
-  chown -R postgres:postgres /datadir/postgresql/data
+  chmod 750 /datadir/postgresql /datadir/postgresql/data
   exec s6-setuidgid postgres /usr/lib/postgresql/13/bin/initdb -D /datadir/postgresql/data 2>&1
   echo "postgres initialization complete" >&2
 fi
