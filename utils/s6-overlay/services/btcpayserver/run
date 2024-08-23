@@ -40,8 +40,8 @@ then
 fi
 
 #  check readiness of altcoin connections if configured to use
-altcoins=$(yq e '.altcoins.type' /datadir/start9/config.yaml)
-if [[ $altcoins = "monero" ]]
+altcoins=$(yq e '.altcoins.monero.status' /datadir/start9/config.yaml)
+if [[ $altcoins = "Enabled" ]]
 then
 
   if ! test -d /mnt/monerod

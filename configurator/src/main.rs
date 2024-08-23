@@ -29,16 +29,26 @@ enum LightningConfig {
 }
 
 #[derive(serde::Deserialize)]
-#[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
-enum AltcoinConfig {
+enum Status {
     #[serde(rename_all = "kebab-case")]
-    None,
+    Enabled,
     #[serde(rename_all = "kebab-case")]
-    Monero {
-        username: String,
-        password: String,
-    },
+    Disabled,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct MoneroConfig {
+    status: Status,
+    username: Option<String>,
+    password: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct AltcoinConfig {
+    monero: MoneroConfig
 }
 
 #[derive(serde::Serialize)]
@@ -76,21 +86,26 @@ fn main() -> Result<(), anyhow::Error> {
         p2p_port = 8333
     )?;
 
-    match config.altcoins {
-        AltcoinConfig::Monero {
+    match config.altcoins.monero {
+        MoneroConfig {
+            status: Status::Enabled,
             username,
-            password,
+            password
         } => {
             write!(
                 btcpay_config,
                 include_str!("templates/settings-btcpay.config.template"),
-                monero_username = username,
-                monero_password = password,
+                monero_username = username.is_some(),
+                monero_password = password.is_some(),
                 chains = "btc,xmr"
             )?;
             println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
         }
-        AltcoinConfig::None => {
+        MoneroConfig {
+            status: Status::Disabled,
+            username: _,
+            password: _
+        } => {
             write!(
                 btcpay_config,
                 include_str!("templates/settings-btcpay.config.template"),

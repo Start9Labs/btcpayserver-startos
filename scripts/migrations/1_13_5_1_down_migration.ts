@@ -2,7 +2,7 @@ import { types as T, matches } from "../deps.ts"
 
 const { shape, string } = matches
 
-export const migration_down_1_13_1_2 = (config: T.Config): T.Config => {
+export const migration_down_1_13_5_1 = (config: T.Config): T.Config => {
 
   if (Object.keys(config).length === 0) {
     // service was never configured
@@ -11,7 +11,9 @@ export const migration_down_1_13_1_2 = (config: T.Config): T.Config => {
 
   const matchAltcoinConfig = shape({
     altcoins: shape({
-      type: string,
+      monero: shape({
+        status: string,
+      })
     }),
   }, ["altcoins"])
 

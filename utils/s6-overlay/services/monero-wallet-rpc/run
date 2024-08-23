@@ -6,8 +6,8 @@
 set -ea
 
 #  check readiness of altcoin connections if configured to use
-altcoins=$(yq e '.altcoins.type' /datadir/start9/config.yaml)
-if [[ "$altcoins" = "monero" ]]
+altcoins=$(yq e '.altcoins.monero.status' /datadir/start9/config.yaml)
+if [[ $altcoins = "Enabled" ]]
 then
  MONERO_DIR=/datadir/btcpayserver/altcoins/monero
  mkdir -p $MONERO_DIR
@@ -37,11 +37,11 @@ then
  fi
 
  monero_daemon_rpc_credentials=""
- monero_daemon_rpc_username=$(yq e '.altcoins.username' /datadir/start9/config.yaml)
+ monero_daemon_rpc_username=$(yq e '.altcoins.monero.username' /datadir/start9/config.yaml)
  #If a monero daemon RPC username has been setup:
  if [ -n "$monero_daemon_rpc_username" ] && [ "$monero_daemon_rpc_username" != "null" ]
  then
-   monero_daemon_rpc_password=$(yq e '.altcoins.password' /datadir/start9/config.yaml)
+   monero_daemon_rpc_password=$(yq e '.altcoins.monero.password' /datadir/start9/config.yaml)
    monero_daemon_rpc_credentials="daemon-login=$monero_daemon_rpc_username:$monero_daemon_rpc_password"
  fi
 

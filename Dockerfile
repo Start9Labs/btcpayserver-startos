@@ -1,6 +1,6 @@
-FROM btcpayserver/monero:0.18.3.3 as monero-wallet-rpc
+FROM btcpayserver/monero:0.18.3.3 AS monero-wallet-rpc
 
-FROM nicolasdorier/nbxplorer:2.5.5 as nbx-builder
+FROM nicolasdorier/nbxplorer:2.5.5 AS nbx-builder
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
