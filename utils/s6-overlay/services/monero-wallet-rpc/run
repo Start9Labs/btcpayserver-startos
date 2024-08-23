@@ -35,7 +35,6 @@ then
   mwr_auth_file="${MONERO_DIR}/monero-wallet-rpc.${MONERO_BTCPAY_WALLET_RPC_PORT}.login"
   rm -f "$mwr_auth_file"
  fi
-gi
  monero_daemon_rpc_credentials=""
  monero_daemon_rpc_username=$(yq e '.altcoins.monero.username' /datadir/start9/config.yaml)
  #If a monero daemon RPC username has been setup:
