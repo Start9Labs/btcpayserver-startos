@@ -14,27 +14,24 @@ then
  MONERO_UID=30236
  MONERO_GID=302340
  chown $MONERO_UID:$MONERO_GID $MONERO_DIR
+ chmod 755 $MONERO_DIR
  CONF_FILENAME="monero-wallet-rpc.btcpayserver.conf"
  MONERO_BTCPAY_WALLET_RPC_CONF="${MONERO_DIR}/${CONF_FILENAME}"
  MONERO_BTCPAY_WALLET_RPC_PORT=18082
- MONERO_MOUNT_DIR=/mnt/monerod
- #Ensure that the monero wallet directory in general (and the btcpayserver wallet directory specifically) exists
- MONERO_BTCPAY_WALLET_DIR=${MONERO_MOUNT_DIR}/wallets/btcpayserver
- mkdir -p $MONERO_BTCPAY_WALLET_DIR
- chown -R $MONERO_UID:$MONERO_GID $MONERO_BTCPAY_WALLET_DIR
- chmod 755 $MONERO_BTCPAY_WALLET_DIR
- chmod 755 ${MONERO_MOUNT_DIR}/wallets
- chmod 755 ${MONERO_MOUNT_DIR}
-
- if ! test -d "$MONERO_MOUNT_DIR"
- then
-  echo "Monero mountpoint does not exist"
-  exit 0
- else
-  #remove old auth file in case it stuck around from an incomplete shutdown
-  mwr_auth_file="${MONERO_DIR}/monero-wallet-rpc.${MONERO_BTCPAY_WALLET_RPC_PORT}.login"
+ #change directory to where the monero wallets, conf, rpc db file & logs dir will go and auth file can be written successfully
+ cd "$MONERO_DIR"
+ #remove old auth file in case it stuck around from an incomplete shutdown
+ mwr_auth_file="monero-wallet-rpc.${MONERO_BTCPAY_WALLET_RPC_PORT}.login"
+ if [ -f "$mwr_auth_file" ] ; then
   rm -f "$mwr_auth_file"
  fi
+
+ #Ensure that the monero wallet directory exists
+ MONERO_BTCPAY_WALLET_DIR=${MONERO_DIR}/wallets
+ mkdir -p $MONERO_BTCPAY_WALLET_DIR
+ chown $MONERO_UID:$MONERO_GID $MONERO_BTCPAY_WALLET_DIR
+ chmod 775 $MONERO_BTCPAY_WALLET_DIR
+
  monero_daemon_rpc_credentials=""
  monero_daemon_rpc_username=$(yq e '.altcoins.monero.username' /datadir/start9/config.yaml)
  #If a monero daemon RPC username has been setup:
@@ -46,14 +43,12 @@ then
 
  #Construct a fully-formed monero-wallet-rpc config file from the template
  cp -f /etc/$CONF_FILENAME.template $MONERO_BTCPAY_WALLET_RPC_CONF
+ sed -i "s|MONERO_DIR|$MONERO_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
  sed -i "s|MONERO_BTCPAY_WALLET_RPC_PORT|$MONERO_BTCPAY_WALLET_RPC_PORT|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
  sed -i "s|MONERO_BTCPAY_WALLET_DIR|$MONERO_BTCPAY_WALLET_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
- sed -i "s|MONERO_MOUNT_DIR|$MONERO_MOUNT_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
  sed -i "s|MONERO_DAEMON_RPC_CREDENTIALS|$monero_daemon_rpc_credentials|g" $MONERO_BTCPAY_WALLET_RPC_CONF
- #change directory to the directory where $mwr_auth_file can be written successfully
- cd $MONERO_DIR
-
+ 
  # start monero-wallet-rpc, copying stderr onto stdout
  exec s6-setuidgid $MONERO_UID:$MONERO_GID /usr/local/bin/monero-wallet-rpc --non-interactive --disable-rpc-login --config-file $MONERO_BTCPAY_WALLET_RPC_CONF 2>&1
- 
+
 fi
