@@ -22,7 +22,7 @@ export const migration_up_1_13_5_1 = (config: T.Config): T.Config => {
    if (!matchConfigWithAltcoins.test(config)) {
     const newAltcoinsConfig: typeof altcoinsConfig._TYPE = {
       monero: {
-        status: 'Disabled'
+        status: 'disabled'
       }
     }
     return {

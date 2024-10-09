@@ -10,7 +10,7 @@ RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
 
-FROM btcpayserver/btcpayserver:1.13.5-altcoins
+FROM --platform=$BUILDPLATFORM btcpayserver/btcpayserver:1.13.5-altcoins
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions

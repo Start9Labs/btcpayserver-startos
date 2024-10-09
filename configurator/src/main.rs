@@ -91,8 +91,8 @@ fn main() -> Result<(), anyhow::Error> {
             write!(
                 btcpay_config,
                 include_str!("templates/settings-btcpay.config.template"),
-                monero_username = &config.altcoins.monero.username.is_some(),
-                monero_password = &config.altcoins.monero.password.is_some(),
+                monero_username = &config.altcoins.monero.username.unwrap(),
+                monero_password = &config.altcoins.monero.password.unwrap(),
                 chains = "btc,xmr"
             )?;
             println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
