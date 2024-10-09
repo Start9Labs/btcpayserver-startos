@@ -49,6 +49,6 @@ then
  sed -i "s|MONERO_DAEMON_RPC_CREDENTIALS|$monero_daemon_rpc_credentials|g" $MONERO_BTCPAY_WALLET_RPC_CONF
  
  # start monero-wallet-rpc, copying stderr onto stdout
- exec s6-setuidgid $MONERO_UID:$MONERO_GID /usr/local/bin/monero-wallet-rpc --non-interactive --disable-rpc-login --config-file $MONERO_BTCPAY_WALLET_RPC_CONF 2>&1
+ exec s6-setuidgid $MONERO_UID:$MONERO_GID /usr/local/bin/monero-wallet-rpc --non-interactive --config-file $MONERO_BTCPAY_WALLET_RPC_CONF 2>&1
 
 fi
