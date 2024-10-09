@@ -20,9 +20,9 @@ BTC.explorer.cookiefile=/datadir/nbxplorer/Main/.cookie
 #BTC.lightning=https://apitoken:API_TOKEN_SECRET@charge.example.com/
 
 ### Monero settings ###
-XMR_daemon_uri=http://monerod.embassy:18081
+XMR_daemon_uri=http://monerod.embassy:18089
 XMR_wallet_daemon_uri=http://127.0.0.1:18082
-XMR_wallet_daemon_walletdir=/mnt/monerod/wallets/btcpayserver
+XMR_wallet_daemon_walletdir=/datadir/btcpayserver/altcoins/monero/wallets
 # Only use username and password if Monero daemon's RPC is password protected
 XMR_daemon_username={monero_username}
 XMR_daemon_password={monero_password}
