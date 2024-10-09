@@ -64,7 +64,7 @@ If you would like to connect to an external lightning node, select "Use custom n
 
 ## Enabling Altcoins
 
-Currently, Monero is the only altcoin available. This service can be installed on your server from the Community Marketplace and enabled in config by selecting Monero from the "Integrations" section. 
+Currently, Monero is the only altcoin available. This service can be installed on your server from the Community Marketplace and enabled in config by setting `Altcoins Integrations > Monero` to "Enabled".
 
 Enabling Monero requires manual wallet setup. Fortunately, the community has put together some great guides to get this setup:
 
