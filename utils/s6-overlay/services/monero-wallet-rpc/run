@@ -7,7 +7,7 @@ set -ea
 
 #  check readiness of altcoin connections if configured to use
 monero_status=$(yq e '.altcoins.monero.status' /datadir/start9/config.yaml)
-if [[ $monero_status = "enabled" ]]
+if [[ $monero_status = "enabled" ]] 
 then
  MONERO_DIR=/datadir/btcpayserver/altcoins/monero
  mkdir -p $MONERO_DIR
@@ -48,6 +48,12 @@ then
  sed -i "s|MONERO_BTCPAY_WALLET_DIR|$MONERO_BTCPAY_WALLET_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
  sed -i "s|MONERO_DAEMON_RPC_CREDENTIALS|$monero_daemon_rpc_credentials|g" $MONERO_BTCPAY_WALLET_RPC_CONF
  
+ #Delay and try again if the wallet file is not already in place...
+ while [[ ! -f "$MONERO_BTCPAY_WALLET_DIR/wallet" || ! -f "$MONERO_BTCPAY_WALLET_DIR/password" ]]
+ do
+  #Check again soon to see if the wallet file has been uploaded
+  sleep 3
+ done
  # start monero-wallet-rpc, copying stderr onto stdout
  exec s6-setuidgid $MONERO_UID:$MONERO_GID /usr/local/bin/monero-wallet-rpc --non-interactive --config-file $MONERO_BTCPAY_WALLET_RPC_CONF 2>&1
 
