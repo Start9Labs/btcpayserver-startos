@@ -48,6 +48,56 @@ const matchOldBitcoindConfig = shape({
   }),
 })
 
+const matchMoneroConfig = shape({
+  rpc: shape({
+    "rpc-credentials": shape({
+      enabled: string
+    }),
+  }),
+  integrations: shape({
+    blocknotify: shape({
+      btcpayserver: boolean
+    })
+  })
+});
+
+
+const moneroChecks: Array<Check> = [
+  {
+    currentError(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return "Monero config is not the correct shape";
+      }
+      if (config.rpc["rpc-credentials"].enabled !== 'enabled') {
+        return "Must have RPC enabled";
+      }
+      return;
+    },
+    fix(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return
+      }
+      config.rpc["rpc-credentials"].enabled = 'enabled';
+    },
+  },
+  {
+    currentError(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return "Monero config is not the correct shape";
+      }
+      if (!config.integrations.blocknotify.btcpayserver) {
+        return "Must have blocknotify enabled for btcpayserver";
+      }
+      return;
+    },
+    fix(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return
+      }
+      config.integrations.blocknotify.btcpayserver = true;
+    },
+  }]
+
 
 const bitcoindChecks: Array<Check> = [
   {
@@ -124,6 +174,31 @@ export const dependencies: T.ExpectedExports.dependencies = {
         }
       }
       return { result: bitcoindConfig };
+    },
+  },
+  monerod: {
+    // deno-lint-ignore require-await
+    async check(effects, moneroConfig) {
+      effects.info("check monerod");
+      for (const checker of moneroChecks) {
+        const error = checker.currentError(moneroConfig);
+        if (error) {
+          effects.error(`throwing error: ${error}`);
+          return { error };
+        }
+      }
+      return { result: null };
+    },
+    // deno-lint-ignore require-await
+    async autoConfigure(effects, moneroConfig) {
+      effects.info("autoconfigure monerod");
+      for (const checker of moneroChecks) {
+        const error = checker.currentError(moneroConfig);
+        if (error) {
+          checker.fix(moneroConfig);
+        }
+      }
+      return { result: moneroConfig };
     },
   },
 };
