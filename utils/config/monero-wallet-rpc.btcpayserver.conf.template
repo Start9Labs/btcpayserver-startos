@@ -8,10 +8,10 @@ daemon-host=monerod.embassy
 daemon-port=18089
 disable-rpc-login=1
 
-wallet-dir=MONERO_BTCPAY_WALLET_DIR
-#wallet-file=MONERO_BTCPAY_WALLET_DIR/wallet
-#password-file=MONERO_BTCPAY_WALLET_DIR/password
-log-file=logs/monero-wallet-rpc.btcpayserver.log
+#wallet-dir=MONERO_BTCPAY_WALLET_DIR
+wallet-file=MONERO_BTCPAY_WALLET_DIR/wallet
+password-file=MONERO_BTCPAY_WALLET_DIR/password
+log-file=MONERO_DIR/logs/monero-wallet-rpc.btcpayserver.log
 #log-level=2
 max-log-file-size=10000000 #10MiB
 max-log-files=2
