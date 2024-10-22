@@ -6,5 +6,6 @@ actions/bin
 .DS_Store
 docker-images
 utils/actions/obj
-procedures/*.js
+startos/*.js
 node_modules/
+notes.md

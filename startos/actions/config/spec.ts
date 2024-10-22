@@ -1,7 +1,7 @@
 import { sdk } from '../../sdk'
-const { Config, Value, Variants } = sdk
+const { InputSpec, Value } = sdk
 
-export const configSpec = Config.of({
+export const inputSpec = InputSpec.of({
   lightning: Value.select({
     name: 'Lightning Node',
     description:
@@ -9,7 +9,7 @@ export const configSpec = Config.of({
     required: false,
     values: {
       lnd: 'LND',
-      'c-lightning': 'Core Lightning',
+      cln: 'Core Lightning',
     },
   }),
   advanced: Value.object(
@@ -17,9 +17,8 @@ export const configSpec = Config.of({
       name: 'Advanced Settings',
       description:
         'Advanced configuration options to change if you know what you are doing',
-      warning: null,
     },
-    Config.of({
+    InputSpec.of({
       'sync-start-height': Value.number({
         name: 'Sync Start Height',
         description:
@@ -33,4 +32,6 @@ export const configSpec = Config.of({
     }),
   ),
 })
-export type ConfigSpec = typeof configSpec.validator._TYPE
+
+export const matchConfigSpec = inputSpec.validator
+export type ConfigSpec = typeof matchConfigSpec._TYPE
