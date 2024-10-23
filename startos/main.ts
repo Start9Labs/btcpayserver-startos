@@ -1,8 +1,18 @@
 import { sdk } from './sdk'
-import { uiPort } from './interfaces'
+import { uiPort, webInterfaceId } from './interfaces'
 import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { SubContainer } from '@start9labs/start-sdk'
+import { NBXplorerEnvFile } from './file-models/nbxplorer.env'
+import { btcpsEnvFile } from './file-models/btcpay.env'
+import { credentials } from 'bitcoind-startos/startos/actions/credentials'
+
+export const mainMounts = sdk.Mounts.of().addVolume(
+  'main',
+  null,
+  '/datadir',
+  false,
+)
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   console.info('Starting BTCPay Server...')
@@ -48,37 +58,39 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     },
   })
 
-  const mainMounts = sdk.Mounts.of().addVolume('main', null, '/datadir', false)
-  const lightningImplementation = await sdk.store
-    .getOwn(effects, sdk.StorePath.lightningImplementation)
-    .const()
-  let BTCPAY_BTCLIGHTNING = ''
-  if (lightningImplementation === 'lnd') {
-    const mountpoint = mainMounts.addDependency(
-      'lnd',
-      'main', //@TODO verify
-      'public', //@TODO verify
-      '/mnt/lnd',
-      true,
-    )
-    BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.embassy:8080/;macaroonfilepath=${mountpoint}/admin.macaroon;allowinsecure=true`
-  }
-  if (lightningImplementation === 'cln') {
-    const mountpoint = mainMounts.addDependency(
-      'cln',
-      'main', //@TODO verify
-      'shared', //@TODO verify
-      '/mnt/cln',
-      true,
-    )
-    BTCPAY_BTCLIGHTNING = `type=clightning;server=unix://${mountpoint}/lightning-rpc`
-  }
-
   // @TODO add smtp
 
-  const NBXPLORER_STARTHEIGHT = await sdk.store
+  const startHeight = await sdk.store
     .getOwn(effects, sdk.StorePath.startHeight)
     .const()
+
+  await NBXplorerEnvFile.write({
+    NBXPLORER_NETWORK: 'mainnet',
+    NBXPLORER_PORT: '24444',
+    NBXPLORER_BTCNODEENDPOINT: 'bitcoind.embassy:8333',
+    NBXPLORER_BTCRPCURL: 'bitcoind.embassy:8332',
+    // @TODO get from bitcoin
+    NBXPLORER_BTCRPCUSER: '',
+    NBXPLORER_BTCRPCPASSWORD: '',
+    NBXPLORER_RESCAN: '1',
+    NBXPLORER_STARTHEIGHT: startHeight ? startHeight.toString() : '-1',
+  })
+
+  // @TODO difference between effects.getContainerIp() and sdk.getContainerIp()?
+  const ip = await sdk.getContainerIp(effects)
+  const addressInfo = (await sdk.serviceInterface
+    .getOwn(effects, webInterfaceId)
+    .const())!.addressInfo!
+
+  await btcpsEnvFile.write({
+    BTCPAY_NETWORK: 'mainnet',
+    BTCPAY_BIND: '0.0.0.0:23000',
+    BTCPAY_NBXPLORER_COOKIE: '', // @TODO???,
+    BTCPAY_SOCKSENDPOINT: 'embassy:9050',
+    BTCPAY_HOST: `https://${ip}/`, // @TODO confirm
+    REVERSEPROXY_DEFAULT_HOST: `https://${ip}/`, // @TODO confirm
+    BTCPAY_ADDITIONAL_HOSTS: `${addressInfo.urls.join()}`, // @TODO confirm
+  })
 
   return sdk.Daemons.of({
     effects,
@@ -120,17 +132,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       image: { id: 'nbx' },
       mounts: sdk.Mounts.of().addVolume('nbx', null, '/datadir', false),
       command: ['dotnet', '/nbxplorer/NBXplorer.dll'],
-      env: {
-        NBXPLORER_NETWORK: 'mainnet',
-        NBXPLORER_PORT: '24444',
-        NBXPLORER_BTCNODEENDPOINT: 'bitcoind.embassy:8333',
-        NBXPLORER_BTCRPCURL: 'bitcoind.embassy:8332',
-        NBXPLORER_BTCRPCUSER: 'btcpayserver',
-        // @TODO get from bitcoin
-        // NBXPLORER_BTCRPCPASSWORD,
-        NBXPLORER_RESCAN: '1',
-        NBXPLORER_STARTHEIGHT: NBXPLORER_STARTHEIGHT?.toString() || '-1',
-      },
+      env: (await NBXplorerEnvFile.read.const(effects))!,
       ready: {
         display: 'UTXO Tracker Sync',
         fn: async () =>
@@ -145,12 +147,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       image: { id: 'main' },
       mounts: mainMounts,
       command: ['dotnet', '/app/BTCPayServer.dll'],
-      env: {
-        BTCPAY_NETWORK: 'mainnet',
-        BTCPAY_BIND: '0.0.0.0:23000',
-        BTCPAY_NBXPLORER_COOKIE: '', // @TODO???,
-        BTCPAY_BTCLIGHTNING,
-      },
+      env: (await NBXplorerEnvFile.read.const(effects))!,
       // @TODO add trigger
       ready: {
         display: 'Web Interface',

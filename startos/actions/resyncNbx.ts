@@ -32,6 +32,8 @@ export const resyncNbx = sdk.Action.withInput(
 
     await sdk.store.setOwn(effects, sdk.StorePath.startHeight, startHeight)
 
+    // @TODO how do i reset this value after action is run?
+
     console.info(`BTCPay Server will now resync from block ${startHeight}`)
   },
 )

@@ -1,5 +1,4 @@
 *.s9pk
-configurator/target
 actions/obj
 actions/bin
 .vscode/*
