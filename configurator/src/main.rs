@@ -17,6 +17,26 @@ struct Config {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct MoneroStart9Config {
+    rpc: MoneroRpcCredentials,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct MoneroRpcCredentials {
+    rpc_credentials: MoneroRpcCredentialValues,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+struct MoneroRpcCredentialValues {
+    enabled: Status,
+    password: Option<String>,
+    username: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
 #[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
 enum LightningConfig {
@@ -41,8 +61,6 @@ enum Status {
 #[serde(rename_all = "kebab-case")]
 struct MoneroConfig {
     status: Status,
-    username: Option<String>,
-    password: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -68,6 +86,10 @@ fn main() -> Result<(), anyhow::Error> {
     let config: Config = serde_yaml::from_reader(
         File::open("/datadir/start9/config.yaml").with_context(|| "/datadir/start9/config.yaml")?,
     )?;
+    let monero_config: MoneroStart9Config = serde_yaml::from_reader(
+        File::open("/mnt/monerod/start9/config.yaml")
+            .with_context(|| "/mnt/monerod/start9/config.yaml")?,
+    )?;
     let tor_address = config.tor_address;
     let mut nbx_config = File::create("/datadir/nbxplorer/Main/settings.config")
         .with_context(|| "/datadir/nbxplorer/mainnet/settings.config")?;
@@ -88,13 +110,26 @@ fn main() -> Result<(), anyhow::Error> {
 
     match config.altcoins.monero.status {
         Status::Enabled => {
-            write!(
-                btcpay_config,
-                include_str!("templates/settings-btcpay.config.template"),
-                monero_username = &config.altcoins.monero.username.unwrap(),
-                monero_password = &config.altcoins.monero.password.unwrap(),
-                chains = "btc,xmr"
-            )?;
+            match monero_config.rpc.rpc_credentials.enabled {
+                Status::Enabled => {
+                    write!(
+                        btcpay_config,
+                        include_str!("templates/settings-btcpay.config.template"),
+                        monero_username = &monero_config.rpc.rpc_credentials.username.unwrap(),
+                        monero_password = &monero_config.rpc.rpc_credentials.password.unwrap(),
+                        chains = "btc,xmr"
+                    )?;
+                }
+                Status::Disabled => {
+                    write!(
+                        btcpay_config,
+                        include_str!("templates/settings-btcpay.config.template"),
+                        monero_username = "",
+                        monero_password = "",
+                        chains = "btc,xmr"
+                    )?;
+                }
+            }
             println!("{}", format!("export BTCPAYGEN_CRYPTO2='xmr'\n"));
         }
         Status::Disabled => {

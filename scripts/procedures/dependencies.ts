@@ -10,12 +10,11 @@ type Check = {
 async function readConfig(effects: T.Effects): Promise<T.Config> {
   const configMatcher = dictionary([string, any]);
   const config = configMatcher.unsafeCast(
-    await effects.readFile(
-      {
+    await effects
+      .readFile({
         path: "start9/config.yaml",
         volumeId: "main",
-      }
-    )
+      })
       .then(YAML.parse)
   );
   return config;
@@ -38,7 +37,7 @@ const matchBitcoindConfig = shape({
 const matchOldBitcoindConfig = shape({
   rpc: shape({
     advanced: shape({
-      serialversion: matches.any
+      serialversion: matches.any,
     }),
   }),
   advanced: shape({
@@ -46,40 +45,17 @@ const matchOldBitcoindConfig = shape({
       mode: string,
     }),
   }),
-})
-
-const matchMoneroConfig = shape({
-  rpc: shape({
-    "rpc-credentials": shape({
-      enabled: string
-    }),
-  }),
-  integrations: shape({
-    blocknotify: shape({
-      btcpayserver: boolean
-    })
-  })
 });
 
+const matchMoneroConfig = shape({
+  integrations: shape({
+    blocknotify: shape({
+      btcpayserver: boolean,
+    }),
+  }),
+});
 
 const moneroChecks: Array<Check> = [
-  {
-    currentError(config) {
-      if (!matchMoneroConfig.test(config)) {
-        return "Monero config is not the correct shape";
-      }
-      if (config.rpc["rpc-credentials"].enabled !== 'enabled') {
-        return "Must have RPC enabled";
-      }
-      return;
-    },
-    fix(config) {
-      if (!matchMoneroConfig.test(config)) {
-        return
-      }
-      config.rpc["rpc-credentials"].enabled = 'enabled';
-    },
-  },
   {
     currentError(config) {
       if (!matchMoneroConfig.test(config)) {
@@ -92,12 +68,12 @@ const moneroChecks: Array<Check> = [
     },
     fix(config) {
       if (!matchMoneroConfig.test(config)) {
-        return
+        return;
       }
       config.integrations.blocknotify.btcpayserver = true;
     },
-  }]
-
+  },
+];
 
 const bitcoindChecks: Array<Check> = [
   {
@@ -112,7 +88,7 @@ const bitcoindChecks: Array<Check> = [
     },
     fix(config) {
       if (!matchBitcoindConfig.test(config)) {
-        return
+        return;
       }
       config.rpc.enable = true;
     },
@@ -129,25 +105,28 @@ const bitcoindChecks: Array<Check> = [
     },
     fix(config) {
       if (!matchBitcoindConfig.test(config)) {
-        return
+        return;
       }
       config.advanced.peers.listen = true;
     },
   },
   {
     currentError(config) {
-      if (matchOldBitcoindConfig.test(config) && config.advanced.pruning.mode !== "disabled") {
-        return 'Pruning must be disabled to use with <= 24.0.1 of Bitcoin Core. To use with a pruned node, update Bitcoin Core to >= 25.0.0~2.';
+      if (
+        matchOldBitcoindConfig.test(config) &&
+        config.advanced.pruning.mode !== "disabled"
+      ) {
+        return "Pruning must be disabled to use with <= 24.0.1 of Bitcoin Core. To use with a pruned node, update Bitcoin Core to >= 25.0.0~2.";
       }
       return;
     },
     fix(config) {
       if (!matchOldBitcoindConfig.test(config)) {
-        return
+        return;
       }
-      config.advanced.pruning.mode = "disabled"
+      config.advanced.pruning.mode = "disabled";
     },
-  }
+  },
 ];
 
 export const dependencies: T.ExpectedExports.dependencies = {

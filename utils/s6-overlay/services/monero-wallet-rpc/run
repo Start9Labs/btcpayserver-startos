@@ -32,21 +32,23 @@ then
  chown $MONERO_UID:$MONERO_GID $MONERO_BTCPAY_WALLET_DIR
  chmod 775 $MONERO_BTCPAY_WALLET_DIR
 
- monero_daemon_rpc_credentials=""
- monero_daemon_rpc_username=$(yq e '.altcoins.monero.username' /datadir/start9/config.yaml)
- #If a monero daemon RPC username has been setup:
- if [ -n "$monero_daemon_rpc_username" ] && [ "$monero_daemon_rpc_username" != "null" ]
- then
-   monero_daemon_rpc_password=$(yq e '.altcoins.monero.password' /datadir/start9/config.yaml)
-   monero_daemon_rpc_credentials="daemon-login=$monero_daemon_rpc_username:$monero_daemon_rpc_password"
- fi
-
- #Construct a fully-formed monero-wallet-rpc config file from the template
+#Construct a fully-formed monero-wallet-rpc config file from the template
  cp -f /etc/$CONF_FILENAME.template $MONERO_BTCPAY_WALLET_RPC_CONF
  sed -i "s|MONERO_DIR|$MONERO_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
  sed -i "s|MONERO_BTCPAY_WALLET_RPC_PORT|$MONERO_BTCPAY_WALLET_RPC_PORT|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
  sed -i "s|MONERO_BTCPAY_WALLET_DIR|$MONERO_BTCPAY_WALLET_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF && \
- sed -i "s|MONERO_DAEMON_RPC_CREDENTIALS|$monero_daemon_rpc_credentials|g" $MONERO_BTCPAY_WALLET_RPC_CONF
+
+ monero_daemon_rpc_credentials=""
+ monero_rpc_enabled="$(yq e '.rpc.rpc-credentials.enabled' /mnt/monerod/start9/config.yaml)"
+ #If a monero daemon RPC username has been setup:
+ if [ "$monero_rpc_enabled" == "enabled" ]
+ then
+  monero_daemon_rpc_username=$(yq e '.rpc.rpc-credentials.username' /mnt/monerod/start9/config.yaml)
+   monero_daemon_rpc_password=$(yq e '.rpc.rpc-credentials.password' /mnt/monerod/start9/config.yaml)
+   monero_daemon_rpc_credentials="daemon-login=$monero_daemon_rpc_username:$monero_daemon_rpc_password"
+    sed -i "s|MONERO_DAEMON_RPC_CREDENTIALS|$monero_daemon_rpc_credentials|g" $MONERO_BTCPAY_WALLET_RPC_CONF
+ fi
+
  
  #Delay and try again if the wallet files are not already in place...
  while [[ ! -f "$MONERO_BTCPAY_WALLET_DIR/wallet" || ! -f "$MONERO_BTCPAY_WALLET_DIR/password" ]]
