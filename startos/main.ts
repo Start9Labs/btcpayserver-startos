@@ -2,6 +2,7 @@ import { sdk } from './sdk'
 import { uiPort, webInterfaceId } from './interfaces'
 import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
+import { T } from '@start9labs/start-sdk'
 import { SubContainer } from '@start9labs/start-sdk'
 import { NBXplorerEnvFile } from './file-models/nbxplorer.env'
 import { btcpsEnvFile } from './file-models/btcpay.env'
@@ -48,7 +49,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           const jsonRes = (await res.json()) as NbxStatusRes
           // @TODO remove me after testing
           console.log(`NBX status response is: ${res}`)
-          console.log(`NBX status response parsed as json: ${res}`)
+          console.log(`NBX status response parsed as json: ${jsonRes}`)
           return jsonRes
         })
         .catch((e: any) => {

@@ -35,11 +35,12 @@ export const config = sdk.Action.withInput(
 
     if (input.lightning === 'lnd') {
       // @TODO mainMounts.addDependency<typeof LndManifest>
-      const mountpoint = mainMounts.addDependency(
+      const mountpoint = '/mnt/lnd'
+      mainMounts.addDependency(
         'lnd',
         'main', //@TODO verify
         'public', //@TODO verify
-        '/mnt/lnd',
+        mountpoint,
         true,
       )
       BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.embassy:8080/;macaroonfilepath=${mountpoint}/admin.macaroon;allowinsecure=true`
@@ -47,11 +48,12 @@ export const config = sdk.Action.withInput(
 
     if (input.lightning === 'cln') {
       // @TODO mainMounts.addDependency<typeof ClnManifest>
-      const mountpoint = mainMounts.addDependency(
+      const mountpoint = '/mnt/cln'
+      mainMounts.addDependency(
         'cln',
         'main', //@TODO verify
         'shared', //@TODO verify
-        '/mnt/cln',
+        mountpoint,
         true,
       )
       BTCPAY_BTCLIGHTNING = `type=clightning;server=unix://${mountpoint}/lightning-rpc`
