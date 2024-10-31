@@ -3,9 +3,9 @@ FROM nicolasdorier/nbxplorer:2.5.9 AS nbx-builder
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 WORKDIR /actions
 COPY . .
-RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
+RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETPLATFORM
 WORKDIR "/actions"
-RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
+RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETPLATFORM -o /actions/build
 
 FROM btcpayserver/btcpayserver:2.0.0
 
