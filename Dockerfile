@@ -1,7 +1,6 @@
 FROM nicolasdorier/nbxplorer:2.5.9 AS nbx-builder
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
-ARG TARGETARCH
 WORKDIR /actions
 COPY . .
 RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
