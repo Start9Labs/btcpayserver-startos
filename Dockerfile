@@ -1,7 +1,7 @@
 FROM btcpayserver/monero:0.18.3.3 AS monero-wallet-rpc
 FROM nicolasdorier/nbxplorer:2.5.9 AS nbx-builder
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
 WORKDIR /actions
 COPY . .
