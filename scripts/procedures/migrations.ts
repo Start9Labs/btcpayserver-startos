@@ -2,8 +2,8 @@ import { types as T, compat } from "../deps.ts";
 import { migration_up_1_4_7 } from "../migrations/1_4_7_up_migration.ts";
 import { migration_down_1_4_7 } from "../migrations/1_4_7_down_migration.ts";
 import { migration_up_1_10_3 } from "../migrations/1_10_3_up_migration.ts";
-import { migration_up_1_13_5_1 } from "../migrations/1_13_5_1_up_migration.ts";
-import { migration_down_1_13_5_1 } from "../migrations/1_13_5_1_down_migration.ts";
+import { migration_up_2_0_0_1 } from "../migrations/2_0_0_1_up_migration.ts";
+import { migration_down_2_0_0_1 } from "../migrations/2_0_0_1_down_migration.ts";
 
 export const migration: T.ExpectedExports.migration = async (
   effects,
@@ -51,28 +51,15 @@ export const migration: T.ExpectedExports.migration = async (
         ),
       },
       "2.0.0": {
-        up: compat.migrations.updateConfig((config) => config, true, {
-          version: "2.0.0",
-          type: "up",
-        }),
+        up: compat.migrations.updateConfig(
+          (config) => {
+            return migration_up_2_0_0_1(config);
+          },
+          true,
+          { version: "2.0.0", type: "up" }
+        ),
         down: () => {
           throw new Error("Cannot downgrade this version");
-        },
-        "1.13.5.1": {
-          up: compat.migrations.updateConfig(
-            (config) => {
-              return migration_up_1_13_5_1(config)
-            },
-            true,
-            { version: "1.13.5.1", type: "up"}
-          ),
-          down: compat.migrations.updateConfig(
-            (config) => {
-              return migration_down_1_13_5_1(config)
-            },
-            true,
-            { version: "1.13.5.1", type: "down" },
-          ),
         },
       },
     },

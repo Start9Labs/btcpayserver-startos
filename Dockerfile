@@ -35,7 +35,6 @@ RUN apt-get update \
   && apt-get clean autoclean \
   && rm -rf /var/lib/apt/lists/*
 
-
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.1.2.1

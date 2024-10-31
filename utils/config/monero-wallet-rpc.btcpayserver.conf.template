@@ -23,6 +23,7 @@ rpc-bind-port=MONERO_BTCPAY_WALLET_RPC_PORT
 
 shared-ringdb-dir=MONERO_DIR
 
-MONERO_DAEMON_RPC_CREDENTIALS
+# if empty, placeholder for if/when monerod rpc credentials are enabled
+#daemon-login=
 
 tx-notify=/usr/bin/curl -so /dev/null -X GET http://127.0.0.1:23000/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s
