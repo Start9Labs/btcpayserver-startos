@@ -53,13 +53,9 @@ export const migration: T.ExpectedExports.migration = async (
           version: "2.0.0",
           type: "up",
         }),
-        down: compat.migrations.updateConfig(
-          (_config) => {
-            throw new Error("Cannot downgrade this version");
-          },
-          true,
-          { version: "2.0.0", type: "down" }
-        ),
+        down: () => {
+          throw new Error("Cannot downgrade this version");
+        },
       },
     },
     "2.0.0"
