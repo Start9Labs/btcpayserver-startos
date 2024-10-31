@@ -1,6 +1,6 @@
 FROM nicolasdorier/nbxplorer:2.5.9 AS nbx-builder
 
-FROM --platform=$TARGETPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
+FROM --platform=$TARGETPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS actions-builder
 ARG TARGETARCH
 WORKDIR /actions
 COPY . .
