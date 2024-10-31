@@ -77,4 +77,4 @@ scripts/embassy.js: $(TS_FILES)
 	deno bundle scripts/embassy.ts scripts/embassy.js
 
 LICENSE:
-	wget https://raw.githubusercontent.com/btcpayserver/btcpayserver/v1.13.5/LICENSE -O - > LICENSE
+	wget https://raw.githubusercontent.com/btcpayserver/btcpayserver/v$(UPSTREAM_VERSION)/LICENSE -O - > LICENSE
