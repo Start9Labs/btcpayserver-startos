@@ -1,6 +1,6 @@
 FROM nicolasdorier/nbxplorer:2.5.9 AS nbx-builder
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
 WORKDIR /actions
 COPY . .
@@ -8,7 +8,7 @@ RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
 
-FROM --platform=$BUILDPLATFORM btcpayserver/btcpayserver:2.0.0
+FROM btcpayserver/btcpayserver:2.0.0
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
