@@ -1,8 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 1.13.5
+version: 2.0.0
 release-notes: |
-  * Updates to the upstream release of [v1.13.5](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.5), which adds several improvements from [v1.13.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v1.13.4) as well as bug fixes.
+  * Major upstream release of [v2.0.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.0)! This release introduces many new features and some breaking changes. Please see the [blog post](https://blog.btcpayserver.org/btcpay-server-2-0/) for more details.
+  * Please note: large instances may experience a few minutes of database migration.
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"

@@ -5,18 +5,6 @@ use std::{
 };
 
 use anyhow::Context;
-use serde::{
-    de::{Deserializer, Error as DeserializeError, Unexpected},
-    Deserialize,
-};
-
-fn deserialize_parse<'de, D: Deserializer<'de>, T: std::str::FromStr>(
-    deserializer: D,
-) -> Result<T, D::Error> {
-    let s: String = Deserialize::deserialize(deserializer)?;
-    s.parse()
-        .map_err(|_| DeserializeError::invalid_value(Unexpected::Str(&s), &"a valid URI"))
-}
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -69,7 +57,7 @@ fn main() -> Result<(), anyhow::Error> {
         rpc_port = 8332,
         rpc_password = config.bitcoin_rpc_password,
         rpc_user = config.bitcoin_rpc_user,
-        p2p_host= bitcoin_host,
+        p2p_host = bitcoin_host,
         p2p_port = 8333
     )?;
     write!(
@@ -81,7 +69,10 @@ fn main() -> Result<(), anyhow::Error> {
     match addr.first() {
         Some(x) => {
             print!("{}", format!("export BTCPAY_HOST='https://{}.local/'\n", x));
-            print!("{}", format!("export REVERSEPROXY_DEFAULT_HOST='http://{}.local/'\n", x));
+            print!(
+                "{}",
+                format!("export REVERSEPROXY_DEFAULT_HOST='http://{}.local/'\n", x)
+            );
             print!("{}", format!("export BTCPAY_ADDITIONAL_HOSTS='https://{}.local/,http://{}.local/,http://{}.onion/'\n", x, x, x));
             print!("{}", "export BTCPAY_SOCKSENDPOINT='embassy:9050'\n");
         }
