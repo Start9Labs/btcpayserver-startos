@@ -2,7 +2,7 @@ import { types as T, matches } from "../deps.ts";
 
 const { shape, string } = matches;
 
-export const migration_up_2_0_0_1 = (config: T.Config): T.Config => {
+export const migration_up_2_0_0 = (config: T.Config): T.Config => {
   if (Object.keys(config).length === 0) {
     // service was never configured
     return config;
