@@ -68,11 +68,11 @@ In config, find `Altcoin Integrations` and set the desired altcoin implemtation 
 
 ### Monero
 
-This service can be installed on your server from the Community Marketplace and enabled in config by setting `Altcoin Integrations > Monero` to "Enabled".
+This service can be installed on your server from the Community Marketplace and enabled in config by setting `Altcoin Integrations > Monero` to "Enabled". You will need a fully synced Monero node for operations to work properly.
 
 #### Wallet
 
-Enabling Monero requires manual wallet setup. Fortunately, the community has put together some great guides to get this setup:
+Enabling Monero requires a manual wallet setup. Fortunately, the community has put together some great guides to do so:
 
 - [SethForPrivacy Guide](https://sethforprivacy.com/guides/accepting-monero-via-btcpay-server/#setup-your-bitcoin-and-monero-wallets)
 - [Freedom Node Guide](https://freedomnode.com/blog/howto-accept-monero-for-your-services-btcpayserver/#create-a-view-only-monero-wallet-with-feather)

@@ -60,11 +60,12 @@ then
     sed -i "s|#daemon-login=.*|daemon-login=$monero_daemon_rpc_credentials|g" $MONERO_BTCPAY_WALLET_RPC_CONF
   fi
  
-  # Delay and try again if the wallet files are not already in place...
-  while [[ ! -f "$MONERO_BTCPAY_WALLET_DIR/wallet" || ! -f "$MONERO_BTCPAY_WALLET_DIR/password" ]]
-  do
-    sleep 7
-  done
+  if [[ -f "$MONERO_BTCPAY_WALLET_DIR/wallet" || -f "$MONERO_BTCPAY_WALLET_DIR/password" ]]
+  then
+    sed -i "s|wallet-dir=.*|#wallet-dir=$MONERO_BTCPAY_WALLET_DIR|g" $MONERO_BTCPAY_WALLET_RPC_CONF
+    sed -i "s|#wallet-file=.*|wallet-file=$MONERO_BTCPAY_WALLET_DIR/wallet|g" $MONERO_BTCPAY_WALLET_RPC_CONF
+    sed -i "s|#password-file=.*|password-file=$MONERO_BTCPAY_WALLET_DIR/password|g" $MONERO_BTCPAY_WALLET_RPC_CONF
+  fi
 
   # Start monero-wallet-rpc, copying stderr onto stdout
   exec s6-setuidgid $MONERO_UID:$MONERO_GID /usr/local/bin/monero-wallet-rpc --non-interactive --config-file $MONERO_BTCPAY_WALLET_RPC_CONF 2>&1
