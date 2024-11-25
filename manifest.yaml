@@ -1,9 +1,11 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.0.0
+version: 2.0.3
 release-notes: |
-  * Major upstream release of [v2.0.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.0)! This release introduces many new features and some breaking changes. Please see the [blog post](https://blog.btcpayserver.org/btcpay-server-2-0/) for more details.
+  * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.3)
+  * Includes major upstream release of [v2.0.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.0)! This release introduces many new features and some breaking changes. Please see the [blog post](https://blog.btcpayserver.org/btcpay-server-2-0/) for more details.
   * Please note: large instances may experience a few minutes of database migration.
+  * Adds optional Monero integration for payment processing
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -29,6 +31,7 @@ main:
   mounts:
     lnd: /mnt/lnd
     c-lightning: "/mnt/c-lightning"
+    monerod: "/mnt/monerod"
     main: /datadir
 health-checks:
   explorer-synced:
@@ -88,6 +91,17 @@ dependencies:
       how: Optionally use Core Lightning for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
+  monerod:
+    version: ">=0.18.3.2 <0.20.0"
+    requirement:
+      type: "opt-in"
+      how: Optionally use Monero.
+    description: Used as an alternative integration for payment processing.
+    config:
+      check:
+        type: script
+      auto-configure:
+        type: script
 volumes:
   main:
     type: data
@@ -103,6 +117,12 @@ volumes:
     volume-id: main
     path: "/shared"
     readonly: true
+  monerod:
+    type: pointer
+    package-id: monerod
+    volume-id: main
+    path: "/"
+    readonly: false
 alerts:
   install: 
     <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>

@@ -2,6 +2,7 @@ import { types as T, compat } from "../deps.ts";
 import { migration_up_1_4_7 } from "../migrations/1_4_7_up_migration.ts";
 import { migration_down_1_4_7 } from "../migrations/1_4_7_down_migration.ts";
 import { migration_up_1_10_3 } from "../migrations/1_10_3_up_migration.ts";
+import { migration_up_2_0_0 } from "../migrations/2_0_0_up_migration.ts";
 
 export const migration: T.ExpectedExports.migration = async (
   effects,
@@ -40,19 +41,19 @@ export const migration: T.ExpectedExports.migration = async (
           true,
           { version: "1.10.2", type: "up" }
         ),
-        down: compat.migrations.updateConfig(
-          (_config) => {
-            throw new Error("Cannot downgrade this version");
+        down: () => {
+          throw new Error("Cannot downgrade this version");
+        },
+      },
+      // major release incompatible downgrade, adds monero
+      "2.0.0": {
+        up: compat.migrations.updateConfig(
+          (config) => {
+            return migration_up_2_0_0(config);
           },
           true,
-          { version: "1.10.2", type: "down" }
+          { version: "2.0.0", type: "up" }
         ),
-      },
-      "2.0.0": {
-        up: compat.migrations.updateConfig((config) => config, true, {
-          version: "2.0.0",
-          type: "up",
-        }),
         down: () => {
           throw new Error("Cannot downgrade this version");
         },

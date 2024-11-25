@@ -10,12 +10,11 @@ type Check = {
 async function readConfig(effects: T.Effects): Promise<T.Config> {
   const configMatcher = dictionary([string, any]);
   const config = configMatcher.unsafeCast(
-    await effects.readFile(
-      {
+    await effects
+      .readFile({
         path: "start9/config.yaml",
         volumeId: "main",
-      }
-    )
+      })
       .then(YAML.parse)
   );
   return config;
@@ -38,7 +37,7 @@ const matchBitcoindConfig = shape({
 const matchOldBitcoindConfig = shape({
   rpc: shape({
     advanced: shape({
-      serialversion: matches.any
+      serialversion: matches.any,
     }),
   }),
   advanced: shape({
@@ -46,8 +45,35 @@ const matchOldBitcoindConfig = shape({
       mode: string,
     }),
   }),
-})
+});
 
+const matchMoneroConfig = shape({
+  integrations: shape({
+    blocknotify: shape({
+      btcpayserver: boolean,
+    }),
+  }),
+});
+
+const moneroChecks: Array<Check> = [
+  {
+    currentError(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return "Monero config is not the correct shape";
+      }
+      if (!config.integrations.blocknotify.btcpayserver) {
+        return "Must have blocknotify enabled for btcpayserver";
+      }
+      return;
+    },
+    fix(config) {
+      if (!matchMoneroConfig.test(config)) {
+        return;
+      }
+      config.integrations.blocknotify.btcpayserver = true;
+    },
+  },
+];
 
 const bitcoindChecks: Array<Check> = [
   {
@@ -62,7 +88,7 @@ const bitcoindChecks: Array<Check> = [
     },
     fix(config) {
       if (!matchBitcoindConfig.test(config)) {
-        return
+        return;
       }
       config.rpc.enable = true;
     },
@@ -79,25 +105,28 @@ const bitcoindChecks: Array<Check> = [
     },
     fix(config) {
       if (!matchBitcoindConfig.test(config)) {
-        return
+        return;
       }
       config.advanced.peers.listen = true;
     },
   },
   {
     currentError(config) {
-      if (matchOldBitcoindConfig.test(config) && config.advanced.pruning.mode !== "disabled") {
-        return 'Pruning must be disabled to use with <= 24.0.1 of Bitcoin Core. To use with a pruned node, update Bitcoin Core to >= 25.0.0~2.';
+      if (
+        matchOldBitcoindConfig.test(config) &&
+        config.advanced.pruning.mode !== "disabled"
+      ) {
+        return "Pruning must be disabled to use with <= 24.0.1 of Bitcoin Core. To use with a pruned node, update Bitcoin Core to >= 25.0.0~2.";
       }
       return;
     },
     fix(config) {
       if (!matchOldBitcoindConfig.test(config)) {
-        return
+        return;
       }
-      config.advanced.pruning.mode = "disabled"
+      config.advanced.pruning.mode = "disabled";
     },
-  }
+  },
 ];
 
 export const dependencies: T.ExpectedExports.dependencies = {
@@ -124,6 +153,31 @@ export const dependencies: T.ExpectedExports.dependencies = {
         }
       }
       return { result: bitcoindConfig };
+    },
+  },
+  monerod: {
+    // deno-lint-ignore require-await
+    async check(effects, moneroConfig) {
+      effects.info("check monerod");
+      for (const checker of moneroChecks) {
+        const error = checker.currentError(moneroConfig);
+        if (error) {
+          effects.error(`throwing error: ${error}`);
+          return { error };
+        }
+      }
+      return { result: null };
+    },
+    // deno-lint-ignore require-await
+    async autoConfigure(effects, moneroConfig) {
+      effects.info("autoconfigure monerod");
+      for (const checker of moneroChecks) {
+        const error = checker.currentError(moneroConfig);
+        if (error) {
+          checker.fix(moneroConfig);
+        }
+      }
+      return { result: moneroConfig };
     },
   },
 };
