@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.0.3
+version: 2.0.3.1
 release-notes: |
   * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.3)
   * Includes major upstream release of [v2.0.0](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.0)! This release introduces many new features and some breaking changes. Please see the [blog post](https://blog.btcpayserver.org/btcpay-server-2-0/) for more details.
@@ -17,7 +17,7 @@ description:
   short: Bitcoin and cryptocurrency payment processor and POS system.
   long: |
     BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. 
-    
+
     BTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.
 assets:
   license: LICENSE
@@ -124,19 +124,17 @@ volumes:
     path: "/"
     readonly: false
 alerts:
-  install: 
+  install:
     <p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>
 
     <p>The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Vaultwarden.</p>
 
-   <p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>
-  uninstall: 
-    <p><b>READ CAREFULLY!</b></p>
-    
+    <p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>
+  uninstall: <p><b>READ CAREFULLY!</b></p>
+
     <p>Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.</p>
-  restore: 
-    Restoring BTCPay will overwrite its current data.
-    
+  restore: Restoring BTCPay will overwrite its current data.
+
     Any stores or invoices created since the last backup will be not be recognized.
 interfaces:
   main:
@@ -195,7 +193,7 @@ actions:
     implementation:
       type: docker
       image: main
-      entrypoint: btcpay-admin.sh 
+      entrypoint: btcpay-admin.sh
       args: ["enable-registrations"]
       inject: true
       io-format: json

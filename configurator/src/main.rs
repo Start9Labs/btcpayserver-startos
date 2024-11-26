@@ -86,10 +86,6 @@ fn main() -> Result<(), anyhow::Error> {
     let config: Config = serde_yaml::from_reader(
         File::open("/datadir/start9/config.yaml").with_context(|| "/datadir/start9/config.yaml")?,
     )?;
-    let monero_config: MoneroStart9Config = serde_yaml::from_reader(
-        File::open("/mnt/monerod/start9/config.yaml")
-            .with_context(|| "/mnt/monerod/start9/config.yaml")?,
-    )?;
     let tor_address = config.tor_address;
     let mut nbx_config = File::create("/datadir/nbxplorer/Main/settings.config")
         .with_context(|| "/datadir/nbxplorer/mainnet/settings.config")?;
@@ -110,6 +106,10 @@ fn main() -> Result<(), anyhow::Error> {
 
     match config.altcoins.monero.status {
         Status::Enabled => {
+            let monero_config: MoneroStart9Config = serde_yaml::from_reader(
+                File::open("/mnt/monerod/start9/config.yaml")
+                    .with_context(|| "/mnt/monerod/start9/config.yaml")?,
+            )?;
             match monero_config.rpc.rpc_credentials.enabled {
                 Status::Enabled => {
                     write!(
