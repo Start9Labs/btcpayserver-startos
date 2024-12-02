@@ -64,7 +64,7 @@ If you would like to connect to an external lightning node, select "Use custom n
 
 ## Enabling Altcoins
 
-In config, find `Altcoin Integrations` and set the desired altcoin implemtation to "Enabled".
+In config, find `Altcoin Integrations` and set the desired altcoin implementation to "Enabled".
 
 ### Monero
 
