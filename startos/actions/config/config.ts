@@ -1,4 +1,4 @@
-import { btcpsEnvFile } from '../../file-models/btcpay.env'
+import { BTCPSEnv, btcpsEnvFile } from '../../file-models/btcpay.env'
 import { mainMounts } from '../../main'
 import { sdk } from '../../sdk'
 import { inputSpec } from './spec'
@@ -18,19 +18,17 @@ export const config = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => {
-    // @TODO doesnt seem right - how to pre-fill with whole store
-    // sdk.store.getOwn(effects, sdk.StorePath).const()
-    await sdk.store.getOwn(effects, sdk.StorePath)
+    const env = await btcpsEnvFile.read.const(effects)
+    return {
+      lightning: await getCurrentLightning(env!),
+    }
   },
 
   async ({ effects, input }) => {
-    const currentLightning = await sdk.store
-      .getOwn(effects, sdk.StorePath.lightning)
-      .const()
-
+    const env = await btcpsEnvFile.read.const(effects)
+    const currentLightning = await getCurrentLightning(env!)
     if (currentLightning === input.lightning) return
 
-    const env = await btcpsEnvFile.read.const(effects)
     let BTCPAY_BTCLIGHTNING = ''
 
     if (input.lightning === 'lnd') {
@@ -43,14 +41,14 @@ export const config = sdk.Action.withInput(
         mountpoint,
         true,
       )
-      BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.embassy:8080/;macaroonfilepath=${mountpoint}/admin.macaroon;allowinsecure=true`
+      BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${mountpoint}/admin.macaroon;allowinsecure=true`
     }
 
     if (input.lightning === 'cln') {
       // @TODO mainMounts.addDependency<typeof ClnManifest>
       const mountpoint = '/mnt/cln'
       mainMounts.addDependency(
-        'cln',
+        'c-lightning',
         'main', //@TODO verify
         'shared', //@TODO verify
         mountpoint,
@@ -58,10 +56,16 @@ export const config = sdk.Action.withInput(
       )
       BTCPAY_BTCLIGHTNING = `type=clightning;server=unix://${mountpoint}/lightning-rpc`
     }
-
-    await Promise.all([
-      btcpsEnvFile.merge({ ...env!, BTCPAY_BTCLIGHTNING }),
-      sdk.store.setOwn(effects, sdk.StorePath.lightning, input.lightning),
-    ])
+    await Promise.all([btcpsEnvFile.merge({ ...env!, BTCPAY_BTCLIGHTNING })])
   },
 )
+
+async function getCurrentLightning(env: BTCPSEnv) {
+  const ln = env?.BTCPAY_BTCLIGHTNING
+  let currentLightning: 'lnd' | 'cln' | 'none' = 'none'
+  if (ln) {
+    if (ln.includes('lnd')) currentLightning = 'lnd'
+    if (ln.includes('clightning')) currentLightning = 'cln'
+  }
+  return currentLightning
+}

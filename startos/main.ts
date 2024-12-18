@@ -2,7 +2,6 @@ import { sdk } from './sdk'
 import { uiPort, webInterfaceId } from './interfaces'
 import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
-import { T } from '@start9labs/start-sdk'
 import { SubContainer } from '@start9labs/start-sdk'
 import { NBXplorerEnvFile } from './file-models/nbxplorer.env'
 import { btcpsEnvFile } from './file-models/btcpay.env'
@@ -18,8 +17,7 @@ export const mainMounts = sdk.Mounts.of().addVolume(
 export const main = sdk.setupMain(async ({ effects, started }) => {
   console.info('Starting BTCPay Server...')
 
-  const apiHealthCheck = sdk.HealthCheck.of({
-    effects,
+  const apiHealthCheck = sdk.HealthCheck.of(effects, {
     name: 'Data Interface',
     fn: () =>
       sdk.healthCheck.checkWebUrl(
@@ -32,8 +30,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       ),
   })
 
-  const syncHealthCheck = sdk.HealthCheck.of({
-    effects,
+  const syncHealthCheck = sdk.HealthCheck.of(effects, {
     name: 'UTXO Tracker Sync',
     fn: async () => {
       const auth = await readFile('/datadir/nbxplorer/Main/.cookie', {
@@ -68,8 +65,8 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   await NBXplorerEnvFile.write({
     NBXPLORER_NETWORK: 'mainnet',
     NBXPLORER_PORT: '24444',
-    NBXPLORER_BTCNODEENDPOINT: 'bitcoind.embassy:8333',
-    NBXPLORER_BTCRPCURL: 'bitcoind.embassy:8332',
+    NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
+    NBXPLORER_BTCRPCURL: 'bitcoind.startos:8332',
     // @TODO get from bitcoin
     NBXPLORER_BTCRPCUSER: '',
     NBXPLORER_BTCRPCPASSWORD: '',
@@ -77,7 +74,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     NBXPLORER_STARTHEIGHT: startHeight ? startHeight.toString() : '-1',
   })
 
-  // @TODO difference between effects.getContainerIp() and sdk.getContainerIp()?
   const ip = await sdk.getContainerIp(effects)
   const addressInfo = (await sdk.serviceInterface
     .getOwn(effects, webInterfaceId)
@@ -87,26 +83,21 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     BTCPAY_NETWORK: 'mainnet',
     BTCPAY_BIND: '0.0.0.0:23000',
     BTCPAY_NBXPLORER_COOKIE: '', // @TODO???,
-    BTCPAY_SOCKSENDPOINT: 'embassy:9050',
+    BTCPAY_SOCKSENDPOINT: 'startos:9050',
     BTCPAY_HOST: `https://${ip}/`, // @TODO confirm
     REVERSEPROXY_DEFAULT_HOST: `https://${ip}/`, // @TODO confirm
     BTCPAY_ADDITIONAL_HOSTS: `${addressInfo.urls.join()}`, // @TODO confirm
   })
 
-  return sdk.Daemons.of({
-    effects,
-    started,
-    healthReceipts: [apiHealthCheck, syncHealthCheck],
-  })
+  return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
       image: { id: 'postgres' },
       mounts: sdk.Mounts.of().addVolume(
-        'postgres',
+        'main',
         null,
         '/var/lib/postgresql/data',
         false,
       ),
-      // @TODO needs a graceful shutdown command
       command: [
         '-c',
         'random_page_cost=1.0',
@@ -121,7 +112,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         fn: async () => {
           const sub = await SubContainer.of(
             effects,
-            { id: 'postges' },
+            { id: 'postgres' },
             'postgres-ready',
           )
           return sdk.healthCheck.runHealthScript(['./postgres-ready.sh'], sub)
@@ -131,7 +122,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('nbxplorer', {
       image: { id: 'nbx' },
-      mounts: sdk.Mounts.of().addVolume('nbx', null, '/datadir', false),
+      mounts: sdk.Mounts.of().addVolume('main', null, '/datadir', false),
       command: ['dotnet', '/nbxplorer/NBXplorer.dll'],
       env: (await NBXplorerEnvFile.read.const(effects))!,
       ready: {

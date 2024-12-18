@@ -5,7 +5,8 @@ const input = InputSpec.of({
   startHeight: Value.number({
     name: 'Starting Block Height',
     description: 'The block height at which to begin resync',
-    required: { default: 1 },
+    required: false,
+    default: 1,
     integer: true,
     min: 1,
   }),

@@ -16,7 +16,6 @@ clean:
 	rm -f $(PKG_ID).s9pk
 	rm -f js/*.js
 	rm -f LICENSE
-	rm -rf configurator/target
 
 verify: $(PKG_ID).s9pk
 	embassy-sdk verify s9pk $(PKG_ID).s9pk
@@ -41,12 +40,6 @@ else
 	mkdir -p docker-images
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --build-arg PLATFORM=arm64 -o type=docker,dest=docker-images/aarch64.tar -f ./Dockerfile .
 endif
-
-configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo +beta build --release
-
-configurator/target/x86_64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -it -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:x86_64-musl cargo +beta build --release
 
 instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
