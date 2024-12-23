@@ -1,8 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.0.4
+version: 2.0.5
 release-notes: |
-  * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.4), which includes various bugfixes and improvements
+  * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.5), which includes various bugfixes and improvements
+  * Includes the upstream release of [2.0.4](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.4) as well.
   * Updates NBXplorer to the latest version
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
