@@ -1,6 +1,7 @@
 import { BTCPSEnv, btcpsEnvFile } from '../../file-models/btcpay.env'
 import { mainMounts } from '../../main'
 import { sdk } from '../../sdk'
+import { getCurrentLightning } from '../../utils'
 import { inputSpec } from './spec'
 
 export const config = sdk.Action.withInput(
@@ -20,13 +21,13 @@ export const config = sdk.Action.withInput(
   async ({ effects }) => {
     const env = await btcpsEnvFile.read.const(effects)
     return {
-      lightning: await getCurrentLightning(env!),
+      lightning: getCurrentLightning(env!),
     }
   },
 
   async ({ effects, input }) => {
     const env = await btcpsEnvFile.read.const(effects)
-    const currentLightning = await getCurrentLightning(env!)
+    const currentLightning = getCurrentLightning(env!)
     if (currentLightning === input.lightning) return
 
     let BTCPAY_BTCLIGHTNING = ''
@@ -59,13 +60,3 @@ export const config = sdk.Action.withInput(
     await Promise.all([btcpsEnvFile.merge({ ...env!, BTCPAY_BTCLIGHTNING })])
   },
 )
-
-async function getCurrentLightning(env: BTCPSEnv) {
-  const ln = env?.BTCPAY_BTCLIGHTNING
-  let currentLightning: 'lnd' | 'cln' | 'none' = 'none'
-  if (ln) {
-    if (ln.includes('lnd')) currentLightning = 'lnd'
-    if (ln.includes('clightning')) currentLightning = 'cln'
-  }
-  return currentLightning
-}

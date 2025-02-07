@@ -1,10 +1,8 @@
 import { sdk } from './sdk'
-
-export const uiPort = 23000
-export const webInterfaceId = 'webui'
+import { uiPort, webInterfaceId } from './utils'
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
-  const multi = sdk.host.multi(effects, webInterfaceId)
+  const multi = sdk.MultiHost.of(effects, webInterfaceId)
   const multiOrigin = await multi.bindPort(uiPort, { protocol: 'http' })
   const multiInterface = sdk.createInterface(effects, {
     name: 'Web UI',
@@ -12,7 +10,6 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
     description:
       'The web interface for interacting with BTCPay Server in a browser.',
     type: 'ui',
-    hasPrimary: false,
     masked: false,
     schemeOverride: null,
     username: null,

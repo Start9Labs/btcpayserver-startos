@@ -1,6 +1,8 @@
 import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
 import { config } from 'bitcoind-startos/startos/actions/config/config'
+import { btcpsEnvFile } from './file-models/btcpay.env'
+import { getCurrentLightning } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   await sdk.action.request(effects, 'bitcoind', config, 'important', {
@@ -21,7 +23,8 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     T.DependencyRequirement
   >
 
-  const ln = await sdk.store.getOwn(effects, sdk.StorePath.lightning).const()
+  const env = await btcpsEnvFile.read.const(effects)
+  const ln = getCurrentLightning(env!)
 
   if (ln === 'lnd') {
     currentDeps['lnd'] = {

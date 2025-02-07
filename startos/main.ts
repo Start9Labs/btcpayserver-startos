@@ -75,23 +75,23 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   })
 
   const ip = await sdk.getContainerIp(effects)
-  const addressInfo = (await sdk.serviceInterface
-    .getOwn(effects, webInterfaceId)
-    .const())!.addressInfo!
+  const urls =
+    (await sdk.serviceInterface.getOwn(effects, webInterfaceId).const())
+      ?.addressInfo?.urls || []
 
   await btcpsEnvFile.write({
     BTCPAY_NETWORK: 'mainnet',
     BTCPAY_BIND: '0.0.0.0:23000',
-    BTCPAY_NBXPLORER_COOKIE: '', // @TODO???,
+    BTCPAY_NBXPLORER_COOKIE: '', // @TODO,
     BTCPAY_SOCKSENDPOINT: 'startos:9050',
     BTCPAY_HOST: `https://${ip}/`, // @TODO confirm
-    REVERSEPROXY_DEFAULT_HOST: `https://${ip}/`, // @TODO confirm
-    BTCPAY_ADDITIONAL_HOSTS: `${addressInfo.urls.join()}`, // @TODO confirm
+    BTCPAY_ADDITIONAL_HOSTS: `${urls.join()}`, // @TODO confirm
   })
 
   return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
-      image: { id: 'postgres' },
+      // TODO should be separate subcontainer?
+      subcontainer: { imageId: 'postgres' },
       mounts: sdk.Mounts.of().addVolume(
         'main',
         null,
@@ -112,7 +112,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         fn: async () => {
           const sub = await SubContainer.of(
             effects,
-            { id: 'postgres' },
+            { imageId: 'postgres' },
             'postgres-ready',
           )
           return sdk.healthCheck.runHealthScript(['./postgres-ready.sh'], sub)
@@ -121,8 +121,8 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       requires: [],
     })
     .addDaemon('nbxplorer', {
-      image: { id: 'nbx' },
-      mounts: sdk.Mounts.of().addVolume('main', null, '/datadir', false),
+      subcontainer: { imageId: 'main' },
+      mounts: mainMounts,
       command: ['dotnet', '/nbxplorer/NBXplorer.dll'],
       env: (await NBXplorerEnvFile.read.const(effects))!,
       ready: {
@@ -136,11 +136,11 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       requires: ['postgres'],
     })
     .addDaemon('webui', {
-      image: { id: 'main' },
+      subcontainer: { imageId: 'main' },
       mounts: mainMounts,
       command: ['dotnet', '/app/BTCPayServer.dll'],
       env: (await NBXplorerEnvFile.read.const(effects))!,
-      // @TODO add trigger
+      // @TODO add trigger?
       ready: {
         display: 'Web Interface',
         fn: () =>
