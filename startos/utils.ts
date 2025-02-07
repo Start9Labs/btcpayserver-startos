@@ -46,10 +46,20 @@ export function getCurrentLightning(env: BTCPSEnv) {
   return currentLightning
 }
 
-export async function getWebInterfaceUrls(effects: Effects): Promise<string[]> {
+export async function getWebHostnames(effects: Effects): Promise<string[]> {
   const webInterface = await sdk.serviceInterface
     .getOwn(effects, webInterfaceId)
     .const()
 
-  return webInterface?.addressInfo?.hostnames.map(h => h.hostname.) || []
+  return (
+    webInterface?.addressInfo?.hostnames.map((h) => {
+      if (h.kind === 'onion') {
+        return h.hostname.value
+      } else if (h.hostname.kind === 'domain') {
+        return h.hostname.domain
+      } else {
+        return `${h.hostname.value}:${h.hostname.sslPort}`
+      }
+    }) || []
+  )
 }

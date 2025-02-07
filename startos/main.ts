@@ -1,11 +1,10 @@
 import { sdk } from './sdk'
-import { uiPort, webInterfaceId } from './interfaces'
 import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { SubContainer } from '@start9labs/start-sdk'
 import { NBXplorerEnvFile } from './file-models/nbxplorer.env'
 import { btcpsEnvFile } from './file-models/btcpay.env'
-import { credentials } from 'bitcoind-startos/startos/actions/credentials'
+import { uiPort, webInterfaceId } from './utils'
 
 export const mainMounts = sdk.Mounts.of().addVolume(
   'main',
@@ -79,18 +78,17 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     (await sdk.serviceInterface.getOwn(effects, webInterfaceId).const())
       ?.addressInfo?.urls || []
 
-  await btcpsEnvFile.write({
+  await btcpsEnvFile.merge({
     BTCPAY_NETWORK: 'mainnet',
     BTCPAY_BIND: '0.0.0.0:23000',
     BTCPAY_NBXPLORER_COOKIE: '', // @TODO,
     BTCPAY_SOCKSENDPOINT: 'startos:9050',
-    BTCPAY_HOST: `https://${ip}/`, // @TODO confirm
+    BTCPAY_HOST: ip, // @TODO confirm
     BTCPAY_ADDITIONAL_HOSTS: `${urls.join()}`, // @TODO confirm
   })
 
   return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
-      // TODO should be separate subcontainer?
       subcontainer: { imageId: 'postgres' },
       mounts: sdk.Mounts.of().addVolume(
         'main',
@@ -121,7 +119,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       requires: [],
     })
     .addDaemon('nbxplorer', {
-      subcontainer: { imageId: 'main' },
+      subcontainer: { imageId: 'nbx' },
       mounts: mainMounts,
       command: ['dotnet', '/nbxplorer/NBXplorer.dll'],
       env: (await NBXplorerEnvFile.read.const(effects))!,
@@ -136,7 +134,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       requires: ['postgres'],
     })
     .addDaemon('webui', {
-      subcontainer: { imageId: 'main' },
+      subcontainer: { imageId: 'btcpay' },
       mounts: mainMounts,
       command: ['dotnet', '/app/BTCPayServer.dll'],
       env: (await NBXplorerEnvFile.read.const(effects))!,

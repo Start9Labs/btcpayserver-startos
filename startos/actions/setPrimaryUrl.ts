@@ -1,65 +1,35 @@
 import { sdk } from '../sdk'
-import { getHttpInterfaceUrls } from '../utils'
+import { getWebHostnames } from '../utils'
 
-const { InputSpec, Value, Variants } = sdk
+const { InputSpec, Value } = sdk
 
 export const inputSpec = InputSpec.of({
-  source: Value.union(
-    {
-      name: 'URL Source',
-      default: 'system',
-    },
-    Variants.of({
-      system: {
-        name: 'System',
-        spec: InputSpec.of({
-          url: Value.dynamicSelect(async ({ effects }) => {
-            const systemUrls = await getHttpInterfaceUrls(effects)
+  primaryhostname: Value.dynamicSelect(async ({ effects }) => {
+    const hostnames = await getWebHostnames(effects)
 
-            return {
-              name: 'URL',
-              values: systemUrls.reduce(
-                (obj, url) => ({
-                  ...obj,
-                  [url]: url,
-                }),
-                {} as Record<string, string>,
-              ),
-              default:
-                systemUrls.find(
-                  (u) => u.startsWith('http:') && u.includes('.onion'),
-                ) || '',
-            }
-          }),
+    return {
+      name: 'Hostname',
+      values: hostnames.reduce(
+        (obj, hostname) => ({
+          ...obj,
+          [hostname]: hostname,
         }),
-      },
-      custom: {
-        name: 'Custom (for clearnet)',
-        spec: InputSpec.of({
-          url: Value.text({
-            name: 'URL',
-            warning: `the domain of this URL must already exist in StartOS and be assigned to Gitea's HTTP interface`,
-            required: true,
-            default: null,
-            inputmode: 'url',
-            patterns: [sdk.patterns.url],
-            placeholder: 'e.g. https://gitea.my-domain.dev',
-          }),
-        }),
-      },
-    }),
-  ),
+        {} as Record<string, string>,
+      ),
+      default: hostnames.find((u) => u.includes('.onion')) || '',
+    }
+  }),
 })
 
 export const setPrimaryUrl = sdk.Action.withInput(
   // id
-  'set-primary-url',
+  'set-primary-hostname',
 
   // metadata
   async ({ effects }) => ({
-    name: 'Set Primary Url',
+    name: 'Set Primary Hostname',
     description:
-      'Choose which of your Gitea http URLs should serve as the primary URL for the purposes of creating links, sending invites, etc.',
+      'Choose which of your BTCPay hostnames should serve as the primary for the purposes of creating links, sending invites, etc.',
     warning: null,
     allowedStatuses: 'any',
     group: null,
