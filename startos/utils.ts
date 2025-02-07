@@ -1,6 +1,7 @@
 import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 import { BTCPSEnv } from './file-models/btcpay.env'
 import { sdk } from './sdk'
+import { HostnameInfo } from '@start9labs/start-sdk/base/lib/osBindings'
 
 export const uiPort = 23000
 export const webInterfaceId = 'webui'
@@ -50,5 +51,5 @@ export async function getWebInterfaceUrls(effects: Effects): Promise<string[]> {
     .getOwn(effects, webInterfaceId)
     .const()
 
-  return webInterface?.addressInfo?.urls || []
+  return webInterface?.addressInfo?.hostnames.map(h => h.hostname.) || []
 }
