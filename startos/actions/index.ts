@@ -1,8 +1,11 @@
 import { sdk } from '../sdk'
 import { resyncNbx } from './resyncNbx'
 import { config } from './config/config'
+import { enableRegistrations } from './enableRegistrations'
+import { resetAdminPassword } from './resetAdminPassword'
 
-export const actions = sdk.Actions.of().addAction(resyncNbx).addAction(config)
-
-// TODO add action for changing start height
-// translate reset admin password and enable registrations
+export const actions = sdk.Actions.of()
+  .addAction(resyncNbx)
+  .addAction(config)
+  .addAction(enableRegistrations)
+  .addAction(resetAdminPassword)

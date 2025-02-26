@@ -1,10 +1,10 @@
 *.s9pk
-actions/obj
-actions/bin
-.vscode/*
-.DS_Store
-docker-images
-utils/actions/obj
 startos/*.js
 node_modules/
+.DS_Store
+.vscode/
+docker-images
+javascript
 notes.md
+javascript
+old

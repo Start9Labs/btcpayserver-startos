@@ -1,51 +1,39 @@
-PKG_ID := $(shell yq e ".id" manifest.yaml)
-PKG_VERSION := $(shell yq e ".version" manifest.yaml)
-UPSTREAM_VERSION :=$(shell ./utils/scripts/get_upstream_version.sh ${PKG_VERSION})
-TS_FILES := $(shell find ./scripts -name '*.ts')
-DOC_ASSETS := $(shell find ./docs/assets)
-CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
-UTILS_SRC := $(shell find ./utils/**/*)
+PACKAGE_ID := $(shell grep -o "id: '[^']*'" startos/manifest.ts | sed "s/id: '\([^']*\)'/\1/")
+DOC_ASSETS := $(shell find ./assets)
 
-.DELETE_ON_ERROR:
+# Phony targets
+.PHONY: all clean install
 
-all: verify
+# Default target
+all: ${PACKAGE_ID}.s9pk
+	@echo " Done!"
+	@echo "   Filesize: $(shell du -h $(PACKAGE_ID).s9pk) is ready"
 
-clean:
-	rm -rf docker-images
-	rm -f image.tar
-	rm -f $(PKG_ID).s9pk
-	rm -f js/*.js
-	rm -f LICENSE
+# Build targets
+${PACKAGE_ID}.s9pk: $(shell start-cli s9pk list-ingredients)
+	start-cli s9pk pack
 
-verify: $(PKG_ID).s9pk
-	embassy-sdk verify s9pk $(PKG_ID).s9pk
+javascript/index.js: $(shell find startos -name "*.ts") tsconfig.json node_modules package.json
+	npm run build
 
-# assumes /etc/embassy/config.yaml exists on local system with `host: "http://embassy-server-name.local"` configured
-install: $(PKG_ID).s9pk
-	embassy-cli package install $(PKG_ID).s9pk
+node_modules: package.json package-lock.json
+	npm ci
 
-$(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.js docker-images/aarch64.tar docker-images/x86_64.tar
-	embassy-sdk pack
+package-lock.json: package.json
+	npm i
 
-docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
-ifeq ($(ARCH),aarch64)
-else
-	mkdir -p docker-images
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/amd64 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 -o type=docker,dest=docker-images/x86_64.tar -f ./Dockerfile .
-endif
-
-docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
-ifeq ($(ARCH),x86_64)
-else
-	mkdir -p docker-images
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --build-arg PLATFORM=arm64 -o type=docker,dest=docker-images/aarch64.tar -f ./Dockerfile .
-endif
-
-instructions.md: docs/instructions.md $(DOC_ASSETS)
+instructions.md: $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
 
-scripts/embassy.js: $(TS_FILES)
-	deno bundle scripts/embassy.ts scripts/embassy.js
+# Clean target
+clean:
+	rm -rf ${PACKAGE_ID}.s9pk
+	rm -rf javascript
+	rm -rf node_modules
 
-LICENSE:
-	wget https://raw.githubusercontent.com/btcpayserver/btcpayserver/v$(UPSTREAM_VERSION)/LICENSE -O - > LICENSE
+# Install target
+install:
+	@if [ ! -f ~/.startos/config.yaml ]; then echo "You must define \"host: http://server-name.local\" in ~/.startos/config.yaml config file first."; exit 1; fi
+	@echo "\nInstalling to $$(grep -v '^#' ~/.startos/config.yaml | cut -d'/' -f3) ...\n"
+	@[ -f $(PACKAGE_ID).s9pk ] || ( $(MAKE) && echo "\nInstalling to $$(grep -v '^#' ~/.startos/config.yaml | cut -d'/' -f3) ...\n" )
+	@start-cli package install -s $(PACKAGE_ID).s9pk

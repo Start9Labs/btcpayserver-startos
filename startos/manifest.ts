@@ -19,13 +19,13 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.0.0',
+        dockerTag: 'btcpayserver/btcpayserver:2.0.6',
       },
       arch: ['x86_64', 'aarch64'],
     },
     nbx: {
       source: {
-        dockerTag: 'nicolasdorier/nbxplorer:2.5.7',
+        dockerTag: 'nicolasdorier/nbxplorer:2.5.20',
       },
       arch: ['x86_64', 'aarch64'],
     },
@@ -42,17 +42,17 @@ export const manifest = setupManifest({
       description:
         'Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.',
       optional: false,
-      s9pk: '',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha/bitcoind.s9pk',
     },
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: false,
-      s9pk: '',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha/bitcoind.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: false,
-      s9pk: '',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha/bitcoind.s9pk',
     },
   },
   alerts: {

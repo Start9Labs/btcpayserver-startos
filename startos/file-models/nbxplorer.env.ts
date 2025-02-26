@@ -8,8 +8,6 @@ const shape = object({
   NBXPLORER_PORT: string,
   NBXPLORER_BTCNODEENDPOINT: string,
   NBXPLORER_BTCRPCURL: string,
-  NBXPLORER_BTCRPCUSER: string,
-  NBXPLORER_BTCRPCPASSWORD: string,
   NBXPLORER_RESCAN: string,
   NBXPLORER_STARTHEIGHT: string,
 })
@@ -19,8 +17,6 @@ export type NBXEnv = {
   NBXPLORER_PORT: string
   NBXPLORER_BTCNODEENDPOINT: string
   NBXPLORER_BTCRPCURL: string
-  NBXPLORER_BTCRPCUSER: string
-  NBXPLORER_BTCRPCPASSWORD: string
   NBXPLORER_RESCAN: string
   NBXPLORER_STARTHEIGHT: string
   [key: string]: string
