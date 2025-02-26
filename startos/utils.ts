@@ -1,13 +1,16 @@
 import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 import { BTCPSEnv } from './file-models/btcpay.env'
 import { sdk } from './sdk'
-import { HostnameInfo } from '@start9labs/start-sdk/base/lib/osBindings'
+import { utils } from '@start9labs/start-sdk'
 
 export const uiPort = 23000
 export const webInterfaceId = 'webui'
-export const randomPassword = {
-  charset: 'a-z,A-Z,1-9,!,@,$,%,&,*',
-  len: 22,
+
+export function getRandomPassword() {
+  return utils.getDefaultString({
+    charset: 'a-z,A-Z,1-9,!,@,$,%,&,*',
+    len: 22,
+  })
 }
 
 export function jsonToDotenv<T extends Record<string, string | undefined>>(
@@ -62,4 +65,27 @@ export async function getWebHostnames(effects: Effects): Promise<string[]> {
       }
     }) || []
   )
+}
+
+export async function query(effects: Effects, name: string, statement: string) {
+  const res = await sdk.runCommand(
+    effects,
+    { imageId: 'postgres' },
+    [
+      'psql',
+      '-U',
+      'postgres',
+      '-h',
+      'localhost',
+      '-d',
+      'btcpayserver',
+      '-t',
+      '-c',
+      `"${statement}"`,
+    ],
+    {},
+    name,
+  )
+  if (res.stderr) throw new Error(res.stderr.toString())
+  return res.stdout.toString()
 }

@@ -1,4 +1,6 @@
 import { sdk } from '../sdk'
+import { query, getRandomPassword } from '../utils'
+import { pbkdf2, randomBytes } from 'node:crypto'
 
 export const resetAdminPassword = sdk.Action.withoutInput(
   'resetAdminPassword',
@@ -13,5 +15,43 @@ export const resetAdminPassword = sdk.Action.withoutInput(
     visibility: 'enabled',
   }),
 
-  async ({ effects }) => {},
+  async ({ effects }) => {
+    const res = JSON.parse(
+      await query(
+        effects,
+        'admin-users',
+        `SELECT "UserId" FROM "AspNetUserRoles"`,
+      ),
+    ) as string[]
+
+    if (res.length > 1)
+      throw new Error(
+        'More than one admin user exists, please use this account to create a new admin user.',
+      )
+
+    const pw = getRandomPassword()
+    const salt = randomBytes(128).toString('base64')
+    const hash = pbkdf2(pw, salt, 1000, 32, 'sha1', (err, derivedKey) => {
+      if (err) throw err
+      return derivedKey.toString('base64')
+    })
+    await query(
+      effects,
+      'update-admin-password',
+      `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${res[0]}'"`,
+    )
+    return {
+      version: '1',
+      title: 'New Admin Password',
+      message:
+        "This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in.",
+      result: {
+        type: 'single',
+        value: pw,
+        copyable: true,
+        qr: false,
+        masked: true,
+      },
+    }
+  },
 )
