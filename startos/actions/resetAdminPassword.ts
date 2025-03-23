@@ -17,11 +17,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
 
   async ({ effects }) => {
     const res = JSON.parse(
-      await query(
-        effects,
-        'admin-users',
-        `SELECT "UserId" FROM "AspNetUserRoles"`,
-      ),
+      await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`),
     ) as string[]
 
     if (res.length > 1)
@@ -37,7 +33,6 @@ export const resetAdminPassword = sdk.Action.withoutInput(
     })
     await query(
       effects,
-      'update-admin-password',
       `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${res[0]}'"`,
     )
     return {

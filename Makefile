@@ -1,5 +1,5 @@
 PACKAGE_ID := $(shell grep -o "id: '[^']*'" startos/manifest.ts | sed "s/id: '\([^']*\)'/\1/")
-DOC_ASSETS := $(shell find ./assets)
+DOC_ASSETS := $(shell find ./docs)
 
 # Phony targets
 .PHONY: all clean install

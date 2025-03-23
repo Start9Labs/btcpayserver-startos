@@ -8,7 +8,6 @@ export const v206_1 = VersionInfo.of({
   version: '2.0.6:1',
   releaseNotes: 'Revamped for StartOS 0.4.0.',
   migrations: {
-    // @TODO migrate config to env vars
     up: async ({ effects }) => {
       const { lightning, altcoins, advanced } = load(
         await readFile('/datadir/start9/config.yaml', 'utf-8'),

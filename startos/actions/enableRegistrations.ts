@@ -8,7 +8,6 @@ export const enableRegistrations = sdk.Action.withoutInput(
     const res = JSON.parse(
       await query(
         effects,
-        'select-policies',
         `SELECT "Value" from "Settings" WHERE "Id"='BTCPayServer.Services.PoliciesSettings'`,
       ),
     ) as SelectPoliciesRes
@@ -31,7 +30,6 @@ export const enableRegistrations = sdk.Action.withoutInput(
     const data = JSON.parse(
       await query(
         effects,
-        'select-policies',
         `SELECT "Value" from "Settings" WHERE "Id"='BTCPayServer.Services.PoliciesSettings'`,
       ),
     ) as SelectPoliciesRes
@@ -39,7 +37,6 @@ export const enableRegistrations = sdk.Action.withoutInput(
 
     await query(
       effects,
-      'update-policies',
       `UPDATE "Settings" SET "Value"='${data}' WHERE "Id"='BTCPayServer.Services.PoliciesSettings'`,
     )
 

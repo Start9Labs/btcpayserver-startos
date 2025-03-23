@@ -108,13 +108,14 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
       subcontainer: { imageId: 'postgres' },
-      mounts: sdk.Mounts.of().addVolume(
-        'main',
-        null,
-        '/var/lib/postgresql/data',
-        false,
-      ),
+      mounts: mainMounts,
       command: [
+        'sudo',
+        '-u',
+        'postgres',
+        '/usr/lib/postgresql/13/bin/postgres',
+        '-D',
+        '/datadir/postgresql/data',
         '-c',
         'random_page_cost=1.0',
         '-c',
@@ -131,7 +132,11 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             { imageId: 'postgres' },
             'postgres-ready',
           )
-          return sdk.healthCheck.runHealthScript(['./postgres-ready.sh'], sub)
+          // @TODO confirm path
+          return sdk.healthCheck.runHealthScript(
+            ['/assets/postgres-ready.sh'],
+            sub,
+          )
         },
       },
       requires: [],

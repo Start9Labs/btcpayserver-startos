@@ -67,7 +67,7 @@ export async function getWebHostnames(effects: Effects): Promise<string[]> {
   )
 }
 
-export async function query(effects: Effects, name: string, statement: string) {
+export async function query(effects: Effects, statement: string) {
   const res = await sdk.runCommand(
     effects,
     { imageId: 'postgres' },
@@ -84,7 +84,6 @@ export async function query(effects: Effects, name: string, statement: string) {
       `"${statement}"`,
     ],
     {},
-    name,
   )
   if (res.stderr) throw new Error(res.stderr.toString())
   return res.stdout.toString()
