@@ -1,11 +1,12 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.0.6
+version: 2.0.7
 release-notes: |
-  * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.6), which includes a security fix, various bugfixes and several new features.
+  * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.7), which includes a security fix, various bugfixes and several new features.
   * Updates NBXplorer to the latest version
+  * Adds new Shopify plugin functionality
 license: mit
-wrapper-repo: "https://github.com/Start9Labs/btcpayserver-wrapper"
+wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
 support-site: "https://docs.btcpayserver.org/Support/"
 marketing-site: "https://btcpayserver.org/"

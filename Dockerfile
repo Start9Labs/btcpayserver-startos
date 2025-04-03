@@ -1,5 +1,6 @@
 FROM btcpayserver/monero:0.18.3.4 AS monero-wallet-rpc
-FROM nicolasdorier/nbxplorer:2.5.20 AS nbx-builder
+FROM nicolasdorier/nbxplorer:2.5.23 AS nbx-builder
+FROM btcpayserver/shopify-app-deployer:1.3 AS shopify-app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
@@ -9,11 +10,12 @@ RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
 
-FROM btcpayserver/btcpayserver:2.0.6
+FROM btcpayserver/btcpayserver:2.0.7
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
 COPY --from=monero-wallet-rpc "/usr/local/bin/monero-wallet-rpc" /usr/local/bin/
+COPY --from=shopify-app "/app" /shopify-app
 
 # arm64 or amd64
 ARG PLATFORM
@@ -34,6 +36,13 @@ RUN apt-get update \
   && apt-get -y autoremove \
   && apt-get clean autoclean \
   && rm -rf /var/lib/apt/lists/*
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
+  # in lieu of restarting the shell
+  && \. "$HOME/.nvm/nvm.sh" \
+  # Download and install Node.js:
+  && nvm install 18
+
 
 # install S6 overlay for proces mgmt
 # https://github.com/just-containers/s6-overlay
@@ -84,7 +93,8 @@ RUN groupadd -r monero --gid=302340; \
 ENV POSTGRES_HOST_AUTH_METHOD=trust \
   NBXPLORER_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
   BTCPAY_EXPLORERPOSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer" \
-  BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver"
+  BTCPAY_POSTGRES="User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver" \
+  BTCPAY_SHOPIFY_PLUGIN_DEPLOYER="http://localhost:5000/"
 
 # start9 specific steps
 ADD ./configurator/target/${ARCH}-unknown-linux-musl/release/configurator /usr/local/bin/configurator
