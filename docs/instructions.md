@@ -87,6 +87,27 @@ If you are unable to open Feather on macOS, go to System Settings > Privacy & Se
 
 If you enable / disable RPC credentials in Monero, you will need to restart BTC Pay Server to pick up this change.
 
+## Shopify Plugin
+
+This integration allows you to connect your self-hosted BTCPay Server with your Shopify store. 
+
+First, it must be enabled on your BTCPay Server service details page in StartOS. Open "Config" from the menu, and change `Plugins > Shopify` to "Enabled".
+
+Next, follow the [official documentation](https://docs.btcpayserver.org/ShopifyV2/#set-up-a-shopify-app) to set up a Shopify. Skip the "Deploy the Shopify fragment" step, as this is taken care of by running BTCPay Server on StartOS.
+
+Note, customers will need ad blockers disabled in their browser for the final "Complete Payment" section to render during checkout completion.
+
+**Important**
+
+Using this plugin requires a clearnet instance of your BTCPay Server store. This can be done using a [Tor reverse proxy](#setting-up-a-tor-reverse-proxy).
+
+You will need to remove this line in `/etc/nginx/sites-available/btcpayserver.conf` on the VPS hosting your Tor reverse proxy in order for the final success view to render within Shopify:
+```
+add_header Content-Security-Policy "frame-ancestors 'self';";
+```
+Be sure to run `systemctl reload nginx` after making this change.
+ 
+
 ## Setting up BTCPayServer Vault
 
 BTCPayServer Vault supports hardware wallet integrations for stores. To use, you must [install Vault](https://github.com/btcpayserver/BTCPayServer.Vault/releases) and run it on a laptop/desktop machine. Then, access your BTCPay Server service in a browser on the same device.
@@ -105,8 +126,8 @@ Manual maintenance updates are disabled. Updates for BTCPay Server will be deliv
 
 The BTCPay Server documentation can recommend `ssh` or `docker-compose` commands for resolving issues. The way BTCPay Server is configured for your Start9 server is different than the default installation, which is meant to run on a standalone server instance. Start9 has consolidated BTCPay Server to run in an optimal way, so please reach out to the Start9 team for support in these circumstances. Adding an SSH key to your device to manually debug voids the warranty and Start9 cannot assure that operations will continue to function as intended.
 
-### Setting up a reverse proxy
+### Setting up a Tor reverse proxy
 
-Clearnet support for BTCPay Sever will be made accessible in a future release of StartOS. In the meantime, you can configure a reverse TOR proxy by following the official guide [here](https://docs.btcpayserver.org/Deployment/ReverseProxyToTor/#reverse-proxy-to-tor).
+Clearnet support for BTCPay Sever will be made accessible in a future release of StartOS. In the meantime, you can configure a reverse Tor proxy by following the official guide [here](https://docs.btcpayserver.org/Deployment/ReverseProxyToTor/#reverse-proxy-to-tor).
 
 Enabling this functionality allows external applications and plugins to use a hosted clearnet address to access the BTCPay Server instance running on your device. This is useful if an external application requires a clearnet address to operate. Please only attempt this setup if you know what you are doing.
