@@ -93,9 +93,9 @@ This integration allows you to connect your self-hosted BTCPay Server with your 
 
 First, it must be enabled on your BTCPay Server service details page in StartOS. Open "Config" from the menu, and change `Plugins > Shopify` to "Enabled".
 
-Next, follow the [official documentation](https://docs.btcpayserver.org/ShopifyV2/#set-up-a-shopify-app) to set up a Shopify. Skip the "Deploy the Shopify fragment" step, as this is taken care of by running BTCPay Server on StartOS.
+Next, follow the [official documentation](https://docs.btcpayserver.org/ShopifyV2/#set-up-a-shopify-app) to set up a Shopify app. Skip the "Deploy the Shopify fragment" step, as this is taken care of by running BTCPay Server on StartOS.
 
-Note, customers will need ad blockers disabled in their browser for the final "Complete Payment" section to render during checkout completion.
+Note, customers will need to disable ad blockers in their browser for the final "Complete Payment" section to render during checkout.
 
 **Important**
 
