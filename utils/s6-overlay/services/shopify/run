@@ -1,0 +1,17 @@
+#!/command/with-contenv bash
+# ^ allows access to the Docker container's environment variables
+
+# -a  Mark variables which are modified or created for export
+# -e  Exit immediately if a command exits with a non-zero status
+set -ea
+
+shopify_status=$(yq e '.plugins.shopify.status' /datadir/start9/config.yaml)
+if [[ $shopify_status = "enabled" ]] 
+then
+  sed -i "s|/app/deploy.sh|/shopify-app/deploy.sh|g" /shopify-app/server.js
+  sed -i "s|/app/|/shopify-app/|g" /shopify-app/deploy.sh
+
+  cd /shopify-app
+  # Start shopify-app server
+  exec node /shopify-app/server.js 2>&1
+fi

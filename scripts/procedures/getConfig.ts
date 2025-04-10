@@ -79,6 +79,33 @@ export const getConfig = compat.getConfig({
       },
     },
   },
+  plugins: {
+    type: "object",
+    name: "Plugins",
+    description:
+      'Choose which plugins to enable. Please see the "Instructions" page for more details.',
+    spec: {
+      shopify: {
+        type: "union",
+        name: "Shopify",
+        description:
+          "Enables you to connect your instance with your Shopify store",
+        tag: {
+          id: "status",
+          name: "Shopify",
+          "variant-names": {
+            enabled: "Enabled",
+            disabled: "Disabled",
+          },
+        },
+        default: "disabled",
+        variants: {
+          disabled: {},
+          enabled: {},
+        },
+      },
+    },
+  },
   advanced: {
     type: "object",
     name: "Advanced Settings",
