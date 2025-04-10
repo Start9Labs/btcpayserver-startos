@@ -74,7 +74,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .getOwn(effects, sdk.StorePath.startHeight)
     .const()
 
-  await NBXplorerEnvFile.merge({
+  await NBXplorerEnvFile.merge(effects, {
     NBXPLORER_NETWORK: 'mainnet',
     NBXPLORER_PORT: '24444',
     NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
@@ -88,7 +88,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     (await sdk.serviceInterface.getOwn(effects, webInterfaceId).const())
       ?.addressInfo?.urls || []
 
-  await BTCPSEnvFile.merge({
+  await BTCPSEnvFile.merge(effects, {
     BTCPAY_NETWORK: 'mainnet',
     BTCPAY_BIND: '0.0.0.0:23000',
     BTCPAY_NBXPLORER_COOKIE: '/datadir/nbxplorer/Main/.cookie',

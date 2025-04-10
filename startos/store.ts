@@ -4,4 +4,8 @@ export type Store = {
   startHeight: number | null
 }
 
+export const InitStore = {
+  startHeight: null,
+}
+
 export const exposedStore = setupExposeStore<Store>((pathBuilder) => [])

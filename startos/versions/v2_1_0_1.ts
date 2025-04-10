@@ -4,8 +4,8 @@ import { load } from 'js-yaml'
 import { sdk } from '../sdk'
 import { BTCPSEnvFile } from '../file-models/btcpay.env'
 
-export const v206_1 = VersionInfo.of({
-  version: '2.0.6:1',
+export const v210_1 = VersionInfo.of({
+  version: '2.1.0:1',
   releaseNotes: 'Revamped for StartOS 0.4.0.',
   migrations: {
     up: async ({ effects }) => {
@@ -29,7 +29,7 @@ export const v206_1 = VersionInfo.of({
         startHeight: parseInt(advanced['sync-start-height']),
       })
 
-      await BTCPSEnvFile.merge({
+      await BTCPSEnvFile.merge(effects, {
         BTCPAY_BTCLIGHTNING: lightning.type,
       })
 

@@ -3,7 +3,7 @@ import { setupManifest } from '@start9labs/start-sdk'
 export const manifest = setupManifest({
   id: 'btcpayserver',
   title: 'BTCPay Server',
-  version: '2.0.0:1',
+  version: '2.1.0:1',
   license: 'mit',
   wrapperRepo: 'https://github.com/Start9Labs/btcpayserver-wrapper',
   upstreamRepo: 'https://github.com/btcpayserver/btcpayserver',
