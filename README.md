@@ -4,7 +4,7 @@
 
 # BTCPay Server for StartOS
 
-[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free. This repository creates the `s9pk` package that is installed to run `btcpayserver` on [StartOS](https://github.com/Start9Labs/start-os/).
+[BTCPay Server](https://btcpayserver.org/) is a self-hosted, open-source cryptocurrency payment processor. It's secure, private, censorship-resistant and free. This repository creates the `s9pk` package that is installed to run BTCPay Server on [StartOS](https://github.com/Start9Labs/start-os/).
 
 ## Setup
 
