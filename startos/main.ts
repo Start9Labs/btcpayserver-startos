@@ -16,17 +16,6 @@ export const mainMounts = sdk.Mounts.of().addVolume(
 export const main = sdk.setupMain(async ({ effects, started }) => {
   console.info('Starting BTCPay Server...')
 
-  const btcpayContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'btcpay' },
-    'btcpay',
-  )
-  const nbxContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'nbx' },
-    'nbx',
-  )
-
   const apiHealthCheck = sdk.HealthCheck.of(effects, {
     id: 'data-interface',
     name: 'Data Interface',
@@ -95,6 +84,19 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     BTCPAY_SOCKSENDPOINT: 'startos:9050',
   })
 
+  const btcpayContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'btcpay' },
+    mainMounts,
+    'btcpay',
+  )
+  const nbxContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'nbx' },
+    mainMounts,
+    'nbx',
+  )
+
   // source env files
   await btcpayContainer.exec([
     'source',
@@ -107,8 +109,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
 
   return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
-      subcontainer: { imageId: 'postgres' },
-      mounts: mainMounts,
+      subcontainer: await SubContainer.of(
+        effects,
+        { imageId: 'postgres' },
+        mainMounts,
+        'postgres',
+      ),
       command: [
         'sudo',
         '-u',
@@ -130,6 +136,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           const sub = await SubContainer.of(
             effects,
             { imageId: 'postgres' },
+            mainMounts,
             'postgres-ready',
           )
           // @TODO confirm path
@@ -143,7 +150,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('nbxplorer', {
       subcontainer: nbxContainer,
-      mounts: mainMounts,
       command: ['dotnet', '/nbxplorer/NBXplorer.dll'],
       env: {},
       ready: {
@@ -158,7 +164,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('webui', {
       subcontainer: btcpayContainer,
-      mounts: mainMounts,
       command: ['dotnet', '/app/BTCPayServer.dll'],
       env: {},
       // @TODO add trigger?
