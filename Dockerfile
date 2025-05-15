@@ -1,5 +1,5 @@
 FROM btcpayserver/monero:0.18.3.4 AS monero-wallet-rpc
-FROM nicolasdorier/nbxplorer:2.5.23 AS nbx-builder
+FROM nicolasdorier/nbxplorer:2.5.26 AS nbx-builder
 FROM btcpayserver/shopify-app-deployer:1.3 AS shopify-app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
