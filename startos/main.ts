@@ -14,6 +14,9 @@ export const mainMounts = sdk.Mounts.of().addVolume(
 )
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
+  /**
+   * ======================== Setup (optional) ========================
+   */
   console.info('Starting BTCPay Server...')
 
   const apiHealthCheck = sdk.HealthCheck.of(effects, {
@@ -28,33 +31,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           errorMessage: `The API is unreachable`,
         },
       ),
-  })
-
-  const syncHealthCheck = sdk.HealthCheck.of(effects, {
-    id: 'sync',
-    name: 'UTXO Tracker Sync',
-    fn: async () => {
-      const auth = await readFile('/datadir/nbxplorer/Main/.cookie', {
-        encoding: 'base64',
-      })
-      const res = await fetch('http://127.0.0.1:24444/v1/cryptos/BTC/status', {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${auth}`,
-        },
-      })
-        .then(async (res: any) => {
-          const jsonRes = (await res.json()) as NbxStatusRes
-          // @TODO remove me after testing
-          console.log(`NBX status response is: ${res}`)
-          console.log(`NBX status response parsed as json: ${jsonRes}`)
-          return jsonRes
-        })
-        .catch((e: any) => {
-          throw new Error(e)
-        })
-      return nbxHealthCheck(res)
-    },
   })
 
   // @TODO add smtp via greenfield api
@@ -107,6 +83,39 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     '/media/startos/volumes/main/nbxplorer.env',
   ])
 
+  /**
+   * ======================== Additional Health Checks (optional) ========================
+   */
+  const syncHealthCheck = sdk.HealthCheck.of(effects, {
+    id: 'sync',
+    name: 'UTXO Tracker Sync',
+    fn: async () => {
+      const auth = await readFile('/datadir/nbxplorer/Main/.cookie', {
+        encoding: 'base64',
+      })
+      const res = await fetch('http://127.0.0.1:24444/v1/cryptos/BTC/status', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${auth}`,
+        },
+      })
+        .then(async (res: any) => {
+          const jsonRes = (await res.json()) as NbxStatusRes
+          // @TODO remove me after testing
+          console.log(`NBX status response is: ${res}`)
+          console.log(`NBX status response parsed as json: ${jsonRes}`)
+          return jsonRes
+        })
+        .catch((e: any) => {
+          throw new Error(e)
+        })
+      return nbxHealthCheck(res)
+    },
+  })
+
+  /**
+   *  ======================== Daemons ========================
+   */
   return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
       subcontainer: await SubContainer.of(
