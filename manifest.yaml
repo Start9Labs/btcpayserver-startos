@@ -1,10 +1,7 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.0.7
-release-notes: |
-  * Updates to the latest upstream [release](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.0.7), which includes a security fix, various bugfixes and several new features.
-  * Updates NBXplorer to the latest version
-  * Adds new Shopify plugin functionality (this requires a Tor reverse proxy setup)
+version: 2.0.7.1
+release-notes: Hotfix update for NBXplorer bug
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
