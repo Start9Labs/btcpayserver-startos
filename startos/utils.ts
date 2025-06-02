@@ -6,6 +6,8 @@ import { mainMounts } from './main'
 
 export const uiPort = 23000
 export const webInterfaceId = 'webui'
+export const lndMountpoint = '/mnt/lnd'
+export const clnMountpoint = '/mnt/cln'
 
 export function getRandomPassword() {
   return utils.getDefaultString({

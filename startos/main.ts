@@ -3,15 +3,32 @@ import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { NBXplorerEnvFile } from './fileModels/nbxplorer.env'
 import { BTCPSEnvFile } from './fileModels/btcpay.env'
-import { uiPort } from './utils'
+import {
+  clnMountpoint,
+  getCurrentLightning,
+  lndMountpoint,
+  uiPort,
+} from './utils'
 import { store } from './fileModels/store.json'
 
-export const mainMounts = sdk.Mounts.of().mountVolume({
-  volumeId: 'main',
-  subpath: null,
-  mountpoint: '/datadir',
-  readonly: false,
-})
+/**
+ * ======================== Mounts ========================
+ */
+export const mainMounts = sdk.Mounts.of()
+  .mountVolume({
+    volumeId: 'main',
+    subpath: null,
+    mountpoint: '/datadir',
+    readonly: false,
+  })
+  .mountDependency({
+    dependencyId: 'bitcoind',
+    volumeId: 'main',
+    subpath: null,
+    mountpoint: '/mnt/bitcoind',
+    // @TODO: this should be readonly, but we need to change its permissions
+    readonly: false,
+  })
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
@@ -84,6 +101,36 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const depResult = await sdk.checkDependencies(effects)
   depResult.throwIfNotSatisfied()
 
+  const env = (await BTCPSEnvFile.read().const(effects))!
+  const lnImplementation = getCurrentLightning(env)
+
+  if (lnImplementation === 'lnd') {
+    // @TODO mainMounts.mountDependency<typeof LndManifest>
+    const mountpoint = '/mnt/lnd'
+    mainMounts.mountDependency({
+      dependencyId: 'lnd',
+      volumeId: 'main', //@TODO verify
+      subpath: null,
+      mountpoint: lndMountpoint,
+      readonly: true,
+    })
+  }
+
+  if (lnImplementation === 'cln') {
+    // @TODO mainMounts.mountDependency<typeof ClnManifest>
+    mainMounts.mountDependency({
+      dependencyId: 'c-lightning',
+      volumeId: 'main', //@TODO verify
+      subpath: null,
+      mountpoint: clnMountpoint,
+      readonly: true,
+    })
+  }
+
+  // ========================
+  // Set config defaults
+  // ========================
+
   const startHeight = await store.read((s) => s.startHeight).const(effects)
 
   await NBXplorerEnvFile.merge(effects, {
@@ -98,7 +145,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   await BTCPSEnvFile.merge(effects, {
     BTCPAY_NETWORK: 'mainnet',
     BTCPAY_BIND: '0.0.0.0:23000',
-    BTCPAY_NBXPLORER_COOKIE: '/datadir/nbxplorer/Main/.cookie',
+    BTCPAY_NBXPLORER_COOKIE: '/mnt/bitcoind/.cookie',
     BTCPAY_SOCKSENDPOINT: 'startos:9050',
   })
 
