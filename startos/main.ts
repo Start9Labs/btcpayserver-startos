@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { NBXplorerEnvFile } from './fileModels/nbxplorer.env'
 import { BTCPSEnvFile } from './fileModels/btcpay.env'
-import { uiPort, webInterfaceId } from './utils'
+import { uiPort } from './utils'
 import { store } from './fileModels/store.json'
 
 export const mainMounts = sdk.Mounts.of().mountVolume({
@@ -94,11 +94,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     NBXPLORER_RESCAN: '1',
     NBXPLORER_STARTHEIGHT: startHeight ? startHeight.toString() : '-1',
   })
-
-  const ip = await sdk.getContainerIp(effects)
-  const urls =
-    (await sdk.serviceInterface.getOwn(effects, webInterfaceId).const())
-      ?.addressInfo?.urls || []
 
   await BTCPSEnvFile.merge(effects, {
     BTCPAY_NETWORK: 'mainnet',
