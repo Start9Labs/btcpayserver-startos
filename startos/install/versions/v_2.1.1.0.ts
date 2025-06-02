@@ -9,7 +9,7 @@ export const v_2_1_1_0 = VersionInfo.of({
   releaseNotes: 'Revamped for StartOS 0.4.0.',
   migrations: {
     up: async ({ effects }) => {
-      const { lightning, altcoins, advanced } = load(
+      const { lightning, altcoins, advanced, plugins } = load(
         await readFile('/datadir/start9/config.yaml', 'utf-8'),
       ) as {
         advanced: {
@@ -23,10 +23,14 @@ export const v_2_1_1_0 = VersionInfo.of({
             status: 'enabled' | 'disabled'
           }
         }
+        plugins: {
+          shopify: 'enabled' | 'disabled'
+        }
       }
 
       await store.merge(effects, {
         startHeight: parseInt(advanced['sync-start-height']),
+        plugins: { shopify: plugins.shopify === 'enabled' ? true : false },
       })
 
       await BTCPSEnvFile.merge(effects, {

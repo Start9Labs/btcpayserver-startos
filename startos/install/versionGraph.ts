@@ -9,6 +9,9 @@ export const versionGraph = VersionGraph.of({
     await Promise.all([
       store.write(effects, {
         startHeight: -1,
+        plugins: {
+          shopify: false,
+        },
       }),
     ])
   },

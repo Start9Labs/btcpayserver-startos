@@ -118,7 +118,10 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
    *  ======================== Daemons ========================
    */
-  return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
+  const daemons = sdk.Daemons.of(effects, started, [
+    apiHealthCheck,
+    syncHealthCheck,
+  ])
     .addDaemon('postgres', {
       subcontainer: await sdk.SubContainer.of(
         effects,
@@ -187,6 +190,32 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       },
       requires: ['nbxplorer'],
     })
+
+  // Add Shopify app daemon if enabled
+  const { shopify } = (await store.read((s) => s.plugins).const(effects))!
+  if (shopify) {
+    daemons.addDaemon('shopify', {
+      subcontainer: await sdk.SubContainer.of(
+        effects,
+        { imageId: 'shopify' },
+        mainMounts,
+        'shopify',
+      ),
+      command: ['node', '/app/server.js'],
+      env: {},
+      ready: {
+        display: 'Shopify Plugin',
+        fn: () =>
+          sdk.healthCheck.checkPortListening(effects, 5000, {
+            successMessage: 'The Shopify app is running',
+            errorMessage: 'The Shopify app is not running',
+          }),
+      },
+      requires: ['webui'],
+    })
+  }
+
+  return daemons
 })
 
 interface NbxStatusRes {

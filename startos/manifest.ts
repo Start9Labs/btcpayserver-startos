@@ -32,6 +32,11 @@ export const manifest = setupManifest({
         dockerTag: 'btcpayserver/postgres:13.13',
       },
     },
+    shopify: {
+      source: {
+        dockerTag: 'btcpayserver/shopify-app-deployer:1.3',
+      },
+    },
   },
   hardwareRequirements: {},
   dependencies: {

@@ -1,5 +1,6 @@
 PACKAGE_ID := $(shell grep -o "id: '[^']*'" startos/manifest.ts | sed "s/id: '\([^']*\)'/\1/")
 INGREDIENTS := $(shell start-cli s9pk list-ingredients 2> /dev/null)
+DOC_ASSETS := $(shell find ./docs/assets) docs/instructions_template.md
 
 .PHONY: all clean install check-deps check-init ingredients
 
@@ -23,6 +24,9 @@ check-init:
 	@if [ ! -f ~/.startos/developer.key.pem ]; then \
 		start-cli init; \
 	fi
+
+instructions.md: $(DOC_ASSETS)
+	cd docs && md-packer < instructions_template.md > ../instructions.md
 
 ingredients: $(INGREDIENTS)
 	@echo "Re-evaluating ingredients..."
