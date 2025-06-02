@@ -1,7 +1,7 @@
 import { mainMounts } from '../main'
 import { sdk } from '../sdk'
 
-export const initalizePostgres = sdk.setupOnInstall(async (effects) => {
+export const initalizePostgres = sdk.setupOnInit(async (effects) => {
   console.log('Initializing PostgreSQL...')
 
   await sdk.SubContainer.withTemp(
