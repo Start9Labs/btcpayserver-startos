@@ -1,0 +1,34 @@
+import { mainMounts } from '../main'
+import { sdk } from '../sdk'
+
+export const initalizePostgres = sdk.setupOnInstall(async (effects) => {
+  console.log('Initializing PostgreSQL...')
+
+  await sdk.SubContainer.withTemp(
+    effects,
+    { imageId: 'postgres' },
+    mainMounts,
+    'initalizePostgres',
+    async (sub) => {
+      await sub.exec(['chmod', '777', '/datadir'])
+      await sub.exec(['mkdir', '-p', '/datadir/postgresql/data'])
+      await sub.exec(['chmod', '777', '/datadir/postgresql'])
+      await sub.exec([
+        'chown',
+        '-R',
+        'postgres:postgres',
+        '/datadir/postgresql/data',
+      ])
+      await sub.exec([
+        'sudo',
+        '-u',
+        'postgres',
+        '/usr/lib/postgresql/13/bin/initdb',
+        '-D',
+        '/datadir/postgresql/data',
+      ])
+      await sub.exec(['chmod', 'a+x', '/assets/postgres-ready.sh'])
+    },
+  ),
+    console.log('PostgreSQL initialization complete')
+})

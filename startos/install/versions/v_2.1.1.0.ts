@@ -1,11 +1,11 @@
-import { VersionInfo, FileHelper, IMPOSSIBLE } from '@start9labs/start-sdk'
-import { readFile, rmdir } from 'fs/promises'
+import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
+import { readFile, rm } from 'fs/promises'
 import { load } from 'js-yaml'
-import { sdk } from '../sdk'
-import { BTCPSEnvFile } from '../file-models/btcpay.env'
+import { BTCPSEnvFile } from '../../fileModels/btcpay.env'
+import { store } from '../../fileModels/store.json'
 
-export const v210_1 = VersionInfo.of({
-  version: '2.1.0:1',
+export const v_2_1_1_0 = VersionInfo.of({
+  version: '2.1.1:0',
   releaseNotes: 'Revamped for StartOS 0.4.0.',
   migrations: {
     up: async ({ effects }) => {
@@ -25,7 +25,7 @@ export const v210_1 = VersionInfo.of({
         }
       }
 
-      await sdk.store.setOwn(effects, sdk.StorePath, {
+      await store.merge(effects, {
         startHeight: parseInt(advanced['sync-start-height']),
       })
 
@@ -34,7 +34,9 @@ export const v210_1 = VersionInfo.of({
       })
 
       // remove old start9 dir
-      await rmdir('/datadir/start9')
+      rm('/media/startos/volumes/main/start9', { recursive: true }).catch(
+        console.error,
+      )
     },
     down: IMPOSSIBLE,
   },

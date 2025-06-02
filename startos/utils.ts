@@ -1,7 +1,8 @@
 import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
-import { BTCPSEnv } from './file-models/btcpay.env'
+import { BTCPSEnv } from './fileModels/btcpay.env'
 import { sdk } from './sdk'
 import { utils } from '@start9labs/start-sdk'
+import { mainMounts } from './main'
 
 export const uiPort = 23000
 export const webInterfaceId = 'webui'
@@ -68,23 +69,26 @@ export async function getWebHostnames(effects: Effects): Promise<string[]> {
 }
 
 export async function query(effects: Effects, statement: string) {
-  const res = await sdk.runCommand(
+  return sdk.SubContainer.withTemp(
     effects,
     { imageId: 'postgres' },
-    [
-      'psql',
-      '-U',
-      'postgres',
-      '-h',
-      'localhost',
-      '-d',
-      'btcpayserver',
-      '-t',
-      '-c',
-      `"${statement}"`,
-    ],
-    {},
+    mainMounts,
+    'queryPostgres',
+    async (sub) => {
+      const res = await sub.exec([
+        'psql',
+        '-U',
+        'postgres',
+        '-h',
+        'localhost',
+        '-d',
+        'btcpayserver',
+        '-t',
+        '-c',
+        `"${statement}"`,
+      ])
+      if (res.stderr) throw new Error(res.stderr.toString())
+      return res.stdout.toString()
+    },
   )
-  if (res.stderr) throw new Error(res.stderr.toString())
-  return res.stdout.toString()
 }

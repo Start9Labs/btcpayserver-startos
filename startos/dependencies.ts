@@ -1,11 +1,11 @@
 import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
 import { config } from 'bitcoind-startos/startos/actions/config/config'
-import { BTCPSEnvFile } from './file-models/btcpay.env'
+import { BTCPSEnvFile } from './fileModels/btcpay.env'
 import { getCurrentLightning } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
-  await sdk.action.request(effects, 'bitcoind', config, 'important', {
+  await sdk.action.createTask(effects, 'bitcoind', config, 'important', {
     input: {
       kind: 'partial',
       value: {
@@ -21,7 +21,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     T.DependencyRequirement
   >
 
-  const env = await BTCPSEnvFile.read.const(effects)
+  const env = await BTCPSEnvFile.read().const(effects)
   const ln = getCurrentLightning(env!)
 
   if (ln === 'lnd') {

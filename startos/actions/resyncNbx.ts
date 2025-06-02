@@ -1,3 +1,4 @@
+import { store } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
 
@@ -5,7 +6,7 @@ const input = InputSpec.of({
   startHeight: Value.number({
     name: 'Starting Block Height',
     description: 'The block height at which to begin resync',
-    required: false,
+    required: true,
     default: 1,
     integer: true,
     min: 1,
@@ -19,7 +20,7 @@ export const resyncNbx = sdk.Action.withInput(
     name: 'Resync NBXplorer',
     description: 'Syncs NBXplorer from the inputted block height.',
     warning: null,
-    allowedStatuses: 'only-running',
+    allowedStatuses: 'any',
     group: null,
     visibility: 'enabled',
   }),
@@ -31,7 +32,7 @@ export const resyncNbx = sdk.Action.withInput(
   async ({ effects, input }) => {
     const startHeight = input.startHeight
 
-    await sdk.store.setOwn(effects, sdk.StorePath.startHeight, startHeight)
+    await store.merge(effects, { startHeight })
 
     // @TODO how do i reset this value after action is run?
 

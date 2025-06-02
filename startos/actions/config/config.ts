@@ -1,4 +1,4 @@
-import { BTCPSEnvFile } from '../../file-models/btcpay.env'
+import { BTCPSEnvFile } from '../../fileModels/btcpay.env'
 import { mainMounts } from '../../main'
 import { sdk } from '../../sdk'
 import { getCurrentLightning } from '../../utils'
@@ -19,44 +19,44 @@ export const config = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => {
-    const env = await BTCPSEnvFile.read.const(effects)
+    const env = await BTCPSEnvFile.read().const(effects)
     return {
       lightning: getCurrentLightning(env!),
     }
   },
 
   async ({ effects, input }) => {
-    const env = await BTCPSEnvFile.read.const(effects)
+    const env = await BTCPSEnvFile.read().const(effects)
     const currentLightning = getCurrentLightning(env!)
     if (currentLightning === input.lightning) return
 
     let BTCPAY_BTCLIGHTNING = ''
 
     if (input.lightning === 'lnd') {
-      // @TODO mainMounts.addDependency<typeof LndManifest>
+      // @TODO mainMounts.mountDependency<typeof LndManifest>
       const mountpoint = '/mnt/lnd'
-      mainMounts.addDependency(
-        'lnd',
-        'main', //@TODO verify
-        'public', //@TODO verify
+      mainMounts.mountDependency({
+        dependencyId: 'lnd',
+        volumeId: 'main', //@TODO verify
+        subpath: null,
         mountpoint,
-        true,
-      )
+        readonly: true,
+      })
       BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${mountpoint}/admin.macaroon;allowinsecure=true`
     }
 
     if (input.lightning === 'cln') {
-      // @TODO mainMounts.addDependency<typeof ClnManifest>
+      // @TODO mainMounts.mountDependency<typeof ClnManifest>
       const mountpoint = '/mnt/cln'
-      mainMounts.addDependency(
-        'c-lightning',
-        'main', //@TODO verify
-        'shared', //@TODO verify
+      mainMounts.mountDependency({
+        dependencyId: 'c-lightning',
+        volumeId: 'main', //@TODO verify
+        subpath: null,
         mountpoint,
-        true,
-      )
+        readonly: true,
+      })
       BTCPAY_BTCLIGHTNING = `type=clightning;server=unix://${mountpoint}/lightning-rpc`
     }
-    await Promise.all([BTCPSEnvFile.merge({ ...env!, BTCPAY_BTCLIGHTNING })])
+    await BTCPSEnvFile.merge(effects, { ...env!, BTCPAY_BTCLIGHTNING })
   },
 )

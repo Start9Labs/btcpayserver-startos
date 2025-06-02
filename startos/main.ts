@@ -1,23 +1,40 @@
 import { sdk } from './sdk'
 import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
-import { SubContainer } from '@start9labs/start-sdk'
-import { NBXplorerEnvFile } from './file-models/nbxplorer.env'
-import { BTCPSEnvFile } from './file-models/btcpay.env'
+import { NBXplorerEnvFile } from './fileModels/nbxplorer.env'
+import { BTCPSEnvFile } from './fileModels/btcpay.env'
 import { uiPort, webInterfaceId } from './utils'
+import { store } from './fileModels/store.json'
 
-export const mainMounts = sdk.Mounts.of().addVolume(
-  'main',
-  null,
-  '/datadir',
-  false,
-)
+export const mainMounts = sdk.Mounts.of().mountVolume({
+  volumeId: 'main',
+  subpath: null,
+  mountpoint: '/datadir',
+  readonly: false,
+})
 
 export const main = sdk.setupMain(async ({ effects, started }) => {
   /**
-   * ======================== Setup (optional) ========================
+   * ======================== Setup ========================
    */
   console.info('Starting BTCPay Server...')
+
+  const btcpayContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'btcpay' },
+    mainMounts,
+    'btcpay',
+  )
+  const nbxContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'nbx' },
+    mainMounts,
+    'nbx',
+  )
+
+  /**
+   * ======================== Additional Health Checks ========================
+   */
 
   const apiHealthCheck = sdk.HealthCheck.of(effects, {
     id: 'data-interface',
@@ -33,59 +50,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       ),
   })
 
-  // @TODO add smtp via greenfield api
-
-  const startHeight = await sdk.store
-    .getOwn(effects, sdk.StorePath.startHeight)
-    .const()
-
-  await NBXplorerEnvFile.merge(effects, {
-    NBXPLORER_NETWORK: 'mainnet',
-    NBXPLORER_PORT: '24444',
-    NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
-    NBXPLORER_BTCRPCURL: 'bitcoind.startos:8332',
-    NBXPLORER_RESCAN: '1',
-    NBXPLORER_STARTHEIGHT: startHeight ? startHeight.toString() : '-1',
-  })
-
-  const ip = await sdk.getContainerIp(effects)
-  const urls =
-    (await sdk.serviceInterface.getOwn(effects, webInterfaceId).const())
-      ?.addressInfo?.urls || []
-
-  await BTCPSEnvFile.merge(effects, {
-    BTCPAY_NETWORK: 'mainnet',
-    BTCPAY_BIND: '0.0.0.0:23000',
-    BTCPAY_NBXPLORER_COOKIE: '/datadir/nbxplorer/Main/.cookie',
-    BTCPAY_SOCKSENDPOINT: 'startos:9050',
-  })
-
-  const btcpayContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'btcpay' },
-    mainMounts,
-    'btcpay',
-  )
-  const nbxContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'nbx' },
-    mainMounts,
-    'nbx',
-  )
-
-  // source env files
-  await btcpayContainer.exec([
-    'source',
-    '/media/startos/volumes/main/btcpay.env',
-  ])
-  await nbxContainer.exec([
-    'source',
-    '/media/startos/volumes/main/nbxplorer.env',
-  ])
-
-  /**
-   * ======================== Additional Health Checks (optional) ========================
-   */
   const syncHealthCheck = sdk.HealthCheck.of(effects, {
     id: 'sync',
     name: 'UTXO Tracker Sync',
@@ -113,12 +77,55 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     },
   })
 
+  // ========================
+  // Dependency checks
+  // ========================
+
+  const depResult = await sdk.checkDependencies(effects)
+  depResult.throwIfNotSatisfied()
+
+  const startHeight = await store.read((s) => s.startHeight).const(effects)
+
+  await NBXplorerEnvFile.merge(effects, {
+    NBXPLORER_NETWORK: 'mainnet',
+    NBXPLORER_PORT: '24444',
+    NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
+    NBXPLORER_BTCRPCURL: 'bitcoind.startos:8332',
+    NBXPLORER_RESCAN: '1',
+    NBXPLORER_STARTHEIGHT: startHeight ? startHeight.toString() : '-1',
+  })
+
+  const ip = await sdk.getContainerIp(effects)
+  const urls =
+    (await sdk.serviceInterface.getOwn(effects, webInterfaceId).const())
+      ?.addressInfo?.urls || []
+
+  await BTCPSEnvFile.merge(effects, {
+    BTCPAY_NETWORK: 'mainnet',
+    BTCPAY_BIND: '0.0.0.0:23000',
+    BTCPAY_NBXPLORER_COOKIE: '/datadir/nbxplorer/Main/.cookie',
+    BTCPAY_SOCKSENDPOINT: 'startos:9050',
+  })
+
+  // ========================
+  // Source environment files
+  // ========================
+
+  await btcpayContainer.exec([
+    'source',
+    '/media/startos/volumes/main/btcpay.env',
+  ])
+  await nbxContainer.exec([
+    'source',
+    '/media/startos/volumes/main/nbxplorer.env',
+  ])
+
   /**
    *  ======================== Daemons ========================
    */
   return sdk.Daemons.of(effects, started, [apiHealthCheck, syncHealthCheck])
     .addDaemon('postgres', {
-      subcontainer: await SubContainer.of(
+      subcontainer: await sdk.SubContainer.of(
         effects,
         { imageId: 'postgres' },
         mainMounts,
@@ -142,7 +149,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       ready: {
         display: null,
         fn: async () => {
-          const sub = await SubContainer.of(
+          const sub = await sdk.SubContainer.of(
             effects,
             { imageId: 'postgres' },
             mainMounts,
@@ -175,7 +182,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       subcontainer: btcpayContainer,
       command: ['dotnet', '/app/BTCPayServer.dll'],
       env: {},
-      // @TODO add trigger?
       ready: {
         display: 'Web Interface',
         fn: () =>
