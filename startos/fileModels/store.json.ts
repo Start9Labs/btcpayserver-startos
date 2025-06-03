@@ -7,6 +7,9 @@ const shape = object({
   plugins: object({
     shopify: boolean.onMismatch(false),
   }),
+  altcoins: object({
+    monero: boolean.onMismatch(false),
+  }),
 })
 
 export const store = FileHelper.json(

@@ -3,7 +3,7 @@ import { query, getRandomPassword } from '../utils'
 import { pbkdf2, randomBytes } from 'node:crypto'
 
 export const resetAdminPassword = sdk.Action.withoutInput(
-  'resetAdminPassword',
+  'reset-admin-password',
 
   async ({ effects }) => ({
     name: 'Reset Admin Password',

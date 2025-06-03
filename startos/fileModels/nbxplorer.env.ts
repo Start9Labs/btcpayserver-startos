@@ -1,30 +1,32 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
-import { dotenvToJson, jsonToDotenv } from '../utils'
-const { object, string } = matches
+import { nbxEnvDefaults } from '../utils'
+const { object, string, literal } = matches
+
+const {
+  NBXPLORER_NETWORK,
+  NBXPLORER_PORT,
+  NBXPLORER_BTCNODEENDPOINT,
+  NBXPLORER_BTCRPCURL,
+  NBXPLORER_RESCAN,
+  NBXPLORER_STARTHEIGHT,
+} = nbxEnvDefaults
 
 // ts matches will preserve existing keys, wont throw an error for extra keys
 const shape = object({
-  NBXPLORER_NETWORK: string,
-  NBXPLORER_PORT: string,
-  NBXPLORER_BTCNODEENDPOINT: string,
-  NBXPLORER_BTCRPCURL: string,
-  NBXPLORER_RESCAN: string,
-  NBXPLORER_STARTHEIGHT: string,
+  NBXPLORER_NETWORK: literal(NBXPLORER_NETWORK).onMismatch(NBXPLORER_NETWORK),
+  NBXPLORER_PORT: literal(NBXPLORER_PORT).onMismatch(NBXPLORER_PORT),
+  NBXPLORER_BTCNODEENDPOINT: literal(NBXPLORER_BTCNODEENDPOINT).onMismatch(
+    NBXPLORER_BTCNODEENDPOINT,
+  ),
+  NBXPLORER_BTCRPCURL:
+    literal(NBXPLORER_BTCRPCURL).onMismatch(NBXPLORER_BTCRPCURL),
+  NBXPLORER_RESCAN: literal(NBXPLORER_RESCAN).onMismatch(NBXPLORER_RESCAN),
+  NBXPLORER_STARTHEIGHT: string.onMismatch(NBXPLORER_STARTHEIGHT),
 })
 
-export type NBXEnv = {
-  NBXPLORER_NETWORK: string
-  NBXPLORER_PORT: string
-  NBXPLORER_BTCNODEENDPOINT: string
-  NBXPLORER_BTCRPCURL: string
-  NBXPLORER_RESCAN: string
-  NBXPLORER_STARTHEIGHT: string
-  [key: string]: string
-}
-
-export const NBXplorerEnvFile = FileHelper.raw(
+export const NBXplorerEnvFile = FileHelper.env(
   '/media/startos/volumes/main/nbxplorer.env',
-  jsonToDotenv<NBXEnv>,
-  dotenvToJson<NBXEnv>,
-  (obj) => shape.unsafeCast(obj),
+  shape,
 )
+
+export type NBXEnv = typeof shape._TYPE

@@ -24,13 +24,20 @@ export const v_2_1_1_0 = VersionInfo.of({
           }
         }
         plugins: {
-          shopify: 'enabled' | 'disabled'
+          shopify: {
+            status: 'enabled' | 'disabled'
+          }
         }
       }
 
       await store.merge(effects, {
         startHeight: parseInt(advanced['sync-start-height']),
-        plugins: { shopify: plugins.shopify === 'enabled' ? true : false },
+        plugins: {
+          shopify: plugins.shopify.status === 'enabled' ? true : false,
+        },
+        altcoins: {
+          monero: altcoins.monero.status === 'enabled' ? true : false,
+        },
       })
 
       await BTCPSEnvFile.merge(effects, {

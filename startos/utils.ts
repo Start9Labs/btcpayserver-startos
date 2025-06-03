@@ -2,44 +2,35 @@ import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 import { BTCPSEnv } from './fileModels/btcpay.env'
 import { sdk } from './sdk'
 import { utils } from '@start9labs/start-sdk'
-import { mainMounts } from './main'
 
 export const uiPort = 23000
 export const webInterfaceId = 'webui'
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
+export const btcMountpoint = '/mnt/bitcoind'
+
+export const btcpsEnvDefaults = {
+  BTCPAY_NETWORK: 'mainnet',
+  BTCPAY_CHAINS: 'btc',
+  BTCPAY_BIND: '0.0.0.0:23000',
+  BTCPAY_NBXPLORER_COOKIE: `${btcMountpoint}.cookie`,
+  BTCPAY_SOCKSENDPOINT: 'startos:9050',
+}
+
+export const nbxEnvDefaults = {
+  NBXPLORER_NETWORK: 'mainnet',
+  NBXPLORER_PORT: '24444',
+  NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
+  NBXPLORER_BTCRPCURL: 'bitcoind.startos:8332',
+  NBXPLORER_RESCAN: '1',
+  NBXPLORER_STARTHEIGHT: '-1',
+}
 
 export function getRandomPassword() {
   return utils.getDefaultString({
     charset: 'a-z,A-Z,1-9,!,@,$,%,&,*',
     len: 22,
   })
-}
-
-export function jsonToDotenv<T extends Record<string, string | undefined>>(
-  jsonObj: T,
-): string {
-  return Object.entries(jsonObj)
-    .map(([key, value]) => `${key.toUpperCase()}=${value}`)
-    .join('\n')
-}
-
-export function dotenvToJson<T extends Record<string, string | undefined>>(
-  dotenvStr: string,
-): T {
-  return (
-    dotenvStr
-      .split('\n')
-      // ignore empty lines and comments
-      .filter((line) => line.trim() && !line.startsWith('#'))
-      .reduce((acc, line) => {
-        const [key, value] = line.split('=')
-        if (key && value !== undefined) {
-          ;(acc as Record<string, string>)[key.trim()] = value.trim()
-        }
-        return acc
-      }, {} as T)
-  )
 }
 
 export function getCurrentLightning(env: BTCPSEnv) {
@@ -74,7 +65,12 @@ export async function query(effects: Effects, statement: string) {
   return sdk.SubContainer.withTemp(
     effects,
     { imageId: 'postgres' },
-    mainMounts,
+    sdk.Mounts.of().mountVolume({
+      volumeId: 'main',
+      subpath: null,
+      mountpoint: '/datadir',
+      readonly: false,
+    }),
     'queryPostgres',
     async (sub) => {
       const res = await sub.exec([

@@ -1,4 +1,3 @@
-import { mainMounts } from '../main'
 import { sdk } from '../sdk'
 
 export const initalizePostgres = sdk.setupOnInit(async (effects) => {
@@ -7,7 +6,12 @@ export const initalizePostgres = sdk.setupOnInit(async (effects) => {
   await sdk.SubContainer.withTemp(
     effects,
     { imageId: 'postgres' },
-    mainMounts,
+    sdk.Mounts.of().mountVolume({
+      volumeId: 'main',
+      subpath: null,
+      mountpoint: '/datadir',
+      readonly: false,
+    }),
     'initalizePostgres',
     async (sub) => {
       await sub.exec(['chmod', '777', '/datadir'])

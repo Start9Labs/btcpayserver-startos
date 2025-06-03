@@ -14,7 +14,7 @@ const input = InputSpec.of({
 })
 
 export const resyncNbx = sdk.Action.withInput(
-  'resyncNbx',
+  'resync-nbx',
 
   async ({ effects }) => ({
     name: 'Resync NBXplorer',

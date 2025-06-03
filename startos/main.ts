@@ -4,9 +4,11 @@ import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/chec
 import { NBXplorerEnvFile } from './fileModels/nbxplorer.env'
 import { BTCPSEnvFile } from './fileModels/btcpay.env'
 import {
+  btcMountpoint,
   clnMountpoint,
   getCurrentLightning,
   lndMountpoint,
+  nbxEnvDefaults,
   uiPort,
 } from './utils'
 import { store } from './fileModels/store.json'
@@ -14,7 +16,7 @@ import { store } from './fileModels/store.json'
 /**
  * ======================== Mounts ========================
  */
-export const mainMounts = sdk.Mounts.of()
+let mainMounts = sdk.Mounts.of()
   .mountVolume({
     volumeId: 'main',
     subpath: null,
@@ -25,7 +27,7 @@ export const mainMounts = sdk.Mounts.of()
     dependencyId: 'bitcoind',
     volumeId: 'main',
     subpath: null,
-    mountpoint: '/mnt/bitcoind',
+    mountpoint: btcMountpoint,
     // @TODO: this should be readonly, but we need to change its permissions
     readonly: false,
   })
@@ -35,19 +37,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
    * ======================== Setup ========================
    */
   console.info('Starting BTCPay Server...')
-
-  const btcpayContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'btcpay' },
-    mainMounts,
-    'btcpay',
-  )
-  const nbxContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'nbx' },
-    mainMounts,
-    'nbx',
-  )
 
   /**
    * ======================== Additional Health Checks ========================
@@ -95,7 +84,15 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   })
 
   // ========================
-  // Dependency checks
+  // Get store values
+  // ========================
+
+  const { startHeight, plugins, altcoins } = (await store
+    .read((s) => s)
+    .const(effects))!
+
+  // ========================
+  // Dependency setup & checks
   // ========================
 
   const depResult = await sdk.checkDependencies(effects)
@@ -106,8 +103,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
 
   if (lnImplementation === 'lnd') {
     // @TODO mainMounts.mountDependency<typeof LndManifest>
-    const mountpoint = '/mnt/lnd'
-    mainMounts.mountDependency({
+    mainMounts = mainMounts.mountDependency({
       dependencyId: 'lnd',
       volumeId: 'main', //@TODO verify
       subpath: null,
@@ -118,7 +114,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
 
   if (lnImplementation === 'cln') {
     // @TODO mainMounts.mountDependency<typeof ClnManifest>
-    mainMounts.mountDependency({
+    mainMounts = mainMounts.mountDependency({
       dependencyId: 'c-lightning',
       volumeId: 'main', //@TODO verify
       subpath: null,
@@ -127,31 +123,53 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
   }
 
+  if (altcoins.monero) {
+    await BTCPSEnvFile.merge(effects, {
+      BTCPAY_CHAINS: 'btc,mxr',
+      BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
+      BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
+      BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
+      BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
+      BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
+        '/datadir/btcpayserver/altcoins/monero/wallets',
+    })
+
+    // @TODO mainMounts.mountDependency<typeof MoneroManifest>
+    http: mainMounts = mainMounts.mountDependency({
+      dependencyId: 'monerod',
+      volumeId: 'main', //@TODO verify
+      subpath: null,
+      mountpoint: '/mnt/monero',
+      readonly: false,
+    })
+  }
+
   // ========================
-  // Set config defaults
+  // Set containers
   // ========================
 
-  const startHeight = await store.read((s) => s.startHeight).const(effects)
+  const btcpayContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'btcpay' },
+    mainMounts,
+    'btcpay',
+  )
+  const nbxContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'nbx' },
+    mainMounts,
+    'nbx',
+  )
+
+  // ========================
+  // Setup environment files
+  // ========================
 
   await NBXplorerEnvFile.merge(effects, {
-    NBXPLORER_NETWORK: 'mainnet',
-    NBXPLORER_PORT: '24444',
-    NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
-    NBXPLORER_BTCRPCURL: 'bitcoind.startos:8332',
-    NBXPLORER_RESCAN: '1',
-    NBXPLORER_STARTHEIGHT: startHeight ? startHeight.toString() : '-1',
+    NBXPLORER_STARTHEIGHT: startHeight
+      ? startHeight.toString()
+      : nbxEnvDefaults.NBXPLORER_STARTHEIGHT,
   })
-
-  await BTCPSEnvFile.merge(effects, {
-    BTCPAY_NETWORK: 'mainnet',
-    BTCPAY_BIND: '0.0.0.0:23000',
-    BTCPAY_NBXPLORER_COOKIE: '/mnt/bitcoind/.cookie',
-    BTCPAY_SOCKSENDPOINT: 'startos:9050',
-  })
-
-  // ========================
-  // Source environment files
-  // ========================
 
   await btcpayContainer.exec([
     'source',
@@ -239,8 +257,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
 
   // Add Shopify app daemon if enabled
-  const { shopify } = (await store.read((s) => s.plugins).const(effects))!
-  if (shopify) {
+  if (plugins.shopify) {
     daemons.addDaemon('shopify', {
       subcontainer: await sdk.SubContainer.of(
         effects,
@@ -261,7 +278,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       requires: ['webui'],
     })
   }
-
   return daemons
 })
 

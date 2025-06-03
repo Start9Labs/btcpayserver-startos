@@ -19,7 +19,7 @@ export const inputSpec = InputSpec.of({
 })
 
 export const lightningNode = sdk.Action.withInput(
-  'lightningNode',
+  'lightning-node',
 
   async ({ effects }) => ({
     name: 'Enable Lightning Node',

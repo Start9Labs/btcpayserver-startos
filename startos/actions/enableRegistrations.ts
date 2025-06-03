@@ -2,7 +2,7 @@ import { sdk } from '../sdk'
 import { query } from '../utils'
 
 export const enableRegistrations = sdk.Action.withoutInput(
-  'enableRegistrations',
+  'enable-registrations',
 
   async ({ effects }) => {
     const res = JSON.parse(

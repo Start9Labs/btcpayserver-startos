@@ -3,7 +3,6 @@ import { setupManifest } from '@start9labs/start-sdk'
 export const manifest = setupManifest({
   id: 'btcpayserver',
   title: 'BTCPay Server',
-  version: '2.1.1:0',
   license: 'mit',
   wrapperRepo: 'https://github.com/Start9Labs/btcpayserver-wrapper',
   upstreamRepo: 'https://github.com/btcpayserver/btcpayserver',
@@ -24,25 +23,24 @@ export const manifest = setupManifest({
     },
     nbx: {
       source: {
-        dockerTag: 'nicolasdorier/nbxplorer:2.5.26',
+        dockerTag: 'nicolasdorier/nbxplorer:2.5.27',
       },
     },
     postgres: {
       source: {
-        dockerTag: 'btcpayserver/postgres:13.13',
+        dockerTag: 'btcpayserver/postgres:13.18',
       },
     },
     shopify: {
       source: {
-        dockerTag: 'btcpayserver/shopify-app-deployer:1.3',
+        dockerTag: 'btcpayserver/shopify-app-deployer:1.4',
       },
     },
   },
   hardwareRequirements: {},
   dependencies: {
     bitcoind: {
-      description:
-        'Used for the P2P connection interface if configured with Internal Proxy and both the P2P and RPC interfaces if configured with Internal.',
+      description: 'Used for the RPC and P2P connection interfaces.',
       optional: false,
       s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
     },
@@ -53,6 +51,11 @@ export const manifest = setupManifest({
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
+      optional: false,
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
+    },
+    monerod: {
+      description: 'Used to connect to the Monero network.',
       optional: false,
       s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
     },

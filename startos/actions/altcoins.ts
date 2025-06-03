@@ -3,20 +3,20 @@ import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
 
 const input = InputSpec.of({
-  shopify: Value.toggle({
-    name: 'Shopify',
+  monero: Value.toggle({
+    name: 'Monero',
     description:
-      'Enables you to connect your instance with your Shopify store. Please see the "Instructions" tab for more details.',
+      'Choose which altcoins to enable. Please see the "Instructions" tab for more details.',
     default: false,
   }),
 })
 
-export const enablePlugins = sdk.Action.withInput(
-  'enable-plugins',
+export const enableAltcoins = sdk.Action.withInput(
+  'enable-altcoins',
 
   async ({ effects }) => ({
-    name: 'Enable Plugins',
-    description: 'Choose which system plugins to enable.',
+    name: 'Enable Altcoins',
+    description: 'Choose which altcoins to enable.',
     warning: null,
     allowedStatuses: 'any',
     group: null,
@@ -28,6 +28,6 @@ export const enablePlugins = sdk.Action.withInput(
   async ({ effects }) => {},
 
   async ({ effects, input }) => {
-    await store.merge(effects, { plugins: { ...input } })
+    await store.merge(effects, { altcoins: { ...input } })
   },
 )

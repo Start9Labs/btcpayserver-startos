@@ -17,7 +17,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   })
 
   let currentDeps = {} as Record<
-    'bitcoind' | 'lnd' | 'c-lightning',
+    'bitcoind' | 'lnd' | 'c-lightning' | 'monerod',
     T.DependencyRequirement
   >
 
