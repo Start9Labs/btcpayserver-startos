@@ -71,7 +71,7 @@ export async function query(effects: Effects, statement: string) {
       mountpoint: '/datadir',
       readonly: false,
     }),
-    'queryPostgres',
+    'query-postgres',
     async (sub) => {
       const res = await sub.exec([
         'psql',

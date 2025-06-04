@@ -5,16 +5,16 @@ import { BTCPSEnvFile } from './fileModels/btcpay.env'
 import { getCurrentLightning } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
-  await sdk.action.createTask(effects, 'bitcoind', config, 'important', {
-    input: {
-      kind: 'partial',
-      value: {
-        prune: 0,
-      },
-    },
-    when: { condition: 'input-not-matches', once: false },
-    reason: 'BTCPay Server requires an archival bitcoin node.',
-  })
+  // await sdk.action.createTask(effects, 'bitcoind', config, 'important', {
+  //   input: {
+  //     kind: 'partial',
+  //     value: {
+  //       prune: 0,
+  //     },
+  //   },
+  //   when: { condition: 'input-not-matches', once: false },
+  //   reason: 'BTCPay Server requires an archival bitcoin node.',
+  // })
 
   let currentDeps = {} as Record<
     'bitcoind' | 'lnd' | 'c-lightning' | 'monerod',

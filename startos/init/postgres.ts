@@ -12,7 +12,7 @@ export const initalizePostgres = sdk.setupOnInit(async (effects) => {
       mountpoint: '/datadir',
       readonly: false,
     }),
-    'initalizePostgres',
+    'initalize-postgres',
     async (sub) => {
       await sub.exec(['chmod', '777', '/datadir'])
       await sub.exec(['mkdir', '-p', '/datadir/postgresql/data'])
@@ -31,7 +31,6 @@ export const initalizePostgres = sdk.setupOnInit(async (effects) => {
         '-D',
         '/datadir/postgresql/data',
       ])
-      await sub.exec(['chmod', 'a+x', '/assets/postgres-ready.sh'])
     },
   ),
     console.log('PostgreSQL initialization complete')

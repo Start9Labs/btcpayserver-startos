@@ -42,27 +42,27 @@ export const manifest = setupManifest({
     bitcoind: {
       description: 'Used for the RPC and P2P connection interfaces.',
       optional: false,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: false,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: false,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
     monerod: {
       description: 'Used to connect to the Monero network.',
       optional: false,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.0-alpha.6/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
   },
   alerts: {
     install:
-      '<p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>\n<p>The password you create on initial registration is not saved in EmbassyOS. Please save this password in a password manager, such as Bitwarden.</p>\n<p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>',
+      '<p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>\n<p>The password you create on initial registration is not saved in StartOS. Please save this password in a password manager, such as Bitwarden.</p>\n<p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>',
     update: null,
     uninstall:
       '<p><b>READ CAREFULLY!</b></p>\n<p>Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.</p>',

@@ -5,12 +5,12 @@ export const enableRegistrations = sdk.Action.withoutInput(
   'enable-registrations',
 
   async ({ effects }) => {
-    const res = JSON.parse(
-      await query(
-        effects,
-        `SELECT "Value" from "Settings" WHERE "Id"='BTCPayServer.Services.PoliciesSettings'`,
-      ),
-    ) as SelectPoliciesRes
+    // const res = JSON.parse(
+    //   await query(
+    //     effects,
+    //     `SELECT "Value" from "Settings" WHERE "Id"='BTCPayServer.Services.PoliciesSettings'`,
+    //   ),
+    // ) as SelectPoliciesRes
 
     return {
       name: 'Enable Registrations',
@@ -20,9 +20,10 @@ export const enableRegistrations = sdk.Action.withoutInput(
         '<p>Skip this action if you <b>can</b> create a new user in the web UI using the register button.</p><p> Only if you <b>cannot</b> create a new user because registrations are disabled in the <code>Server Settings > Policies</code> do you need to preform this action.</p><p><b>Please note:</b> This action will <i>restart</i> the BTCPay service.</p>',
       allowedStatuses: 'only-running',
       group: null,
-      visibility: res.LockSubscription
-        ? 'enabled'
-        : { disabled: 'Registrations are already enabled' },
+      visibility: 'enabled',
+      // visibility: res.LockSubscription
+      //   ? 'enabled'
+      //   : { disabled: 'Registrations are already enabled' },
     }
   },
 

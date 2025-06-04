@@ -3,10 +3,11 @@ import { readFile, rm } from 'fs/promises'
 import { load } from 'js-yaml'
 import { BTCPSEnvFile } from '../../fileModels/btcpay.env'
 import { store } from '../../fileModels/store.json'
+import { clnMountpoint, lndMountpoint } from '../../utils'
 
 export const v_2_1_1_0 = VersionInfo.of({
   version: '2.1.1:0',
-  releaseNotes: 'Revamped for StartOS 0.4.0.',
+  releaseNotes: 'Updated for StartOS v0.4.0.',
   migrations: {
     up: async ({ effects }) => {
       const { lightning, altcoins, advanced, plugins } = load(
@@ -30,6 +31,7 @@ export const v_2_1_1_0 = VersionInfo.of({
         }
       }
 
+      // Set store config
       await store.merge(effects, {
         startHeight: parseInt(advanced['sync-start-height']),
         plugins: {
@@ -40,9 +42,18 @@ export const v_2_1_1_0 = VersionInfo.of({
         },
       })
 
-      await BTCPSEnvFile.merge(effects, {
-        BTCPAY_BTCLIGHTNING: lightning.type,
-      })
+      // Set lightning node selection
+      if (lightning.type === 'lnd') {
+        await BTCPSEnvFile.merge(effects, {
+          BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`,
+        })
+      }
+
+      if (lightning.type === 'c-lightning') {
+        await BTCPSEnvFile.merge(effects, {
+          BTCPAY_BTCLIGHTNING: `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`,
+        })
+      }
 
       // remove old start9 dir
       rm('/media/startos/volumes/main/start9', { recursive: true }).catch(

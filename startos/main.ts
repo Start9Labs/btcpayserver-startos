@@ -12,6 +12,7 @@ import {
   uiPort,
 } from './utils'
 import { store } from './fileModels/store.json'
+import { bitcoinConfDefaults } from 'bitcoind-startos/startos/utils'
 
 /**
  * ======================== Mounts ========================
@@ -48,7 +49,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     fn: () =>
       sdk.healthCheck.checkWebUrl(
         effects,
-        'http://btcpayserver.embassy:23000/api/v1/health',
+        'http://btcpayserver.startos:23000/api/v1/health',
         {
           successMessage: `The API is fully operational`,
           errorMessage: `The API is unreachable`,
@@ -60,9 +61,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     id: 'sync',
     name: 'UTXO Tracker Sync',
     fn: async () => {
-      const auth = await readFile('/datadir/nbxplorer/Main/.cookie', {
-        encoding: 'base64',
-      })
+      const auth = await readFile(
+        `${btcMountpoint}${bitcoinConfDefaults.rpccookiefile}`,
+        {
+          encoding: 'base64',
+        },
+      )
       const res = await fetch('http://127.0.0.1:24444/v1/cryptos/BTC/status', {
         headers: {
           'Content-Type': 'application/json',
@@ -220,7 +224,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           )
           // @TODO confirm path
           return sdk.healthCheck.runHealthScript(
-            ['/assets/postgres-ready.sh'],
+            ['/media/startos/assets/scripts/postgres-ready.sh'],
             sub,
           )
         },
