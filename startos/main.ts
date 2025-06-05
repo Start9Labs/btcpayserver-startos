@@ -1,17 +1,15 @@
 import { sdk } from './sdk'
 import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
-import { NBXplorerEnvFile } from './fileModels/nbxplorer.env'
-import { BTCPSEnvFile } from './fileModels/btcpay.env'
+import { BTCPSEnv } from './fileModels/btcpay.env'
 import {
   btcMountpoint,
   clnMountpoint,
   getCurrentLightning,
   lndMountpoint,
-  nbxEnvDefaults,
   uiPort,
 } from './utils'
-import { store } from './fileModels/store.json'
+import { storeJson } from './fileModels/store.json'
 import { bitcoinConfDefaults } from 'bitcoind-startos/startos/utils'
 
 /**
@@ -91,9 +89,16 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   // Get store values
   // ========================
 
-  const { startHeight, plugins, altcoins } = (await store
-    .read((s) => s)
-    .const(effects))!
+  const plugins = await storeJson.read((s) => s.plugins).const(effects)
+
+  if (!plugins) throw new Error('Store plugins not found')
+
+  const startHeight = await storeJson.read((s) => s.startHeight).once()
+
+  // reset NBXplorer to scan from current block height (defaults)
+  await storeJson.merge(effects, {
+    startHeight: -1,
+  })
 
   // ========================
   // Dependency setup & checks
@@ -102,8 +107,9 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const depResult = await sdk.checkDependencies(effects)
   depResult.throwIfNotSatisfied()
 
-  const env = (await BTCPSEnvFile.read().const(effects))!
-  const lnImplementation = getCurrentLightning(env)
+  const env = await BTCPSEnv.read().const(effects)
+  if (!env) throw new Error('BTCPay environment file unreadable')
+  const lnImplementation = getCurrentLightning(env.BTCPAY_BTCLIGHTNING)
 
   if (lnImplementation === 'lnd') {
     // @TODO mainMounts.mountDependency<typeof LndManifest>
@@ -127,19 +133,10 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
   }
 
-  if (altcoins.monero) {
-    await BTCPSEnvFile.merge(effects, {
-      BTCPAY_CHAINS: 'btc,mxr',
-      BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
-      BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
-      BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
-      BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
-      BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
-        '/datadir/btcpayserver/altcoins/monero/wallets',
-    })
-
+  // TODO check if xmr in btc chains
+  if (env.BTCPAY_XMR_DAEMON_URI) {
     // @TODO mainMounts.mountDependency<typeof MoneroManifest>
-    http: mainMounts = mainMounts.mountDependency({
+    mainMounts = mainMounts.mountDependency({
       dependencyId: 'monerod',
       volumeId: 'main', //@TODO verify
       subpath: null,
@@ -168,12 +165,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   // ========================
   // Setup environment files
   // ========================
-
-  await NBXplorerEnvFile.merge(effects, {
-    NBXPLORER_STARTHEIGHT: startHeight
-      ? startHeight.toString()
-      : nbxEnvDefaults.NBXPLORER_STARTHEIGHT,
-  })
 
   await btcpayContainer.exec([
     'source',
@@ -222,7 +213,8 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             mainMounts,
             'postgres-ready',
           )
-          // @TODO confirm path
+          // TODO convert to TS
+          // sub.execFail
           return sdk.healthCheck.runHealthScript(
             ['/media/startos/assets/scripts/postgres-ready.sh'],
             sub,
@@ -233,7 +225,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('nbxplorer', {
       subcontainer: nbxContainer,
-      command: ['dotnet', '/nbxplorer/NBXplorer.dll'],
+      command: [
+        'dotnet',
+        '/nbxplorer/NBXplorer.dll',
+        `--btcrescan=${startHeight === -1 ? 0 : 1}`,
+        `--btcstartheight=${startHeight}`,
+      ],
       env: {},
       ready: {
         display: 'UTXO Tracker Sync',
@@ -282,6 +279,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       requires: ['webui'],
     })
   }
+
   return daemons
 })
 

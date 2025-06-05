@@ -1,7 +1,7 @@
 import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
 import { config } from 'bitcoind-startos/startos/actions/config/config'
-import { BTCPSEnvFile } from './fileModels/btcpay.env'
+import { BTCPSEnv } from './fileModels/btcpay.env'
 import { getCurrentLightning } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
@@ -21,8 +21,10 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     T.DependencyRequirement
   >
 
-  const env = await BTCPSEnvFile.read().const(effects)
-  const ln = getCurrentLightning(env!)
+  const env = await BTCPSEnv.read().const(effects)
+  if (!env) throw new Error('BTCPay environment file unreadable')
+
+  const ln = getCurrentLightning(env.BTCPAY_BTCLIGHTNING)
 
   if (ln === 'lnd') {
     currentDeps['lnd'] = {
@@ -41,6 +43,8 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
       healthChecks: [],
     }
   }
+
+  // TODO actually set monero as dep
 
   return {
     ...currentDeps,

@@ -13,7 +13,6 @@ export const manifest = setupManifest({
     short: 'Bitcoin and cryptocurrency payment processor and POS system.',
     long: 'BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. \n\nBTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.\n',
   },
-  assets: ['scripts'],
   volumes: ['main'],
   images: {
     btcpay: {
@@ -46,28 +45,25 @@ export const manifest = setupManifest({
     },
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
-      optional: false,
+      optional: true,
       s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
-      optional: false,
+      optional: true,
       s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
     monerod: {
       description: 'Used to connect to the Monero network.',
-      optional: false,
+      optional: true,
       s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.0/bitcoind.s9pk',
     },
   },
   alerts: {
-    install:
-      '<p>BTCPay is a self hosted payment processing system. No third party exists to backup data. You are responsible for backups of all your information!</p>\n<p>The password you create on initial registration is not saved in StartOS. Please save this password in a password manager, such as Bitwarden.</p>\n<p><b>PLEASE READ</b> the <b>INSTRUCTIONS</b> after installation!</p>',
+    install: null,
     update: null,
-    uninstall:
-      '<p><b>READ CAREFULLY!</b></p>\n<p>Uninstalling BTCPay will result in permanent loss of data, including any stores, apps, or invoices created. The only way to ensure data is not lost to to backup the service and restore from this backup.</p>',
-    restore:
-      'Restoring BTCPay will overwrite its current data.\nAny stores or invoices created since the last backup will be not be recognized.',
+    uninstall: null,
+    restore: null,
     start: null,
     stop: null,
   },

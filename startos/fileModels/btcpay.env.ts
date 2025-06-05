@@ -27,8 +27,8 @@ const shape = object({
   BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: string.optional(),
 })
 
-export const BTCPSEnvFile = FileHelper.env(
-  '/media/startos/volumes/main/btcpay.env',
+export const BTCPSEnv = FileHelper.env(
+  { volumeId: 'main', subpath: '/btcpay.env' },
   shape,
 )
 

@@ -1,7 +1,7 @@
 import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
-import { BTCPSEnv } from './fileModels/btcpay.env'
 import { sdk } from './sdk'
 import { utils } from '@start9labs/start-sdk'
+import { bitcoinConfDefaults } from 'bitcoind-startos/startos/utils'
 
 export const uiPort = 23000
 export const webInterfaceId = 'webui'
@@ -13,7 +13,7 @@ export const btcpsEnvDefaults = {
   BTCPAY_NETWORK: 'mainnet',
   BTCPAY_CHAINS: 'btc',
   BTCPAY_BIND: '0.0.0.0:23000',
-  BTCPAY_NBXPLORER_COOKIE: `${btcMountpoint}.cookie`,
+  BTCPAY_NBXPLORER_COOKIE: `${btcMountpoint}${bitcoinConfDefaults.rpccookiefile}`,
   BTCPAY_SOCKSENDPOINT: 'startos:9050',
 }
 
@@ -22,8 +22,6 @@ export const nbxEnvDefaults = {
   NBXPLORER_PORT: '24444',
   NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333',
   NBXPLORER_BTCRPCURL: 'bitcoind.startos:8332',
-  NBXPLORER_RESCAN: '1',
-  NBXPLORER_STARTHEIGHT: '-1',
 }
 
 export function getRandomPassword() {
@@ -33,8 +31,7 @@ export function getRandomPassword() {
   })
 }
 
-export function getCurrentLightning(env: BTCPSEnv) {
-  const ln = env?.BTCPAY_BTCLIGHTNING
+export function getCurrentLightning(ln?: string) {
   let currentLightning: 'lnd' | 'cln' | 'none' = 'none'
   if (ln) {
     if (ln.includes('lnd')) currentLightning = 'lnd'

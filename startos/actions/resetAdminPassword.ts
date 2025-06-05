@@ -2,14 +2,16 @@ import { sdk } from '../sdk'
 import { query, getRandomPassword } from '../utils'
 import { pbkdf2, randomBytes } from 'node:crypto'
 
+// TODO reset first admin user
+
 export const resetAdminPassword = sdk.Action.withoutInput(
   'reset-admin-password',
 
   async ({ effects }) => ({
-    name: 'Reset Admin Password',
-    description: 'Resets the admin user with a temporary password.',
-    warning:
-      '<p>This action will fail if more than one admin user is present.</p><p>If another admin user exists, please login to this admin account, add SMTP email settings, and utilize the default <code>Forgot Password</code> flow on the login screen instead.</p>',
+    name: 'Reset First Admin Password',
+    description:
+      'Resets the first admin user with a temporary password. You should only need to preform this action if a single admin user exists. Otherwise, another admin can reset their password.',
+    warning: null,
     allowedStatuses: 'only-running',
     group: null,
     visibility: 'enabled',
@@ -17,7 +19,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
 
   async ({ effects }) => {
     const res = JSON.parse(
-      await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`),
+      await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`), // change to created at - check if column
     ) as string[]
 
     if (res.length > 1)

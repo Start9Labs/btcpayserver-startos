@@ -1,15 +1,15 @@
-import { store } from '../fileModels/store.json'
+import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
 
 const input = InputSpec.of({
   startHeight: Value.number({
-    name: 'Starting Block Height',
+    name: 'Rescan',
     description: 'The block height at which to begin resync',
     required: true,
-    default: 1,
+    default: null,
     integer: true,
-    min: 1,
+    min: 0,
   }),
 })
 
@@ -32,9 +32,9 @@ export const resyncNbx = sdk.Action.withInput(
   async ({ effects, input }) => {
     const startHeight = input.startHeight
 
-    await store.merge(effects, { startHeight })
+    await storeJson.merge(effects, { startHeight })
 
-    // @TODO how do i reset this value after action is run?
+    await sdk.restart(effects)
 
     console.info(`BTCPay Server will now resync from block ${startHeight}`)
   },

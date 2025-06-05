@@ -12,7 +12,7 @@ const shape = object({
   }),
 })
 
-export const store = FileHelper.json(
+export const storeJson = FileHelper.json(
   {
     volumeId: 'main',
     subpath: '/store.json',

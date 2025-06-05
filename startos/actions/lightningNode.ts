@@ -1,4 +1,4 @@
-import { BTCPSEnvFile } from '../fileModels/btcpay.env'
+import { BTCPSEnv } from '../fileModels/btcpay.env'
 import { sdk } from '../sdk'
 import { getCurrentLightning, lndMountpoint, clnMountpoint } from '../utils'
 
@@ -8,12 +8,12 @@ export const inputSpec = InputSpec.of({
   lightning: Value.select({
     name: 'Lightning Node',
     description:
-      'Use this setting to grant access to the selected internal Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, leave this setting blank. Please see the "Instructions" page for more details.',
+      'Use this setting to grant access to the selected internal Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, select "None/External". Please see the "Instructions" page for more details.',
     default: 'none',
     values: {
       lnd: 'LND',
       cln: 'Core Lightning',
-      none: 'None',
+      none: 'None/External',
     },
   }),
 })
@@ -34,18 +34,23 @@ export const lightningNode = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => {
-    const env = await BTCPSEnvFile.read().const(effects)
+    const env = await BTCPSEnv.read().const(effects)
+    if (!env) throw new Error('BTCPay environment file unreadable')
+
     return {
-      lightning: getCurrentLightning(env!),
+      lightning: getCurrentLightning(env.BTCPAY_BTCLIGHTNING),
     }
   },
 
   async ({ effects, input }) => {
-    const env = await BTCPSEnvFile.read().const(effects)
-    const currentLightning = getCurrentLightning(env!)
+    const env = await BTCPSEnv.read().const(effects)
+    if (!env) throw new Error('BTCPay environment file unreadable')
+
+    const currentLightning = getCurrentLightning(env.BTCPAY_BTCLIGHTNING)
+    // return early if nothing changed
     if (currentLightning === input.lightning) return
 
-    let BTCPAY_BTCLIGHTNING = ''
+    let BTCPAY_BTCLIGHTNING = undefined
 
     if (input.lightning === 'lnd') {
       BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`
@@ -54,6 +59,6 @@ export const lightningNode = sdk.Action.withInput(
     if (input.lightning === 'cln') {
       BTCPAY_BTCLIGHTNING = `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`
     }
-    await BTCPSEnvFile.merge(effects, { ...env!, BTCPAY_BTCLIGHTNING })
+    await BTCPSEnv.merge(effects, { ...env, BTCPAY_BTCLIGHTNING })
   },
 )

@@ -7,8 +7,6 @@ const {
   NBXPLORER_PORT,
   NBXPLORER_BTCNODEENDPOINT,
   NBXPLORER_BTCRPCURL,
-  NBXPLORER_RESCAN,
-  NBXPLORER_STARTHEIGHT,
 } = nbxEnvDefaults
 
 // ts matches will preserve existing keys, wont throw an error for extra keys
@@ -20,12 +18,10 @@ const shape = object({
   ),
   NBXPLORER_BTCRPCURL:
     literal(NBXPLORER_BTCRPCURL).onMismatch(NBXPLORER_BTCRPCURL),
-  NBXPLORER_RESCAN: literal(NBXPLORER_RESCAN).onMismatch(NBXPLORER_RESCAN),
-  NBXPLORER_STARTHEIGHT: string.onMismatch(NBXPLORER_STARTHEIGHT),
 })
 
-export const NBXplorerEnvFile = FileHelper.env(
-  '/media/startos/volumes/main/nbxplorer.env',
+export const NBXplorerEnv = FileHelper.env(
+  { volumeId: 'main', subpath: '/nbxplorer.env' },
   shape,
 )
 
