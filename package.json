@@ -7,13 +7,13 @@
   },
   "dependencies": {
     "@start9labs/start-sdk": "0.4.0-beta.27",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "bitcoind-startos": "git+https://github.com/Start9Labs/bitcoind-startos.git#update/040"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.1.0",
     "@vercel/ncc": "^0.38.1",
-    "bitcoind-startos": "git+https://github.com/Start9Labs/bitcoind-startos.git#update/040",
     "prettier": "^3.2.5",
     "typescript": "^5.4.3"
   },

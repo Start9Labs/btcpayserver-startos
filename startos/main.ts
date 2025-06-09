@@ -239,12 +239,20 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             mainMounts,
             'postgres-ready',
           )
-          // @TODO convert to TS
-          // sub.execFail
-          return sdk.healthCheck.runHealthScript(
-            ['/media/startos/assets/scripts/postgres-ready.sh'],
-            sub,
-          )
+          const status = await sub.execFail(['pg_isready'], {
+            user: 'postgres',
+          })
+          if (status.stderr) {
+            console.log(status.stderr.toString())
+            return {
+              result: 'failure',
+              message: 'Waiting for PostgreSQL to be ready',
+            }
+          }
+          return {
+            result: 'success',
+            message: 'Postgres is ready',
+          }
         },
       },
       requires: [],
