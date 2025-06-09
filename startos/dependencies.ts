@@ -1,8 +1,9 @@
 import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
-import { config } from 'bitcoind-startos/startos/actions/config/config'
+// import { config } from 'bitcoind-startos/startos/actions/config/config'
 import { BTCPSEnv } from './fileModels/btcpay.env'
-import { getCurrentLightning } from './utils'
+import { storeJson } from './fileModels/store.json'
+import { getEnabledAltcoin } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   // await sdk.action.createTask(effects, 'bitcoind', config, 'important', {
@@ -21,10 +22,11 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     T.DependencyRequirement
   >
 
-  const env = await BTCPSEnv.read().const(effects)
-  if (!env) throw new Error('BTCPay environment file unreadable')
+  const chains = await BTCPSEnv.read((e) => e.BTCPAY_CHAINS).const(effects)
+  if (!chains) throw new Error('BTCPay chains not found')
 
-  const ln = getCurrentLightning(env.BTCPAY_BTCLIGHTNING)
+  const ln = await storeJson.read((s) => s.lightning).const(effects)
+  if (!ln) throw new Error('Lightning not found in store')
 
   if (ln === 'lnd') {
     currentDeps['lnd'] = {
@@ -44,7 +46,14 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     }
   }
 
-  // TODO actually set monero as dep
+  if (getEnabledAltcoin('xmr', chains)) {
+    currentDeps['monerod'] = {
+      id: 'monerod',
+      kind: 'running',
+      versionRange: '>=0.18.4.0:1', // @TODO confirm
+      healthChecks: [],
+    }
+  }
 
   return {
     ...currentDeps,

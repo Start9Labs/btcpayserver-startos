@@ -45,9 +45,7 @@ export const versionGraph = VersionGraph.of({
       plugins: {
         shopify: false,
       },
-      altcoins: {
-        monero: false,
-      },
+      lightning: 'none',
     })
   },
 })

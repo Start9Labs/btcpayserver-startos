@@ -2,8 +2,6 @@ import { sdk } from '../sdk'
 import { query, getRandomPassword } from '../utils'
 import { pbkdf2, randomBytes } from 'node:crypto'
 
-// TODO reset first admin user
-
 export const resetAdminPassword = sdk.Action.withoutInput(
   'reset-admin-password',
 
@@ -19,13 +17,18 @@ export const resetAdminPassword = sdk.Action.withoutInput(
 
   async ({ effects }) => {
     const res = JSON.parse(
-      await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`), // change to created at - check if column
+      await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`),
     ) as string[]
 
     if (res.length > 1)
       throw new Error(
-        'More than one admin user exists, please use this account to create a new admin user.',
+        'More than one admin user exists, please use the other account to reset the password.',
       )
+
+    const firstAdmin = await query(
+      effects,
+      `SELECT "Id" FROM "AspNetUsers" WHERE "Id" IN '${res}' ORDER BY "Created" ASC LIMIT 1`,
+    )
 
     const pw = getRandomPassword()
     const salt = randomBytes(128).toString('base64')
@@ -35,7 +38,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
     })
     await query(
       effects,
-      `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${res[0]}'"`,
+      `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${firstAdmin}'"`,
     )
     return {
       version: '1',

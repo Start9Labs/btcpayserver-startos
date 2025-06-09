@@ -1,5 +1,6 @@
-import { storeJson } from '../fileModels/store.json'
+import { BTCPSEnv } from '../fileModels/btcpay.env'
 import { sdk } from '../sdk'
+import { getEnabledAltcoin } from '../utils'
 const { InputSpec, Value } = sdk
 
 const input = InputSpec.of({
@@ -25,19 +26,21 @@ export const enableAltcoins = sdk.Action.withInput(
 
   input,
 
-  async ({ effects }) => {},
+  async ({ effects }) => {
+    const chains = await BTCPSEnv.read((s) => s.BTCPAY_CHAINS).const(effects)
+    if (!chains) throw new Error('BTCPay environment file unreadable')
+    return { monero: getEnabledAltcoin('xmr', chains) }
+  },
 
   async ({ effects, input }) => {
-    // TODO create BTCPAY_CHAINS and restart service, remove altcoins from store
-    await storeJson.merge(effects, { altcoins: { ...input } })
-    // await BTCPSEnv.merge(effects, {
-    //   BTCPAY_CHAINS: 'btc,xmr',
-    //   BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
-    //   BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
-    //   BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
-    //   BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
-    //   BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
-    //     '/datadir/btcpayserver/altcoins/monero/wallets',
-    // })
+    const env = await BTCPSEnv.read().const(effects)
+    if (!env) throw new Error('BTCPay environment file unreadable')
+
+    if (input.monero) {
+      await BTCPSEnv.merge(effects, {
+        BTCPAY_CHAINS: 'btc,xmr',
+      })
+      await sdk.restart(effects)
+    }
   },
 )

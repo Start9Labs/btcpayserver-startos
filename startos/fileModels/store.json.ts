@@ -1,15 +1,13 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
 
-const { object, number, boolean } = matches
+const { object, number, boolean, literals } = matches
 
 const shape = object({
   startHeight: number.onMismatch(-1),
   plugins: object({
     shopify: boolean.onMismatch(false),
   }),
-  altcoins: object({
-    monero: boolean.onMismatch(false),
-  }),
+  lightning: literals('lnd', 'cln', 'none').onMismatch('none'),
 })
 
 export const storeJson = FileHelper.json(

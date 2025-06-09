@@ -1,4 +1,4 @@
-import { store } from '../fileModels/store.json'
+import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
 
@@ -28,6 +28,6 @@ export const enablePlugins = sdk.Action.withInput(
   async ({ effects }) => {},
 
   async ({ effects, input }) => {
-    await store.merge(effects, { plugins: { ...input } })
+    await storeJson.merge(effects, { plugins: { ...input } })
   },
 )

@@ -31,13 +31,8 @@ export function getRandomPassword() {
   })
 }
 
-export function getCurrentLightning(ln?: string) {
-  let currentLightning: 'lnd' | 'cln' | 'none' = 'none'
-  if (ln) {
-    if (ln.includes('lnd')) currentLightning = 'lnd'
-    if (ln.includes('clightning')) currentLightning = 'cln'
-  }
-  return currentLightning
+export function getEnabledAltcoin(altcoin: string, list: string) {
+  return list.split(',').includes(altcoin)
 }
 
 export async function getWebHostnames(effects: Effects): Promise<string[]> {

@@ -1,6 +1,6 @@
 import { BTCPSEnv } from '../fileModels/btcpay.env'
+import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
-import { getCurrentLightning, lndMountpoint, clnMountpoint } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -34,31 +34,21 @@ export const lightningNode = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => {
-    const env = await BTCPSEnv.read().const(effects)
-    if (!env) throw new Error('BTCPay environment file unreadable')
+    const lightning = await storeJson.read((s) => s.lightning).const(effects)
+    if (!lightning) throw new Error('No lightning attribute in store')
 
     return {
-      lightning: getCurrentLightning(env.BTCPAY_BTCLIGHTNING),
+      lightning,
     }
   },
 
   async ({ effects, input }) => {
-    const env = await BTCPSEnv.read().const(effects)
-    if (!env) throw new Error('BTCPay environment file unreadable')
+    const lightning = await storeJson.read((s) => s.lightning).const(effects)
+    if (!lightning) throw new Error('No lightning attribute in store')
 
-    const currentLightning = getCurrentLightning(env.BTCPAY_BTCLIGHTNING)
     // return early if nothing changed
-    if (currentLightning === input.lightning) return
+    if (lightning === input.lightning) return
 
-    let BTCPAY_BTCLIGHTNING = undefined
-
-    if (input.lightning === 'lnd') {
-      BTCPAY_BTCLIGHTNING = `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`
-    }
-
-    if (input.lightning === 'cln') {
-      BTCPAY_BTCLIGHTNING = `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`
-    }
-    await BTCPSEnv.merge(effects, { ...env, BTCPAY_BTCLIGHTNING })
+    await storeJson.merge(effects, { lightning })
   },
 )

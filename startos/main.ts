@@ -5,7 +5,7 @@ import { BTCPSEnv } from './fileModels/btcpay.env'
 import {
   btcMountpoint,
   clnMountpoint,
-  getCurrentLightning,
+  getEnabledAltcoin,
   lndMountpoint,
   uiPort,
 } from './utils'
@@ -89,11 +89,10 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   // Get store values
   // ========================
 
-  const plugins = await storeJson.read((s) => s.plugins).const(effects)
+  const store = await storeJson.read().const(effects)
+  if (!store) throw new Error('Store not found')
 
-  if (!plugins) throw new Error('Store plugins not found')
-
-  const startHeight = await storeJson.read((s) => s.startHeight).once()
+  const { plugins, lightning, startHeight } = store
 
   // reset NBXplorer to scan from current block height (defaults)
   await storeJson.merge(effects, {
@@ -107,34 +106,44 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const depResult = await sdk.checkDependencies(effects)
   depResult.throwIfNotSatisfied()
 
-  const env = await BTCPSEnv.read().const(effects)
-  if (!env) throw new Error('BTCPay environment file unreadable')
-  const lnImplementation = getCurrentLightning(env.BTCPAY_BTCLIGHTNING)
+  const chains = await BTCPSEnv.read((e) => e.BTCPAY_CHAINS).const(effects)
+  if (!chains) throw new Error('BTCPay chains does not exist')
 
-  if (lnImplementation === 'lnd') {
-    // @TODO mainMounts.mountDependency<typeof LndManifest>
-    mainMounts = mainMounts.mountDependency({
-      dependencyId: 'lnd',
-      volumeId: 'main', //@TODO verify
-      subpath: null,
-      mountpoint: lndMountpoint,
-      readonly: true,
-    })
+  switch (lightning) {
+    case 'lnd':
+      // @TODO mainMounts.mountDependency<typeof LndManifest>
+      mainMounts = mainMounts.mountDependency({
+        dependencyId: 'lnd',
+        volumeId: 'main', //@TODO verify
+        subpath: null,
+        mountpoint: lndMountpoint,
+        readonly: true,
+      })
+      await BTCPSEnv.merge(effects, {
+        BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`,
+      })
+      break
+    case 'cln':
+      // @TODO mainMounts.mountDependency<typeof ClnManifest>
+      mainMounts = mainMounts.mountDependency({
+        dependencyId: 'c-lightning',
+        volumeId: 'main', //@TODO verify
+        subpath: null,
+        mountpoint: clnMountpoint,
+        readonly: true,
+      })
+      await BTCPSEnv.merge(effects, {
+        BTCPAY_BTCLIGHTNING: `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`,
+      })
+      break
+    default:
+      await BTCPSEnv.merge(effects, {
+        BTCPAY_BTCLIGHTNING: undefined,
+      })
+      break
   }
 
-  if (lnImplementation === 'cln') {
-    // @TODO mainMounts.mountDependency<typeof ClnManifest>
-    mainMounts = mainMounts.mountDependency({
-      dependencyId: 'c-lightning',
-      volumeId: 'main', //@TODO verify
-      subpath: null,
-      mountpoint: clnMountpoint,
-      readonly: true,
-    })
-  }
-
-  // TODO check if xmr in btc chains
-  if (env.BTCPAY_XMR_DAEMON_URI) {
+  if (!getEnabledAltcoin('xmr', chains)) {
     // @TODO mainMounts.mountDependency<typeof MoneroManifest>
     mainMounts = mainMounts.mountDependency({
       dependencyId: 'monerod',
@@ -142,6 +151,23 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       subpath: null,
       mountpoint: '/mnt/monero',
       readonly: false,
+    })
+    await BTCPSEnv.merge(effects, {
+      BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
+      BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
+      BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
+      BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
+      BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
+        '/datadir/btcpayserver/altcoins/monero/wallets',
+    })
+  } else {
+    await BTCPSEnv.merge(effects, {
+      BTCPAY_CHAINS: 'btc',
+      BTCPAY_XMR_DAEMON_URI: undefined,
+      BTCPAY_XMR_DAEMON_USERNAME: undefined,
+      BTCPAY_XMR_DAEMON_PASSWORD: undefined,
+      BTCPAY_XMR_WALLET_DAEMON_URI: undefined,
+      BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: undefined,
     })
   }
 

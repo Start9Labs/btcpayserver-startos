@@ -37,21 +37,20 @@ export const v_2_1_1_0 = VersionInfo.of({
         plugins: {
           shopify: plugins.shopify.status === 'enabled' ? true : false,
         },
-        altcoins: {
-          monero: altcoins.monero.status === 'enabled' ? true : false,
-        },
       })
 
       // Set lightning node selection
       if (lightning.type === 'lnd') {
-        await BTCPSEnv.merge(effects, {
-          BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`,
-        })
+        await storeJson.merge(effects, { lightning: lightning.type })
       }
 
       if (lightning.type === 'c-lightning') {
+        await storeJson.merge(effects, { lightning: 'cln' })
+      }
+
+      if (altcoins.monero.status) {
         await BTCPSEnv.merge(effects, {
-          BTCPAY_BTCLIGHTNING: `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`,
+          BTCPAY_CHAINS: 'btc,xmr',
         })
       }
 
