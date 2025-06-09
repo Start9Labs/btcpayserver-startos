@@ -215,20 +215,20 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         mainMounts,
         'postgres',
       ),
-      command: [
-        'sudo',
-        '-u',
-        'postgres',
-        '/usr/lib/postgresql/13/bin/postgres',
-        '-D',
-        '/datadir/postgresql/data',
-        '-c',
-        'random_page_cost=1.0',
-        '-c',
-        'shared_preload_libraries=pg_stat_statements',
-      ],
-      env: {
-        POSTGRES_HOST_AUTH_METHOD: 'trust',
+      exec: {
+        command: [
+          '/usr/lib/postgresql/13/bin/postgres',
+          '-D',
+          '/datadir/postgresql/data',
+          '-c',
+          'random_page_cost=1.0',
+          '-c',
+          'shared_preload_libraries=pg_stat_statements',
+        ],
+        user: 'postgres',
+        env: {
+          POSTGRES_HOST_AUTH_METHOD: 'trust',
+        },
       },
       ready: {
         display: null,
@@ -239,7 +239,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             mainMounts,
             'postgres-ready',
           )
-          // TODO convert to TS
+          // @TODO convert to TS
           // sub.execFail
           return sdk.healthCheck.runHealthScript(
             ['/media/startos/assets/scripts/postgres-ready.sh'],
@@ -251,13 +251,14 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('nbxplorer', {
       subcontainer: nbxContainer,
-      command: [
-        'dotnet',
-        '/nbxplorer/NBXplorer.dll',
-        `--btcrescan=${startHeight === -1 ? 0 : 1}`,
-        `--btcstartheight=${startHeight}`,
-      ],
-      env: {},
+      exec: {
+        command: [
+          'dotnet',
+          '/nbxplorer/NBXplorer.dll',
+          `--btcrescan=${startHeight === -1 ? 0 : 1}`,
+          `--btcstartheight=${startHeight}`,
+        ],
+      },
       ready: {
         display: 'UTXO Tracker Sync',
         fn: async () =>
@@ -270,8 +271,9 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     })
     .addDaemon('webui', {
       subcontainer: btcpayContainer,
-      command: ['dotnet', '/app/BTCPayServer.dll'],
-      env: {},
+      exec: {
+        command: ['dotnet', '/app/BTCPayServer.dll'],
+      },
       ready: {
         display: 'Web Interface',
         fn: () =>
@@ -292,8 +294,9 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         mainMounts,
         'shopify',
       ),
-      command: ['node', '/app/server.js'],
-      env: {},
+      exec: {
+        command: ['node', '/app/server.js'],
+      },
       ready: {
         display: 'Shopify Plugin',
         fn: () =>
