@@ -20,7 +20,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     currentDeps['lnd'] = {
       id: 'lnd',
       kind: 'running',
-      versionRange: '>=0.19.1',
+      versionRange: '>=0.19.1-beta:1-alpha.2',
       healthChecks: [],
     }
   }
