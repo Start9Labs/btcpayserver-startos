@@ -39,8 +39,22 @@ export const enableAltcoins = sdk.Action.withInput(
     if (input.monero) {
       await BTCPSEnv.merge(effects, {
         BTCPAY_CHAINS: 'btc,xmr',
+        BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
+        BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
+        BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
+        BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
+        BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
+          '/datadir/btcpayserver/altcoins/monero/wallets',
       })
-      await sdk.restart(effects)
+    } else {
+      await BTCPSEnv.merge(effects, {
+        BTCPAY_CHAINS: 'btc',
+        BTCPAY_XMR_DAEMON_URI: undefined,
+        BTCPAY_XMR_DAEMON_USERNAME: undefined,
+        BTCPAY_XMR_DAEMON_PASSWORD: undefined,
+        BTCPAY_XMR_WALLET_DAEMON_URI: undefined,
+        BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: undefined,
+      })
     }
   },
 )

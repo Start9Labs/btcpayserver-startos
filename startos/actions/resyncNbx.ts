@@ -1,3 +1,4 @@
+import { NBXplorerEnv } from '../fileModels/nbxplorer.env'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
@@ -32,7 +33,10 @@ export const resyncNbx = sdk.Action.withInput(
   async ({ effects, input }) => {
     const startHeight = input.startHeight
 
-    await storeJson.merge(effects, { startHeight })
+    await NBXplorerEnv.merge(effects, {
+      NBXPLORER_BTCSTARTHEIGHT: String(startHeight),
+      NBXPLORER_BTCRESCAN: '1',
+    })
 
     await sdk.restart(effects)
 

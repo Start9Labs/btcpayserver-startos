@@ -17,7 +17,7 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.1.1',
+        dockerTag: 'btcpayserver/btcpayserver:2.1.2',
       },
     },
     nbx: {
@@ -35,28 +35,33 @@ export const manifest = setupManifest({
         dockerTag: 'btcpayserver/shopify-app-deployer:1.4',
       },
     },
+    nginx: {
+      source: {
+        dockerTag: 'nginx:stable-alpine',
+      },
+    },
   },
   hardwareRequirements: {},
   dependencies: {
     bitcoind: {
       description: 'Used for the RPC and P2P connection interfaces.',
       optional: false,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.1/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.4/bitcoind.s9pk',
     },
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.1/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.19.1-beta.1-alpha.2/lnd.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.1/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.02.2/c-lightningV2.s9pk',
     },
     monerod: {
       description: 'Used to connect to the Monero network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.1/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.4/bitcoind.s9pk',
     },
   },
   alerts: {

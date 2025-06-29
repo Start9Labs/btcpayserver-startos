@@ -1,22 +1,10 @@
 import { sdk } from './sdk'
 import { T } from '@start9labs/start-sdk'
-// import { config } from 'bitcoind-startos/startos/actions/config/config'
 import { BTCPSEnv } from './fileModels/btcpay.env'
 import { storeJson } from './fileModels/store.json'
 import { getEnabledAltcoin } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
-  // await sdk.action.createTask(effects, 'bitcoind', config, 'important', {
-  //   input: {
-  //     kind: 'partial',
-  //     value: {
-  //       prune: 0,
-  //     },
-  //   },
-  //   when: { condition: 'input-not-matches', once: false },
-  //   reason: 'BTCPay Server requires an archival bitcoin node.',
-  // })
-
   let currentDeps = {} as Record<
     'bitcoind' | 'lnd' | 'c-lightning' | 'monerod',
     T.DependencyRequirement
@@ -32,7 +20,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     currentDeps['lnd'] = {
       id: 'lnd',
       kind: 'running',
-      versionRange: '>=0.18.3',
+      versionRange: '>=0.19.1',
       healthChecks: [],
     }
   }
@@ -59,7 +47,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     ...currentDeps,
     bitcoind: {
       kind: 'running',
-      versionRange: '>=28.0.0:1',
+      versionRange: '>=28.1.0:1',
       healthChecks: [],
     },
   }

@@ -3,7 +3,7 @@ import { uiPort, webInterfaceId } from './utils'
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
   const multi = sdk.MultiHost.of(effects, webInterfaceId)
-  const multiOrigin = await multi.bindPort(uiPort, { protocol: 'http' })
+  const multiOrigin = await multi.bindPort(80, { protocol: 'http' })
   const multiInterface = sdk.createInterface(effects, {
     name: 'Web UI',
     id: webInterfaceId,

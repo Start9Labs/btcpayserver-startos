@@ -1,6 +1,7 @@
 import { BTCPSEnv } from '../fileModels/btcpay.env'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
+import { clnMountpoint, lndMountpoint } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -24,7 +25,7 @@ export const lightningNode = sdk.Action.withInput(
   async ({ effects }) => ({
     name: 'Enable Lightning Node',
     description:
-      'Use this setting to grant access to the selected internal Lightning node to use lightning for BTCPay Server invoices.',
+      'Use this setting to grant access to the selected internal Lightning node to use lightning for invoices.',
     warning: null,
     allowedStatuses: 'any',
     group: null,
@@ -43,12 +44,23 @@ export const lightningNode = sdk.Action.withInput(
   },
 
   async ({ effects, input }) => {
-    const lightning = await storeJson.read((s) => s.lightning).const(effects)
-    if (!lightning) throw new Error('No lightning attribute in store')
+    switch (input.lightning) {
+      case 'lnd':
+        await BTCPSEnv.merge(effects, {
+          BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`,
+        })
+        break
+      case 'cln':
+        await BTCPSEnv.merge(effects, {
+          BTCPAY_BTCLIGHTNING: `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`,
+        })
+        break
+      default:
+        await BTCPSEnv.merge(effects, {
+          BTCPAY_BTCLIGHTNING: undefined,
+        })
+    }
 
-    // return early if nothing changed
-    if (lightning === input.lightning) return
-
-    await storeJson.merge(effects, { lightning })
+    await storeJson.merge(effects, { lightning: input.lightning })
   },
 )

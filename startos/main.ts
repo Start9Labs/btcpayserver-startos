@@ -1,5 +1,5 @@
 import { sdk } from './sdk'
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { BTCPSEnv } from './fileModels/btcpay.env'
 import {
@@ -7,10 +7,14 @@ import {
   clnMountpoint,
   getEnabledAltcoin,
   lndMountpoint,
+  nbxEnvDefaults,
   uiPort,
+  nbxPort,
+  nbxCookieFile,
+  nginxConf,
 } from './utils'
 import { storeJson } from './fileModels/store.json'
-import { bitcoinConfDefaults } from 'bitcoind-startos/startos/utils'
+import { NBXplorerEnv } from './fileModels/nbxplorer.env'
 
 /**
  * ======================== Mounts ========================
@@ -37,54 +41,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
    */
   console.info('Starting BTCPay Server...')
 
-  /**
-   * ======================== Additional Health Checks ========================
-   */
-
-  const apiHealthCheck = sdk.HealthCheck.of(effects, {
-    id: 'data-interface',
-    name: 'Data Interface',
-    fn: () =>
-      sdk.healthCheck.checkWebUrl(
-        effects,
-        'http://btcpayserver.startos:23000/api/v1/health',
-        {
-          successMessage: `The API is fully operational`,
-          errorMessage: `The API is unreachable`,
-        },
-      ),
-  })
-
-  const syncHealthCheck = sdk.HealthCheck.of(effects, {
-    id: 'sync',
-    name: 'UTXO Tracker Sync',
-    fn: async () => {
-      const auth = await readFile(
-        `${btcMountpoint}${bitcoinConfDefaults.rpccookiefile}`,
-        {
-          encoding: 'base64',
-        },
-      )
-      const res = await fetch('http://127.0.0.1:24444/v1/cryptos/BTC/status', {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${auth}`,
-        },
-      })
-        .then(async (res: any) => {
-          const jsonRes = (await res.json()) as NbxStatusRes
-          // @TODO remove me after testing
-          console.log(`NBX status response is: ${res}`)
-          console.log(`NBX status response parsed as json: ${jsonRes}`)
-          return jsonRes
-        })
-        .catch((e: any) => {
-          throw new Error(e)
-        })
-      return nbxHealthCheck(res)
-    },
-  })
-
   // ========================
   // Get store values
   // ========================
@@ -92,12 +48,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const store = await storeJson.read().const(effects)
   if (!store) throw new Error('Store not found')
 
-  const { plugins, lightning, startHeight } = store
-
-  // reset NBXplorer to scan from current block height (defaults)
-  await storeJson.merge(effects, {
-    startHeight: -1,
-  })
+  const { plugins, lightning } = store
 
   // ========================
   // Dependency setup & checks
@@ -119,9 +70,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         mountpoint: lndMountpoint,
         readonly: true,
       })
-      await BTCPSEnv.merge(effects, {
-        BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`,
-      })
       break
     case 'cln':
       // @TODO mainMounts.mountDependency<typeof ClnManifest>
@@ -132,18 +80,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         mountpoint: clnMountpoint,
         readonly: true,
       })
-      await BTCPSEnv.merge(effects, {
-        BTCPAY_BTCLIGHTNING: `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`,
-      })
       break
     default:
-      await BTCPSEnv.merge(effects, {
-        BTCPAY_BTCLIGHTNING: undefined,
-      })
       break
   }
 
-  if (!getEnabledAltcoin('xmr', chains)) {
+  if (getEnabledAltcoin('xmr', chains)) {
     // @TODO mainMounts.mountDependency<typeof MoneroManifest>
     mainMounts = mainMounts.mountDependency({
       dependencyId: 'monerod',
@@ -151,23 +93,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       subpath: null,
       mountpoint: '/mnt/monero',
       readonly: false,
-    })
-    await BTCPSEnv.merge(effects, {
-      BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
-      BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
-      BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
-      BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
-      BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
-        '/datadir/btcpayserver/altcoins/monero/wallets',
-    })
-  } else {
-    await BTCPSEnv.merge(effects, {
-      BTCPAY_CHAINS: 'btc',
-      BTCPAY_XMR_DAEMON_URI: undefined,
-      BTCPAY_XMR_DAEMON_USERNAME: undefined,
-      BTCPAY_XMR_DAEMON_PASSWORD: undefined,
-      BTCPAY_XMR_WALLET_DAEMON_URI: undefined,
-      BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: undefined,
     })
   }
 
@@ -187,27 +112,26 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     mainMounts,
     'nbx',
   )
+  const nginxContainer = await sdk.SubContainer.of(
+    effects,
+    { imageId: 'nginx' },
+    mainMounts,
+    'nginx',
+  )
 
   // ========================
-  // Setup environment files
+  // Set nginx conf
   // ========================
-
-  await btcpayContainer.exec([
-    'source',
-    '/media/startos/volumes/main/btcpay.env',
-  ])
-  await nbxContainer.exec([
-    'source',
-    '/media/startos/volumes/main/nbxplorer.env',
-  ])
+  await writeFile(
+    `${nginxContainer.rootfs}/etc/nginx/conf.d/default.conf`,
+    nginxConf,
+  )
 
   /**
    *  ======================== Daemons ========================
    */
-  const daemons = sdk.Daemons.of(effects, started, [
-    apiHealthCheck,
-    syncHealthCheck,
-  ])
+
+  const daemons = sdk.Daemons.of(effects, started)
     .addDaemon('postgres', {
       subcontainer: await sdk.SubContainer.of(
         effects,
@@ -217,42 +141,55 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       ),
       exec: {
         command: [
-          '/usr/lib/postgresql/13/bin/postgres',
-          '-D',
-          '/datadir/postgresql/data',
+          'su',
+          '-',
+          'postgres',
           '-c',
-          'random_page_cost=1.0',
-          '-c',
-          'shared_preload_libraries=pg_stat_statements',
+          '/usr/lib/postgresql/13/bin/pg_ctl -D /datadir/postgresql/data start',
         ],
-        user: 'postgres',
+        // user: 'postgres',
         env: {
           POSTGRES_HOST_AUTH_METHOD: 'trust',
+          PGDATA: '/datadir/postgresql/data',
         },
       },
       ready: {
         display: null,
         fn: async () => {
-          const sub = await sdk.SubContainer.of(
+          return sdk.SubContainer.withTemp(
             effects,
             { imageId: 'postgres' },
             mainMounts,
             'postgres-ready',
+            async (sub) => {
+              const status = await sub.execFail(
+                [
+                  'su',
+                  '-',
+                  'postgres',
+                  '-c',
+                  '/usr/lib/postgresql/13/bin/pg_isready -h localhost',
+                ],
+                {
+                  // user: 'postgres',
+                },
+              )
+              if (status.stderr) {
+                console.error(
+                  'Error running postgres: ',
+                  status.stderr.toString(),
+                )
+                return {
+                  result: 'loading',
+                  message: 'Waiting for PostgreSQL to be ready',
+                }
+              }
+              return {
+                result: 'success',
+                message: 'Postgres is ready',
+              }
+            },
           )
-          const status = await sub.execFail(['pg_isready'], {
-            user: 'postgres',
-          })
-          if (status.stderr) {
-            console.log(status.stderr.toString())
-            return {
-              result: 'failure',
-              message: 'Waiting for PostgreSQL to be ready',
-            }
-          }
-          return {
-            result: 'success',
-            message: 'Postgres is ready',
-          }
         },
       },
       requires: [],
@@ -260,27 +197,99 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('nbxplorer', {
       subcontainer: nbxContainer,
       exec: {
-        command: [
-          'dotnet',
-          '/nbxplorer/NBXplorer.dll',
-          `--btcrescan=${startHeight === -1 ? 0 : 1}`,
-          `--btcstartheight=${startHeight}`,
-        ],
+        command: ['dotnet', '/app/NBXplorer.dll'],
+        env: {
+          ...(await NBXplorerEnv.read().const(effects)),
+        },
       },
       ready: {
-        display: 'UTXO Tracker Sync',
+        display: 'UTXO Tracker',
         fn: async () =>
-          sdk.healthCheck.checkPortListening(effects, 24444, {
+          sdk.healthCheck.checkPortListening(effects, nbxPort, {
             successMessage: 'The explorer is reachable',
             errorMessage: 'The explorer is unreachable',
           }),
       },
       requires: ['postgres'],
     })
+    .addOneshot('reset-start-height', {
+      subcontainer: nbxContainer,
+      exec: {
+        fn: async () => {
+          await NBXplorerEnv.merge(effects, {
+            NBXPLORER_BTCRESCAN: nbxEnvDefaults.NBXPLORER_BTCRESCAN,
+            NBXPLORER_BTCSTARTHEIGHT: nbxEnvDefaults.NBXPLORER_BTCSTARTHEIGHT,
+          })
+          return null
+        },
+      },
+      requires: ['nbxplorer'],
+    })
+    .addHealthCheck('utxo-sync', {
+      ready: {
+        display: 'UTXO Tracker Sync',
+        gracePeriod: 10000,
+        fn: async () => {
+          const auth = await readFile(
+            `${nbxContainer.rootfs}${nbxCookieFile}`,
+            {
+              encoding: 'base64',
+            },
+          )
+          const res = await fetch(
+            `http://0.0.0.0:${nbxPort}/v1/cryptos/BTC/status`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Basic ${auth}`,
+              },
+            },
+          )
+            .then(async (res: any) => {
+              const jsonRes = (await res.json()) as NbxStatusRes
+              return jsonRes
+            })
+            .catch((e: any) => {
+              throw new Error(e)
+            })
+          return nbxHealthCheck(res)
+        },
+      },
+      requires: ['nbxplorer'],
+    })
+    .addDaemon('nginx', {
+      subcontainer: nginxContainer,
+      exec: {
+        command: ['nginx', '-g', 'daemon off;'],
+      },
+      ready: {
+        display: null,
+        fn: () =>
+          sdk.healthCheck.checkPortListening(effects, 80, {
+            successMessage: 'Nginx running',
+            errorMessage: 'Nginx not running',
+          }),
+      },
+      requires: [],
+    })
     .addDaemon('webui', {
       subcontainer: btcpayContainer,
       exec: {
         command: ['dotnet', '/app/BTCPayServer.dll'],
+        env: {
+          ...(await BTCPSEnv.read().const(effects)),
+          BTCPAY_EXPLORERPOSTGRES:
+            'User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
+          BTCPAY_POSTGRES:
+            'User ID=postgres;Host=localhost;Port=5432;Application Name=btcpayserver;Database=btcpayserver',
+          BTCPAY_PLUGINDIR: '/datadir/plugins',
+          BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: 'http://localhost:5000/',
+          LC_ALL: 'C',
+          BTCPAY_DEBUGLOG: 'btcpay.log',
+          BTCPAY_DATADIR: '/datadir/btcpayserver',
+          BTCPAY_DOCKERDEPLOYMENT: 'false',
+          APPDATA: '/datadir/btcpayserver',
+        },
       },
       ready: {
         display: 'Web Interface',
@@ -290,7 +299,24 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             errorMessage: 'The web interface is unreachable',
           }),
       },
-      requires: ['nbxplorer'],
+      requires: ['nbxplorer', 'nginx'],
+    })
+    .addHealthCheck('data-interface', {
+      ready: {
+        display: 'Data Interface',
+        gracePeriod: 10000,
+        fn: () => {
+          return sdk.healthCheck.checkWebUrl(
+            effects,
+            `http://0.0.0.0:${uiPort}/api/v1/health`,
+            {
+              successMessage: `The API is fully operational`,
+              errorMessage: `The API is unreachable`,
+            },
+          )
+        },
+      },
+      requires: ['webui'],
     })
 
   // Add Shopify app daemon if enabled
@@ -321,7 +347,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
 })
 
 interface NbxStatusRes {
-  bitcoinStatus: {
+  bitcoinStatus?: {
     blocks: number
     headers: number
     verificationProgress: number // float
@@ -340,13 +366,13 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
       result: 'success',
       message: 'Synced to the tip of the Bitcoin blockchain',
     }
-  } else if (!isFullySynched && !bitcoinStatus.isSynched) {
+  } else if (!isFullySynched && bitcoinStatus && !bitcoinStatus.isSynched) {
     const percentage = (bitcoinStatus.verificationProgress * 100).toFixed(2)
     return {
       result: 'loading',
       message: `The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%`,
     }
-  } else if (!isFullySynched && bitcoinStatus.isSynched) {
+  } else if (!isFullySynched && bitcoinStatus && bitcoinStatus.isSynched) {
     const progress = ((syncHeight / chainHeight) * 100).toFixed(2)
     return {
       result: 'loading',

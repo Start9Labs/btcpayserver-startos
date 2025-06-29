@@ -2,6 +2,9 @@ import { VersionGraph } from '@start9labs/start-sdk'
 import { current, other } from './versions'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
+import { BTCPSEnv } from '../fileModels/btcpay.env'
+import { btcpsEnvDefaults, nbxEnvDefaults } from '../utils'
+import { NBXplorerEnv } from '../fileModels/nbxplorer.env'
 
 export const versionGraph = VersionGraph.of({
   current,
@@ -28,24 +31,32 @@ export const versionGraph = VersionGraph.of({
           'postgres:postgres',
           '/datadir/postgresql/data',
         ])
-        await sub.exec([
-          'sudo',
-          '-u',
-          'postgres',
-          '/usr/lib/postgresql/13/bin/initdb',
-          '-D',
-          '/datadir/postgresql/data',
-        ])
+        await sub.exec(
+          [
+            'su',
+            '-',
+            'postgres',
+            '-c',
+            '/usr/lib/postgresql/13/bin/initdb -D /datadir/postgresql/data',
+          ],
+          // { user: 'postgres' },
+        )
       },
     )
     console.log('PostgreSQL initialization complete')
 
     await storeJson.write(effects, {
-      startHeight: -1,
       plugins: {
         shopify: false,
       },
       lightning: 'none',
+    })
+
+    await BTCPSEnv.write(effects, {
+      ...btcpsEnvDefaults,
+    })
+    await NBXplorerEnv.write(effects, {
+      ...nbxEnvDefaults,
     })
   },
 })
