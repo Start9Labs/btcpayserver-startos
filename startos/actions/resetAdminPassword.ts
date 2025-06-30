@@ -16,9 +16,10 @@ export const resetAdminPassword = sdk.Action.withoutInput(
   }),
 
   async ({ effects }) => {
-    const res = JSON.parse(
-      await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`),
-    ) as string[]
+    const res = (await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`))
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l !== '')
 
     if (res.length > 1)
       throw new Error(
@@ -27,7 +28,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
 
     const firstAdmin = await query(
       effects,
-      `SELECT "Id" FROM "AspNetUsers" WHERE "Id" IN '${res}' ORDER BY "Created" ASC LIMIT 1`,
+      `SELECT "Id" FROM "AspNetUsers" WHERE "Id" IN ('${res[0]}') ORDER BY "Created" ASC LIMIT 1`,
     )
 
     const pw = getRandomPassword()
@@ -38,7 +39,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
     })
     await query(
       effects,
-      `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${firstAdmin}'"`,
+      `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${firstAdmin}'`,
     )
     return {
       version: '1',

@@ -83,7 +83,7 @@ export async function query(effects: Effects, statement: string) {
         'btcpayserver',
         '-t',
         '-c',
-        `"${statement}"`,
+        `${statement}`,
       ])
       if (res.stderr) throw new Error(res.stderr.toString())
       return res.stdout.toString()
