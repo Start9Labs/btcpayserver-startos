@@ -2,6 +2,7 @@ import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
 import { sdk } from './sdk'
 import { utils } from '@start9labs/start-sdk'
 import { bitcoinConfDefaults } from 'bitcoind-startos/startos/utils'
+import { Client } from 'pg'
 
 export const uiPort = 23000
 export const nbxPort = 24444
@@ -9,7 +10,7 @@ export const webInterfaceId = 'webui'
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
 export const btcMountpoint = '/mnt/bitcoind'
-export const nbxCookieFile = '/datadir/Main/.cookie' //'/datadir/nbxplorer/Main/.cookie'
+export const nbxCookieFile = '/datadir/Main/.cookie'
 
 export const btcpsEnvDefaults = {
   BTCPAY_NETWORK: 'mainnet',
@@ -61,7 +62,11 @@ export async function getWebHostnames(effects: Effects): Promise<string[]> {
   )
 }
 
-export async function query(effects: Effects, statement: string) {
+export async function query(
+  effects: Effects,
+  statement: string,
+  values?: string[],
+) {
   return sdk.SubContainer.withTemp(
     effects,
     { imageId: 'postgres' },
@@ -73,20 +78,21 @@ export async function query(effects: Effects, statement: string) {
     }),
     'query-postgres',
     async (sub) => {
-      const res = await sub.exec([
-        'psql',
-        '-U',
-        'postgres',
-        '-h',
-        'localhost',
-        '-d',
-        'btcpayserver',
-        '-t',
-        '-c',
-        `${statement}`,
-      ])
-      if (res.stderr) throw new Error(res.stderr.toString())
-      return res.stdout.toString()
+      const postgresClient = new Client({
+        user: 'postgres',
+        host: 'localhost',
+        database: 'btcpayserver',
+        port: 5432,
+      })
+      try {
+        await postgresClient.connect()
+        const res = await postgresClient.query(statement, values)
+        return res
+      } catch (err) {
+        console.error('Database error:', err)
+      } finally {
+        await postgresClient.end()
+      }
     },
   )
 }

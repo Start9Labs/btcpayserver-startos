@@ -1,6 +1,6 @@
 import { sdk } from '../sdk'
 import { query, getRandomPassword } from '../utils'
-import { pbkdf2, randomBytes } from 'node:crypto'
+import { pbkdf2Sync, randomBytes } from 'node:crypto'
 
 export const resetAdminPassword = sdk.Action.withoutInput(
   'reset-admin-password',
@@ -16,31 +16,34 @@ export const resetAdminPassword = sdk.Action.withoutInput(
   }),
 
   async ({ effects }) => {
-    const res = (await query(effects, `SELECT "UserId" FROM "AspNetUserRoles"`))
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l !== '')
+    const admins = await query(
+      effects,
+      `SELECT "UserId" FROM "AspNetUserRoles"`,
+    )
 
-    if (res.length > 1)
+    if (!admins) {
+      throw new Error('No admins exist')
+    }
+
+    if (admins.rows.length > 1) {
       throw new Error(
-        'More than one admin user exists, please use the other account to reset the password.',
+        'More than one admin user exists, please use another admin account to adminset the password.',
       )
+    }
 
     const firstAdmin = await query(
       effects,
-      `SELECT "Id" FROM "AspNetUsers" WHERE "Id" IN ('${res[0]}') ORDER BY "Created" ASC LIMIT 1`,
+      `SELECT "Id" FROM "AspNetUsers" WHERE "Id" IN ($1) ORDER BY "Created" ASC LIMIT 1`,
+      [admins.rows[0].UserId],
     )
-
     const pw = getRandomPassword()
-    const salt = randomBytes(128).toString('base64')
-    const hash = pbkdf2(pw, salt, 1000, 32, 'sha1', (err, derivedKey) => {
-      if (err) throw err
-      return derivedKey.toString('base64')
-    })
+    const hash = generateHash(pw)
     await query(
       effects,
-      `UPDATE "AspNetUsers" SET "PasswordHash"='${hash}' WHERE "Id"='${firstAdmin}'`,
+      `UPDATE "AspNetUsers" SET "PasswordHash"=$1 WHERE "Id"=$2`,
+      [hash, firstAdmin?.rows[0].Id],
     )
+
     return {
       version: '1',
       title: 'New Admin Password',
@@ -56,3 +59,30 @@ export const resetAdminPassword = sdk.Action.withoutInput(
     }
   },
 )
+
+function generateHash(input: string): string {
+  const Pbkdf2IterCount = 1000
+  const Pbkdf2SubkeyLength = 256 / 8 // 32 bytes
+  const SaltSize = 128 / 8 // 16 bytes
+
+  // Generate salt
+  const salt = randomBytes(SaltSize)
+
+  // Derive subkey using PBKDF2 with HMAC-SHA1
+  const subkey = pbkdf2Sync(
+    input,
+    salt,
+    Pbkdf2IterCount,
+    Pbkdf2SubkeyLength,
+    'sha1',
+  )
+
+  // Create the output buffer with format marker (0x00)
+  const outputBytes = Buffer.alloc(1 + SaltSize + Pbkdf2SubkeyLength)
+  outputBytes[0] = 0x00
+  salt.copy(outputBytes, 1)
+  subkey.copy(outputBytes, 1 + SaltSize)
+
+  // Return base64 string
+  return outputBytes.toString('base64')
+}

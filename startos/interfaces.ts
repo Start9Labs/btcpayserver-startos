@@ -1,5 +1,5 @@
 import { sdk } from './sdk'
-import { uiPort, webInterfaceId } from './utils'
+import { webInterfaceId } from './utils'
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
   const multi = sdk.MultiHost.of(effects, webInterfaceId)
