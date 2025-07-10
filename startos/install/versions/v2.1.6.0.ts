@@ -60,15 +60,15 @@ export const v_2_1_6_0 = VersionInfo.of({
             BTCPAY_CHAINS: 'btc,xmr',
           })
         }
+
+        // remove old start9 dir
+        rm('/media/startos/volumes/main/start9', { recursive: true }).catch(
+          console.error,
+        )
       }
 
       // set nbx config
       await NBXplorerEnv.write(effects, { ...nbxEnvDefaults })
-
-      // remove old start9 dir
-      rm('/media/startos/volumes/main/start9', { recursive: true }).catch(
-        console.error,
-      )
     },
     down: IMPOSSIBLE,
   },
