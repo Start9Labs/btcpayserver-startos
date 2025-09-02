@@ -55,7 +55,7 @@ export const v_2_1_6_0 = VersionInfo.of({
           })
         }
 
-        if (altcoins.monero.status) {
+        if (altcoins.monero.status === 'enabled') {
           await BTCPSEnv.merge(effects, {
             BTCPAY_CHAINS: 'btc,xmr',
           })
