@@ -33,11 +33,11 @@ export const v_2_1_6_0 = VersionInfo.of({
           }
         }
 
-        // Set store config
-        await storeJson.merge(effects, {
+        await storeJson.write(effects, {
           plugins: {
             shopify: plugins.shopify.status === 'enabled' ? true : false,
           },
+          lightning: 'none',
         })
 
         // Set lightning node selection
