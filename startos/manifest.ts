@@ -46,22 +46,22 @@ export const manifest = setupManifest({
     bitcoind: {
       description: 'Used for the RPC and P2P connection interfaces.',
       optional: false,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.6/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.8/bitcoind.s9pk',
     },
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.19.1-beta.1-alpha.3/lnd.s9pk',
+      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.19.2-beta.1-beta.2/lnd.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.02.2/c-lightningV2.s9pk',
+      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.05.0.1-alpha.1/c-lightning.s9pk',
     },
     monerod: {
       description: 'Used to connect to the Monero network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.6/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v28.1.0.3-alpha.8/bitcoind.s9pk',
     },
   },
   alerts: {
