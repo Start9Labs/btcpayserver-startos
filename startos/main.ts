@@ -31,7 +31,6 @@ const mainMountsDefault = sdk.Mounts.of()
     volumeId: 'main',
     subpath: null,
     mountpoint: btcMountpoint,
-    // @TODO: this should be readonly, but we need to change its permissions
     readonly: false,
   })
 

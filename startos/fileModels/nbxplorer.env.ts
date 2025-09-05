@@ -1,6 +1,6 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
 import { nbxEnvDefaults } from '../utils'
-const { object, string, literal, literals, natural } = matches
+const { object, string, literal, literals } = matches
 
 const {
   NBXPLORER_NETWORK,
@@ -24,7 +24,7 @@ const shape = object({
   NBXPLORER_BTCRPCURL:
     literal(NBXPLORER_BTCRPCURL).onMismatch(NBXPLORER_BTCRPCURL),
   NBXPLORER_BTCRESCAN: literals('0', '1').onMismatch(NBXPLORER_BTCRESCAN),
-  NBXPLORER_BTCSTARTHEIGHT: string.onMismatch(NBXPLORER_BTCSTARTHEIGHT), // @TODO change string -> natural
+  NBXPLORER_BTCSTARTHEIGHT: string.onMismatch(NBXPLORER_BTCSTARTHEIGHT),
   NBXPLORER_BTCRPCCOOKIEFILE: literal(NBXPLORER_BTCRPCCOOKIEFILE).onMismatch(
     NBXPLORER_BTCRPCCOOKIEFILE,
   ),
