@@ -57,7 +57,7 @@ Next, **enable lightning** for a particular store's wallet using the connection 
 1. Click "Save".
 1. That's it!
 
-![internal node connection](./assets/internal-node-connection.png)
+![internal node connection](./docs/assets/internal-node-connection.png)
 
 If you would like to connect to an external lightning node, select "Use custom node" when on the page above and follow the instructions.
 
