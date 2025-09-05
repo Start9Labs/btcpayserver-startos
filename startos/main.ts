@@ -19,7 +19,7 @@ import { NBXplorerEnv } from './fileModels/nbxplorer.env'
 /**
  * ======================== Mounts ========================
  */
-let mainMounts = sdk.Mounts.of()
+const mainMountsDefault = sdk.Mounts.of()
   .mountVolume({
     volumeId: 'main',
     subpath: null,
@@ -60,40 +60,41 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   const chains = await BTCPSEnv.read((e) => e.BTCPAY_CHAINS).const(effects)
   if (!chains) throw new Error('BTCPay chains does not exist')
 
+  let mainMounts = mainMountsDefault
+  if (getEnabledAltcoin('xmr', chains)) {
+    mainMounts = mainMounts.mountDependency({
+      dependencyId: 'monerod',
+      volumeId: 'main',
+      subpath: null,
+      mountpoint: '/mnt/monero',
+      readonly: false,
+    })
+  } else {
+    mainMounts = mainMountsDefault
+  }
+
   switch (lightning) {
     case 'lnd':
-      // @TODO mainMounts.mountDependency<typeof LndManifest>
       mainMounts = mainMounts.mountDependency({
         dependencyId: 'lnd',
-        volumeId: 'main', //@TODO verify
+        volumeId: 'main',
         subpath: null,
         mountpoint: lndMountpoint,
         readonly: true,
       })
       break
     case 'cln':
-      // @TODO mainMounts.mountDependency<typeof ClnManifest>
       mainMounts = mainMounts.mountDependency({
         dependencyId: 'c-lightning',
-        volumeId: 'main', //@TODO verify
+        volumeId: 'main',
         subpath: null,
         mountpoint: clnMountpoint,
         readonly: true,
       })
       break
     default:
+      mainMounts = mainMountsDefault
       break
-  }
-
-  if (getEnabledAltcoin('xmr', chains)) {
-    // @TODO mainMounts.mountDependency<typeof MoneroManifest>
-    mainMounts = mainMounts.mountDependency({
-      dependencyId: 'monerod',
-      volumeId: 'main', //@TODO verify
-      subpath: null,
-      mountpoint: '/mnt/monero',
-      readonly: false,
-    })
   }
 
   // ========================
@@ -162,18 +163,13 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             mainMounts,
             'postgres-ready',
             async (sub) => {
-              const status = await sub.execFail(
-                [
-                  'su',
-                  '-',
-                  'postgres',
-                  '-c',
-                  '/usr/lib/postgresql/13/bin/pg_isready -h localhost',
-                ],
-                {
-                  // user: 'postgres',
-                },
-              )
+              const status = await sub.execFail([
+                'su',
+                '-',
+                'postgres',
+                '-c',
+                '/usr/lib/postgresql/13/bin/pg_isready -h localhost',
+              ])
               if (status.stderr) {
                 console.error(
                   'Error running postgres: ',

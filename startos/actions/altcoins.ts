@@ -6,8 +6,7 @@ const { InputSpec, Value } = sdk
 const input = InputSpec.of({
   monero: Value.toggle({
     name: 'Monero',
-    description:
-      'Choose which altcoins to enable. Please see the "Instructions" tab for more details.',
+    description: 'Enable Monero integration',
     default: false,
   }),
 })
@@ -33,12 +32,10 @@ export const enableAltcoins = sdk.Action.withInput(
   },
 
   async ({ effects, input }) => {
-    const env = await BTCPSEnv.read().const(effects)
-    if (!env) throw new Error('BTCPay environment file unreadable')
-
     if (input.monero) {
       await BTCPSEnv.merge(effects, {
         BTCPAY_CHAINS: 'btc,xmr',
+        BTCPAYGEN_CRYPTO2: 'xmr',
         BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
         BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
         BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
@@ -49,6 +46,7 @@ export const enableAltcoins = sdk.Action.withInput(
     } else {
       await BTCPSEnv.merge(effects, {
         BTCPAY_CHAINS: 'btc',
+        BTCPAYGEN_CRYPTO2: undefined,
         BTCPAY_XMR_DAEMON_URI: undefined,
         BTCPAY_XMR_DAEMON_USERNAME: undefined,
         BTCPAY_XMR_DAEMON_PASSWORD: undefined,

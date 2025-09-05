@@ -5,6 +5,7 @@ import { BTCPSEnv } from '../../fileModels/btcpay.env'
 import { storeJson } from '../../fileModels/store.json'
 import { NBXplorerEnv } from '../../fileModels/nbxplorer.env'
 import { clnMountpoint, lndMountpoint, nbxEnvDefaults } from '../../utils'
+import { sdk } from '../../sdk'
 
 export const v_2_1_6_0 = VersionInfo.of({
   version: '2.1.6:0-alpha.0',
@@ -69,6 +70,30 @@ export const v_2_1_6_0 = VersionInfo.of({
 
       // set nbx config
       await NBXplorerEnv.write(effects, { ...nbxEnvDefaults })
+
+      // set postgres permissions
+      await sdk.SubContainer.withTemp(
+        effects,
+        { imageId: 'postgres' },
+        sdk.Mounts.of().mountVolume({
+          volumeId: 'main',
+          subpath: null,
+          mountpoint: '/datadir',
+          readonly: false,
+        }),
+        'set-postgres',
+        async (sub) => {
+          await sub.exec(['chmod', '777', '/datadir'])
+          await sub.exec(['mkdir', '-p', '/datadir/postgresql/data'])
+          await sub.exec(['chmod', '777', '/datadir/postgresql'])
+          await sub.exec([
+            'chown',
+            '-R',
+            'postgres:postgres',
+            '/datadir/postgresql/data',
+          ])
+        },
+      )
     },
     down: IMPOSSIBLE,
   },

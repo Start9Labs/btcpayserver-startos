@@ -20,7 +20,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     currentDeps['lnd'] = {
       id: 'lnd',
       kind: 'running',
-      versionRange: '>=0.19.1-beta:1-alpha.2',
+      versionRange: '>=0.19.2-beta:1-beta.2',
       healthChecks: [],
     }
   }
@@ -29,7 +29,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     currentDeps['c-lightning'] = {
       id: 'c-lightning',
       kind: 'running',
-      versionRange: '>=24.08.1:1', // @TODO confirm
+      versionRange: '>=25.5.0:1-alpha.1',
       healthChecks: [],
     }
   }
@@ -38,7 +38,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     currentDeps['monerod'] = {
       id: 'monerod',
       kind: 'running',
-      versionRange: '>=0.18.4.0:1', // @TODO confirm
+      versionRange: '>=0.18.4:0',
       healthChecks: [],
     }
   }

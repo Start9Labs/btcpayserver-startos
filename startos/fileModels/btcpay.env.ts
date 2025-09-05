@@ -20,6 +20,7 @@ const shape = object({
   BTCPAY_SOCKSENDPOINT:
     literal(BTCPAY_SOCKSENDPOINT).onMismatch(BTCPAY_SOCKSENDPOINT),
   BTCPAY_BTCLIGHTNING: string.optional(),
+  BTCPAYGEN_CRYPTO2: string.optional(),
   BTCPAY_XMR_DAEMON_URI: string.optional(),
   BTCPAY_XMR_DAEMON_USERNAME: string.optional(),
   BTCPAY_XMR_DAEMON_PASSWORD: string.optional(),

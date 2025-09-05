@@ -34,7 +34,7 @@ const shape = object({
 })
 
 export const NBXplorerEnv = FileHelper.env(
-  { volumeId: 'main', subpath: 'nbxplorer.env' },
+  { volumeId: 'main', subpath: '/nbxplorer.env' },
   shape,
 )
 
