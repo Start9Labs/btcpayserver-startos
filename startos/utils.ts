@@ -54,7 +54,7 @@ export async function getWebHostnames(effects: Effects): Promise<string[]> {
       if (h.kind === 'onion') {
         return h.hostname.value
       } else if (h.hostname.kind === 'domain') {
-        return h.hostname.domain
+        return h.hostname.value
       } else {
         return `${h.hostname.value}:${h.hostname.sslPort}`
       }
