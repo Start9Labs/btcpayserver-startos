@@ -7,7 +7,7 @@ ifeq ($(CMD_ARCH_GOAL),)
   S9PK := $(PACKAGE_ID).s9pk
 else
   RAW_ARCH := $(firstword $(CMD_ARCH_GOAL))
-  ACTUAL_ARCH := $(subst x86,x86_64,$(subst arm,aarch64,$(RAW_ARCH)))
+  ACTUAL_ARCH := $(patsubst x86,x86_64,$(patsubst arm,aarch64,$(RAW_ARCH)))
   BUILD := $(ACTUAL_ARCH)
   S9PK := $(PACKAGE_ID)_$(BUILD).s9pk
 endif
