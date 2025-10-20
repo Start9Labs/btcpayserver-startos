@@ -1,8 +1,8 @@
 PKG_ID := $(shell yq e ".id" manifest.yaml)
 PKG_VERSION := $(shell yq e ".version" manifest.yaml)
-UPSTREAM_VERSION :=$(shell ./utils/scripts/get_upstream_version.sh ${PKG_VERSION})
+UPSTREAM_VERSION := $(shell ./utils/scripts/get_upstream_version.sh ${PKG_VERSION})
 TS_FILES := $(shell find ./ -name \*.ts)
-DOC_ASSETS := $(shell find ./docs/assets)
+DOC_ASSETS := $(shell find ./docs/assets 2>/dev/null)
 CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
 UTILS_SRC := $(shell find ./utils/**/*)
 
@@ -38,7 +38,7 @@ clean:
 	rm -f LICENSE
 	rm -rf configurator/target
 
-$(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.js docker-images/aarch64.tar docker-images/x86_64.tar
+$(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png docker-images/aarch64.tar docker-images/x86_64.tar
 ifeq ($(ARCH),aarch64)
 	@echo "start-sdk: Preparing aarch64 package ..."
 else ifeq ($(ARCH),x86_64)
@@ -53,7 +53,13 @@ ifeq ($(ARCH),aarch64)
 else
 	@echo "Building package for x86_64..."
 	mkdir -p docker-images
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/amd64 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 -o type=docker,dest=docker-images/x86_64.tar -f ./Dockerfile .
+	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build \
+	  --platform=linux/amd64 \
+	  --tag start9/btcpayserver/main:$(PKG_VERSION) \
+	  --build-arg ARCH=x86_64 \
+	  --build-arg PLATFORM=amd64 \
+	  -o type=docker,dest=docker-images/x86_64.tar \
+	  -f ./Dockerfile .
 endif
 
 docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
@@ -61,14 +67,32 @@ ifeq ($(ARCH),x86_64)
 else
 	@echo "Building package for aarch64..."
 	mkdir -p docker-images
-	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/arm64/v8 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=aarch64 --build-arg PLATFORM=arm64 -o type=docker,dest=docker-images/aarch64.tar -f ./Dockerfile .
+	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build \
+	  --platform=linux/arm64/v8 \
+	  --tag start9/btcpayserver/main:$(PKG_VERSION) \
+	  --build-arg ARCH=aarch64 \
+	  --build-arg PLATFORM=arm64 \
+	  -o type=docker,dest=docker-images/aarch64.tar \
+	  -f ./Dockerfile .
 endif
 
 configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo build --release --config net.git-fetch-with-cli=true
+	@echo "Building configurator for aarch64..."
+	docker run --rm \
+	  -v ~/.cargo/registry:/root/.cargo/registry \
+	  -v "$(shell pwd)"/configurator:/home/rust/src \
+	  -e RUSTC_WRAPPER= \
+	  start9/rust-musl-cross:aarch64-musl \
+	  cargo build --release --config net.git-fetch-with-cli=true
 
 configurator/target/x86_64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:x86_64-musl cargo build --release --config net.git-fetch-with-cli=true
+	@echo "Building configurator for x86_64..."
+	docker run --rm \
+	  -v ~/.cargo/registry:/root/.cargo/registry \
+	  -v "$(shell pwd)"/configurator:/home/rust/src \
+	  -e RUSTC_WRAPPER= \
+	  start9/rust-musl-cross:x86_64-musl \
+	  cargo build --release --config net.git-fetch-with-cli=true
 
 scripts/embassy.js: $(TS_FILES)
 	deno run --allow-read --allow-write --allow-env --allow-net scripts/bundle.ts
