@@ -74,7 +74,7 @@ instructions.md: docs/instructions.md $(DOC_ASSETS)
 	cd docs && md-packer < instructions.md > ../instructions.md
 
 scripts/embassy.js: $(TS_FILES)
- deno run --allow-read --allow-write --allow-env --allow-net scripts/bundle.ts
+	deno run --allow-read --allow-write --allow-env --allow-net scripts/bundle.ts
 
 LICENSE:
 	wget https://raw.githubusercontent.com/btcpayserver/btcpayserver/v$(UPSTREAM_VERSION)/LICENSE -O - > LICENSE
