@@ -1,6 +1,6 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.0.7.2
+version: 2.2.1
 release-notes: |
   * Bump max Bitcoin version
   * Bump max LND version
