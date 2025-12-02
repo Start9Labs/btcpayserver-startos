@@ -10,7 +10,7 @@ export const webInterfaceId = 'webui'
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
 export const btcMountpoint = '/mnt/bitcoind'
-export const nbxCookieFile = '/datadir/Main/.cookie'
+export const nbxCookieFile = '/datadir/nbxplorer/Main/.cookie'
 
 export const btcpsEnvDefaults = {
   BTCPAY_NETWORK: 'mainnet',
