@@ -199,6 +199,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       },
       ready: {
         display: 'UTXO Tracker',
+        gracePeriod: 30_000,
         fn: async () =>
           sdk.healthCheck.checkPortListening(effects, nbxPort, {
             successMessage: 'The explorer is reachable',
@@ -223,7 +224,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addHealthCheck('utxo-sync', {
       ready: {
         display: 'UTXO Tracker Sync',
-        gracePeriod: 10000,
+        gracePeriod: 20_000,
         fn: async () => {
           const auth = await readFile(
             `${nbxContainer.rootfs}${nbxCookieFile}`,
@@ -299,7 +300,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addHealthCheck('data-interface', {
       ready: {
         display: 'Data Interface',
-        gracePeriod: 10000,
+        gracePeriod: 20_000,
         fn: () => {
           return sdk.healthCheck.checkWebUrl(
             effects,
