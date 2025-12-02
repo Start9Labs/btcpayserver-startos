@@ -19,7 +19,7 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.1.6',
+        dockerTag: 'btcpayserver/btcpayserver:2.2.1',
       },
     },
     nbx: {
