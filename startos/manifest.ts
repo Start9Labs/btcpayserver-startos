@@ -66,7 +66,7 @@ export const manifest = setupManifest({
     monerod: {
       description: 'Used to connect to the Monero network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/bitcoind-startos/releases/download/v29.1.0.2-beta.0/bitcoind.s9pk',
+      s9pk: 'https://github.com/Start9Labs/hello-world-startos/releases/download/v0.4.0.0/hello-world.s9pk',
     },
   },
   alerts: {
