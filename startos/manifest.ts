@@ -47,7 +47,7 @@ export const manifest = setupManifest({
   dependencies: {
     bitcoind: {
       description: 'Used to subscribe to new block events.',
-      optional: true,
+      optional: false,
       metadata: {
         title: 'A Bitcoin Full Node',
         icon: 'https://bitcoin.org/img/icons/opengraph.png',
