@@ -32,50 +32,29 @@ export const nbxEnvDefaults = {
   NBXPLORER_DATADIR: '/datadir/nbxplorer',
 } as const
 
-export function getRandomPassword() {
-  return utils.getDefaultString({
-    charset: 'a-z,A-Z,1-9,!,@,$,%,&,*',
-    len: 22,
-  })
-}
-
 export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
 }
 
 export async function query(
-  effects: Effects,
   statement: string,
   values?: string[],
 ) {
-  return sdk.SubContainer.withTemp(
-    effects,
-    { imageId: 'postgres' },
-    sdk.Mounts.of().mountVolume({
-      volumeId: 'main',
-      subpath: null,
-      mountpoint: '/datadir',
-      readonly: false,
-    }),
-    'query-postgres',
-    async (sub) => {
-      const postgresClient = new Client({
-        user: 'postgres',
-        host: 'localhost',
-        database: 'btcpayserver',
-        port: 5432,
-      })
-      try {
-        await postgresClient.connect()
-        const res = await postgresClient.query(statement, values)
-        return res
-      } catch (err) {
-        console.error('Database error:', err)
-      } finally {
-        await postgresClient.end()
-      }
-    },
-  )
+  const postgresClient = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'btcpayserver',
+    port: 5432,
+  })
+  try {
+    await postgresClient.connect()
+    const res = await postgresClient.query(statement, values)
+    return res
+  } catch (err) {
+    console.error('Database error:', err)
+  } finally {
+    await postgresClient.end()
+  }
 }
 
 export const nginxConf = `
