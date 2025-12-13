@@ -6,7 +6,6 @@ import { Client } from 'pg'
 
 export const uiPort = 23000
 export const nbxPort = 24444
-export const webInterfaceId = 'webui'
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
 export const btcMountpoint = '/mnt/bitcoind'
@@ -42,24 +41,6 @@ export function getRandomPassword() {
 
 export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
-}
-
-export async function getWebHostnames(effects: Effects): Promise<string[]> {
-  const webInterface = await sdk.serviceInterface
-    .getOwn(effects, webInterfaceId)
-    .const()
-
-  return (
-    webInterface?.addressInfo?.hostnames.map((h) => {
-      if (h.kind === 'onion') {
-        return h.hostname.value
-      } else if (h.hostname.kind === 'domain') {
-        return h.hostname.value
-      } else {
-        return `${h.hostname.value}:${h.hostname.sslPort}`
-      }
-    }) || []
-  )
 }
 
 export async function query(
@@ -132,6 +113,7 @@ server {
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
+          client_max_body_size 10M;
   }
 }
 `

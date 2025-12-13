@@ -32,5 +32,3 @@ export const BTCPSEnv = FileHelper.env(
   { volumeId: 'main', subpath: '/btcpay.env' },
   shape,
 )
-
-export type BTCPSEnv = typeof shape._TYPE

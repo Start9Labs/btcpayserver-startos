@@ -140,14 +140,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         'postgres',
       ),
       exec: {
-        command: [
-          'su',
-          '-',
-          'postgres',
-          '-c',
-          '/usr/lib/postgresql/13/bin/pg_ctl -D /datadir/postgresql/data start',
-        ],
-        // user: 'postgres',
+        command: sdk.useEntrypoint(['-c', 'random_page_cost=1.0']),
         env: {
           POSTGRES_HOST_AUTH_METHOD: 'trust',
           PGDATA: '/datadir/postgresql/data',
@@ -192,7 +185,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('nbxplorer', {
       subcontainer: nbxContainer,
       exec: {
-        command: ['dotnet', '/app/NBXplorer.dll'],
+        command: sdk.useEntrypoint(),
         env: {
           ...(await NBXplorerEnv.read().const(effects)),
         },
@@ -256,7 +249,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('nginx', {
       subcontainer: nginxContainer,
       exec: {
-        command: ['nginx', '-g', 'daemon off;'],
+        command: sdk.useEntrypoint(),
       },
       ready: {
         display: null,
@@ -271,7 +264,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('webui', {
       subcontainer: btcpayContainer,
       exec: {
-        command: ['dotnet', '/app/BTCPayServer.dll'],
+        command: sdk.useEntrypoint(),
         env: {
           ...(await BTCPSEnv.read().const(effects)),
           BTCPAY_EXPLORERPOSTGRES:
@@ -325,7 +318,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         'shopify',
       ),
       exec: {
-        command: ['node', '/app/server.js'],
+        command: sdk.useEntrypoint(),
       },
       ready: {
         display: 'Shopify Plugin',

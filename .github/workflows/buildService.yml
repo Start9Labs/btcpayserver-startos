@@ -23,8 +23,16 @@ jobs:
 
       - name: Build the service package
         id: build
+        env:
+          S9DEVKEY: ${{ secrets.S9DEVKEY }}
         run: |
           start-cli init-key
+          if [[ -n "$S9DEVKEY" ]]; then
+            echo "Using developer key from secrets to sign the package."
+            printf '%s' "$S9DEVKEY" > ~/.startos/developer.key.pem
+          else
+            echo "Using newly generated developer key to sign the package."
+          fi
           RUST_LOG=debug RUST_BACKTRACE=1 make
           PACKAGE_ID=$(start-cli s9pk inspect *.s9pk manifest | jq -r '.id')
           echo "package_id=${PACKAGE_ID}" >> $GITHUB_ENV
