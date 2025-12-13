@@ -8,7 +8,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
   async ({ effects }) => ({
     name: 'Reset First Admin Password',
     description:
-      'Resets the first admin user with a temporary password. You should only need to preform this action if a single admin user exists. Otherwise, another admin can reset their password.',
+      'Resets the first admin user with a temporary password. You should only need to perform this action if a single admin user exists. Otherwise, another admin can reset their password.',
     warning: null,
     allowedStatuses: 'only-running',
     group: null,

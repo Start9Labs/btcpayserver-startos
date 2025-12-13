@@ -156,11 +156,14 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
             'postgres-ready',
             async (sub) => {
               const status = await sub.execFail([
-                'su',
-                '-',
+                '/usr/lib/postgresql/13/bin/pg_isready',
+                '-q',
+                '-h',
+                'localhost',
+                '-d',
+                'btcpayserver',
+                '-U',
                 'postgres',
-                '-c',
-                '/usr/lib/postgresql/13/bin/pg_isready -h localhost',
               ])
               if (status.stderr) {
                 console.error(
@@ -174,7 +177,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
               }
               return {
                 result: 'success',
-                message: 'Postgres is ready',
+                message: 'PostgreSQL is ready',
               }
             },
           )
@@ -192,7 +195,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       },
       ready: {
         display: 'UTXO Tracker',
-        gracePeriod: 30_000,
         fn: async () =>
           sdk.healthCheck.checkPortListening(effects, nbxPort, {
             successMessage: 'The explorer is reachable',
@@ -217,7 +219,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addHealthCheck('utxo-sync', {
       ready: {
         display: 'UTXO Tracker Sync',
-        gracePeriod: 20_000,
         fn: async () => {
           const auth = await readFile(
             `${nbxContainer.rootfs}${nbxCookieFile}`,
@@ -246,21 +247,6 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       },
       requires: ['nbxplorer'],
     })
-    .addDaemon('nginx', {
-      subcontainer: nginxContainer,
-      exec: {
-        command: sdk.useEntrypoint(),
-      },
-      ready: {
-        display: null,
-        fn: () =>
-          sdk.healthCheck.checkPortListening(effects, 80, {
-            successMessage: 'Nginx running',
-            errorMessage: 'Nginx not running',
-          }),
-      },
-      requires: [],
-    })
     .addDaemon('webui', {
       subcontainer: btcpayContainer,
       exec: {
@@ -281,31 +267,45 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         },
       },
       ready: {
-        display: 'Web Interface',
+        display: null,
         fn: () =>
           sdk.healthCheck.checkPortListening(effects, uiPort, {
             successMessage: 'The web interface is reachable',
             errorMessage: 'The web interface is unreachable',
           }),
       },
-      requires: ['nbxplorer', 'nginx'],
+      requires: ['nbxplorer', 'postgres'],
     })
-    .addHealthCheck('data-interface', {
+    .addDaemon('nginx', {
+      subcontainer: nginxContainer,
+      exec: {
+        command: ['nginx', '-g', 'daemon off;'],
+      },
       ready: {
-        display: 'Data Interface',
-        gracePeriod: 20_000,
+        display: null,
+        fn: () =>
+          sdk.healthCheck.checkPortListening(effects, 80, {
+            successMessage: 'Nginx running',
+            errorMessage: 'Nginx not running',
+          }),
+      },
+      requires: ['webui'],
+    })
+    .addHealthCheck('ui', {
+      ready: {
+        display: 'Web Interface',
         fn: () => {
           return sdk.healthCheck.checkWebUrl(
             effects,
-            `http://0.0.0.0:${uiPort}/api/v1/health`,
+            `http://0.0.0.0:80/api/v1/health`,
             {
-              successMessage: `The API is fully operational`,
-              errorMessage: `The API is unreachable`,
+              successMessage: `The web interface is reachable`,
+              errorMessage: `The web interface is unreachable`,
             },
           )
         },
       },
-      requires: ['webui'],
+      requires: ['webui', 'nginx'],
     })
 
   // Add Shopify app daemon if enabled

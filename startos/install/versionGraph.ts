@@ -31,16 +31,11 @@ export const versionGraph = VersionGraph.of({
           'postgres:postgres',
           '/datadir/postgresql/data',
         ])
-        await sub.exec(
-          [
-            'su',
-            '-',
-            'postgres',
-            '-c',
-            '/usr/lib/postgresql/13/bin/initdb -D /datadir/postgresql/data',
-          ],
-          // { user: 'postgres' },
-        )
+        await sub.exec([
+          '/usr/lib/postgresql/13/bin/initdb',
+          '-D',
+          '/datadir/postgresql/data',
+        ])
       },
     )
     console.log('PostgreSQL initialization complete')
