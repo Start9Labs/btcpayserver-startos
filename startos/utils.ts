@@ -1,6 +1,3 @@
-import { Effects } from '@start9labs/start-sdk/base/lib/Effects'
-import { sdk } from './sdk'
-import { utils } from '@start9labs/start-sdk'
 import { bitcoinConfDefaults } from 'bitcoind-startos/startos/utils'
 import { Client } from 'pg'
 
@@ -36,10 +33,7 @@ export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
 }
 
-export async function query(
-  statement: string,
-  values?: string[],
-) {
+export async function query(statement: string, values?: string[]) {
   const postgresClient = new Client({
     user: 'postgres',
     host: 'localhost',
@@ -58,66 +52,98 @@ export async function query(
 }
 
 export const nginxConf = `
-# If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
-# scheme used to connect to this server
-map $http_x_forwarded_proto $proxy_x_forwarded_proto {
-  default $http_x_forwarded_proto;
-  ''      https;
-}
-# If we receive X-Forwarded-Port, pass it through; otherwise, pass along the
-# server port the client connected to
-map $http_x_forwarded_port $proxy_x_forwarded_port {
-  default $http_x_forwarded_port;
-  ''      $server_port;
-}
-# If we receive Upgrade, set Connection to "upgrade"; otherwise, delete any
-# Connection header that may have been passed to this server
-map $http_upgrade $proxy_connection {
-  default upgrade;
-  '' close;
-}
-# Apply fix for very long server names
-server_names_hash_bucket_size 128;
-# Prevent Nginx Information Disclosure
-server_tokens off;
-# Default dhparam
-# Set appropriate X-Forwarded-Ssl header
-map $scheme $proxy_x_forwarded_ssl {
-  default off;
-  https on;
+
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
 }
 
-gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
-log_format vhost '$host $remote_addr - $remote_user [$time_local] '
-                 '"$request" $status $body_bytes_sent '
-                 '"$http_referer" "$http_user_agent"';
-access_log off;
-# HTTP 1.1 support
-proxy_http_version 1.1;
-proxy_buffering off;
-proxy_set_header Host $http_host;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Connection $proxy_connection;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
-proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
-proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
-proxy_buffer_size          128k;
-proxy_buffers              4 256k;
-proxy_busy_buffers_size    256k;
-client_header_buffer_size 500k;
-large_client_header_buffers 4 500k;
-# Mitigate httpoxy attack (see README for details)
-proxy_set_header Proxy "";
 
-server {  
-  listen 80 default_server;
-  listen [::]:80 default_server;
-  client_max_body_size 100M;
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
 
-  location / {
-          proxy_pass http://0.0.0.0:23000;
-  }
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
+    # scheme used to connect to this server
+    map $http_x_forwarded_proto $proxy_x_forwarded_proto {
+      default $http_x_forwarded_proto;
+      ''      https;
+    }
+    # If we receive X-Forwarded-Port, pass it through; otherwise, pass along the
+    # server port the client connected to
+    map $http_x_forwarded_port $proxy_x_forwarded_port {
+      default $http_x_forwarded_port;
+      ''      $server_port;
+    }
+    # If we receive Upgrade, set Connection to "upgrade"; otherwise, delete any
+    # Connection header that may have been passed to this server
+    map $http_upgrade $proxy_connection {
+      default upgrade;
+      '' close;
+    }
+    # Apply fix for very long server names
+    server_names_hash_bucket_size 128;
+    # Prevent Nginx Information Disclosure
+    server_tokens off;
+    # Default dhparam
+    # Set appropriate X-Forwarded-Ssl header
+    map $scheme $proxy_x_forwarded_ssl {
+      default off;
+      https on;
+    }
+
+    gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+    log_format vhost '$host $remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent"';
+    access_log off;
+    # HTTP 1.1 support
+    proxy_http_version 1.1;
+    proxy_buffering off;
+    proxy_set_header Host $http_host;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $proxy_connection;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+    proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
+    proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
+    proxy_buffer_size          128k;
+    proxy_buffers              4 256k;
+    proxy_busy_buffers_size    256k;
+    client_header_buffer_size 500k;
+    large_client_header_buffers 4 500k;
+    # Mitigate httpoxy attack (see README for details)
+    proxy_set_header Proxy "";
+
+    server {  
+      listen 80 default_server;
+      listen [::]:80 default_server;
+      client_max_body_size 100M;
+
+      location / {
+              proxy_pass http://0.0.0.0:23000;
+      }
+    }
 }
+
 `

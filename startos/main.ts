@@ -122,10 +122,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
   // ========================
   // Set nginx conf
   // ========================
-  await writeFile(
-    `${nginxContainer.rootfs}/etc/nginx/conf.d/default.conf`,
-    nginxConf,
-  )
+  await writeFile(`${nginxContainer.rootfs}/etc/nginx/nginx.conf`, nginxConf)
 
   /**
    *  ======================== Daemons ========================
@@ -192,6 +189,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         env: {
           ...(await NBXplorerEnv.read().const(effects)),
         },
+        sigtermTimeout: 60_000,
       },
       ready: {
         display: 'UTXO Tracker',
@@ -265,6 +263,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
           BTCPAY_DOCKERDEPLOYMENT: 'false',
           APPDATA: '/datadir/btcpayserver',
         },
+        sigtermTimeout: 60_000,
       },
       ready: {
         display: null,
@@ -279,7 +278,10 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     .addDaemon('nginx', {
       subcontainer: nginxContainer,
       exec: {
-        command: ['nginx', '-g', 'daemon off;'],
+        command: sdk.useEntrypoint(),
+        env: {
+          NGINX_ENTRYPOINT_QUIET_LOGS: '1',
+        },
       },
       ready: {
         display: null,
@@ -291,7 +293,7 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
       },
       requires: ['webui'],
     })
-    .addHealthCheck('ui', {
+    .addHealthCheck('ui-health', {
       ready: {
         display: 'Web Interface',
         fn: () => {

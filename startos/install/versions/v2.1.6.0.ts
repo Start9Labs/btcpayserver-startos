@@ -63,9 +63,9 @@ export const v_2_1_6_0 = VersionInfo.of({
         }
 
         // remove old start9 dir
-        rm('/media/startos/volumes/main/start9', { recursive: true }).catch(
-          console.error,
-        )
+        await rm('/media/startos/volumes/main/start9', {
+          recursive: true,
+        }).catch((e) => console.error(e))
       }
 
       // set nbx config

@@ -1,5 +1,4 @@
 import { NBXplorerEnv } from '../fileModels/nbxplorer.env'
-import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
 
