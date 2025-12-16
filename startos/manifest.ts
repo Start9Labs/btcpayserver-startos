@@ -38,6 +38,9 @@ export const manifest = setupManifest({
       },
     },
   },
+  hardwareRequirements: {
+    arch: ['x86_64', 'aarch64'],
+  },
   dependencies: {
     bitcoind: {
       description: 'Used to subscribe to new block events.',
