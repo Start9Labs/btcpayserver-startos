@@ -1,5 +1,5 @@
 import { sdk } from './sdk'
-import { readFile, writeFile } from 'fs/promises'
+import { readFile } from 'fs/promises'
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { BTCPSEnv } from './fileModels/btcpay.env'
 import {
@@ -11,7 +11,6 @@ import {
   uiPort,
   nbxPort,
   nbxCookieFile,
-  nginxConf,
 } from './utils'
 import { storeJson } from './fileModels/store.json'
 import { NBXplorerEnv } from './fileModels/nbxplorer.env'
@@ -34,7 +33,7 @@ const mainMountsDefault = sdk.Mounts.of()
     readonly: false,
   })
 
-export const main = sdk.setupMain(async ({ effects, started }) => {
+export const main = sdk.setupMain(async ({ effects }) => {
   /**
    * ======================== Setup ========================
    */
@@ -112,23 +111,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
     mainMounts,
     'nbx',
   )
-  const nginxContainer = await sdk.SubContainer.of(
-    effects,
-    { imageId: 'nginx' },
-    mainMounts,
-    'nginx',
-  )
-
-  // ========================
-  // Set nginx conf
-  // ========================
-  await writeFile(`${nginxContainer.rootfs}/etc/nginx/nginx.conf`, nginxConf)
 
   /**
    *  ======================== Daemons ========================
    */
 
-  const daemons = sdk.Daemons.of(effects, started)
+  const daemons = sdk.Daemons.of(effects)
     .addDaemon('postgres', {
       subcontainer: await sdk.SubContainer.of(
         effects,
@@ -233,11 +221,12 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
               },
             },
           )
-            .then(async (res: any) => {
+            .then(async (res) => {
               const jsonRes = (await res.json()) as NbxStatusRes
               return jsonRes
             })
-            .catch((e: any) => {
+            .catch((e) => {
+              console.log(e)
               throw new Error(e)
             })
           return nbxHealthCheck(res)
@@ -266,48 +255,18 @@ export const main = sdk.setupMain(async ({ effects, started }) => {
         sigtermTimeout: 60_000,
       },
       ready: {
-        display: null,
-        fn: () =>
-          sdk.healthCheck.checkPortListening(effects, uiPort, {
-            successMessage: 'The web interface is reachable',
-            errorMessage: 'The web interface is unreachable',
-          }),
-      },
-      requires: ['nbxplorer', 'postgres'],
-    })
-    .addDaemon('nginx', {
-      subcontainer: nginxContainer,
-      exec: {
-        command: sdk.useEntrypoint(),
-        env: {
-          NGINX_ENTRYPOINT_QUIET_LOGS: '1',
-        },
-      },
-      ready: {
-        display: null,
-        fn: () =>
-          sdk.healthCheck.checkPortListening(effects, 80, {
-            successMessage: 'Nginx running',
-            errorMessage: 'Nginx not running',
-          }),
-      },
-      requires: ['webui'],
-    })
-    .addHealthCheck('ui-health', {
-      ready: {
         display: 'Web Interface',
-        fn: () => {
-          return sdk.healthCheck.checkWebUrl(
+        fn: () =>
+          sdk.healthCheck.checkWebUrl(
             effects,
-            `http://0.0.0.0:80/api/v1/health`,
+            `http://0.0.0.0:${uiPort}/api/v1/health`,
             {
               successMessage: `The web interface is reachable`,
               errorMessage: `The web interface is unreachable`,
             },
-          )
-        },
+          ),
       },
-      requires: ['webui', 'nginx'],
+      requires: ['nbxplorer', 'postgres'],
     })
 
   // Add Shopify app daemon if enabled

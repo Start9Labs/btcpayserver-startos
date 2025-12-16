@@ -1,32 +1,25 @@
-import { Value } from '@start9labs/start-sdk/base/lib/actions/input/builder'
 import { sdk } from '../sdk'
 import { query } from '../utils'
 import { pbkdf2Sync, randomBytes } from 'node:crypto'
+import { utils } from '@start9labs/start-sdk'
 
-export const resetAdminPassword = sdk.Action.withInput(
+export const resetAdminPassword = sdk.Action.withoutInput(
   'reset-admin-password',
   async ({ effects }) => ({
     name: 'Reset Server Admin Password',
     description:
       'Resets the first server admin user with a temporary password. You should only need to perform this action if a single admin user exists. Otherwise, another admin can reset their password.',
-    warning: null,
+    warning: 'Are you sure you want to reset the server admin password?',
     allowedStatuses: 'only-running',
     group: null,
     visibility: 'enabled',
   }),
-  sdk.InputSpec.of({
-    password: Value.text({
-      name: 'New Password',
-      description: 'Enter new password for the admin user.',
-      default: { charset: 'a-z,A-Z,1-9,!,@,$,%,&,*', len: 22 },
-      masked: true,
-      required: true,
-      generate: { charset: 'a-z,A-Z,1-9,!,@,$,%,&,*', len: 22 },
-    }),
-  }),
-  async ({ effects }) => ({}),
-  async ({ effects, input }) => {
-    await resetServerAdminPassword(input.password)
+  async ({ effects }) => {
+    const password = utils.getDefaultString({
+      charset: 'a-z,A-Z,1-9,!,@,$,%,&,*',
+      len: 22,
+    })
+    await resetServerAdminPassword(password)
 
     return {
       version: '1',
@@ -35,7 +28,7 @@ export const resetAdminPassword = sdk.Action.withInput(
         "This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in.",
       result: {
         type: 'single',
-        value: input.password,
+        value: password,
         copyable: true,
         qr: false,
         masked: true,
