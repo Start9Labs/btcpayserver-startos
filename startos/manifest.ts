@@ -1,9 +1,4 @@
 import { setupManifest } from '@start9labs/start-sdk'
-import { SDKImageInputSpec } from '@start9labs/start-sdk/base/lib/types/ManifestTypes'
-
-const BUILD = process.env.BUILD || ''
-const architectures =
-  BUILD === 'x86_64' || BUILD === 'aarch64' ? [BUILD] : ['x86_64', 'aarch64']
 
 export const manifest = setupManifest({
   id: 'btcpayserver',
@@ -26,34 +21,26 @@ export const manifest = setupManifest({
       source: {
         dockerTag: 'btcpayserver/btcpayserver:2.2.1',
       },
-      arch: architectures,
-    } as SDKImageInputSpec,
+    },
     nbx: {
       source: {
         dockerTag: 'nicolasdorier/nbxplorer:2.5.30-1',
       },
-      arch: architectures,
-    } as SDKImageInputSpec,
+    },
     postgres: {
       source: {
         dockerTag: 'btcpayserver/postgres:13.18',
       },
-      arch: architectures,
-    } as SDKImageInputSpec,
+    },
     shopify: {
       source: {
         dockerTag: 'btcpayserver/shopify-app-deployer:1.4',
       },
-      arch: architectures,
-    } as SDKImageInputSpec,
-    nginx: {
-      source: {
-        dockerTag: 'nginx:stable-alpine',
-      },
-      arch: architectures,
-    } as SDKImageInputSpec,
+    },
   },
-  hardwareRequirements: { arch: architectures },
+  hardwareRequirements: {
+    arch: ['x86_64', 'aarch64'],
+  },
   dependencies: {
     bitcoind: {
       description: 'Used to subscribe to new block events.',
