@@ -53,12 +53,12 @@ export const manifest = setupManifest({
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.20.0-beta.1-beta.0/lnd.s9pk',
+      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.20.0-beta.1-beta.1/lnd.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.09.3.1-beta.0/c-lightning.s9pk',
+      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.12.0.1-beta.0/c-lightning.s9pk',
     },
     monerod: {
       description: 'Used to connect to the Monero network.',
