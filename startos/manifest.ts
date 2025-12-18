@@ -63,7 +63,7 @@ export const manifest = setupManifest({
     monerod: {
       description: 'Used to connect to the Monero network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/hello-world-startos/releases/download/v0.4.0.0/hello-world.s9pk',
+      s9pk: null,
     },
   },
   alerts: {
