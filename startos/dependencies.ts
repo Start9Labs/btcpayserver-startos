@@ -5,10 +5,7 @@ import { storeJson } from './fileModels/store.json'
 import { getEnabledAltcoin } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
-  let currentDeps = {} as Record<
-    'bitcoind' | 'lnd' | 'c-lightning' | 'monerod',
-    T.DependencyRequirement
-  >
+  const deps: T.CurrentDependenciesResult<any> = {}
 
   const chains = await BTCPSEnv.read((e) => e.BTCPAY_CHAINS).const(effects)
   if (!chains) throw new Error('BTCPay chains not found')
@@ -17,8 +14,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (!ln) throw new Error('Lightning not found in store')
 
   if (ln === 'lnd') {
-    currentDeps['lnd'] = {
-      id: 'lnd',
+    deps['lnd'] = {
       kind: 'running',
       versionRange: '>=0.19.3-beta:1-beta.0',
       healthChecks: [],
@@ -26,8 +22,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   }
 
   if (ln === 'cln') {
-    currentDeps['c-lightning'] = {
-      id: 'c-lightning',
+    deps['c-lightning'] = {
       kind: 'running',
       versionRange: '>=25.9.0:1-beta.0',
       healthChecks: [],
@@ -35,8 +30,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   }
 
   if (getEnabledAltcoin('xmr', chains)) {
-    currentDeps['monerod'] = {
-      id: 'monerod',
+    deps['monerod'] = {
       kind: 'running',
       versionRange: '>=0.18.4:0',
       healthChecks: [],
@@ -44,7 +38,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   }
 
   return {
-    ...currentDeps,
+    ...deps,
     bitcoind: {
       kind: 'running',
       versionRange: '>=29.1:2-beta.0',
