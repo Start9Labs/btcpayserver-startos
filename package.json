@@ -8,11 +8,9 @@
   "dependencies": {
     "@start9labs/start-sdk": "^0.4.0-beta.45",
     "bitcoind-startos": "git+https://github.com/Start9Labs/bitcoind-startos.git#update/040",
-    "js-yaml": "^4.1.1",
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.19.2",
     "@types/pg": "^8.16.0",
     "@vercel/ncc": "^0.38.1",
