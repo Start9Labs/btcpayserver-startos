@@ -19,7 +19,7 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.2.1',
+        dockerTag: 'btcpayserver/btcpayserver:2.3.1',
       },
     },
     nbx: {
@@ -34,7 +34,7 @@ export const manifest = setupManifest({
     },
     shopify: {
       source: {
-        dockerTag: 'btcpayserver/shopify-app-deployer:1.4',
+        dockerTag: 'btcpayserver/shopify-app-deployer:1.5',
       },
     },
   },
