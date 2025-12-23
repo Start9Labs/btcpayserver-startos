@@ -5,7 +5,7 @@ const { object, string, literal } = matches
 const {
   BTCPAY_NETWORK,
   BTCPAY_CHAINS,
-  BTCPAY_BIND,
+  BTCPAY_BIND,  
   BTCPAY_BTCEXPLORERCOOKIEFILE,
   BTCPAY_SOCKSENDPOINT,
 } = btcpsEnvDefaults
@@ -13,7 +13,7 @@ const {
 const shape = object({
   BTCPAY_NETWORK: literal(BTCPAY_NETWORK).onMismatch(BTCPAY_NETWORK),
   BTCPAY_CHAINS: string.onMismatch(BTCPAY_CHAINS),
-  BTCPAY_BIND: literal(BTCPAY_BIND).onMismatch(BTCPAY_BIND),
+  BTCPAY_BIND: literal(BTCPAY_BIND).onMismatch(BTCPAY_BIND),  
   BTCPAY_BTCEXPLORERCOOKIEFILE: literal(
     BTCPAY_BTCEXPLORERCOOKIEFILE,
   ).onMismatch(BTCPAY_BTCEXPLORERCOOKIEFILE),

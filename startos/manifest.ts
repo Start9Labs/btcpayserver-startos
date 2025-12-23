@@ -29,7 +29,7 @@ export const manifest = setupManifest({
     },
     postgres: {
       source: {
-        dockerTag: 'btcpayserver/postgres:13.18',
+        dockerTag: 'btcpayserver/postgres:13.23',
       },
     },
     shopify: {
@@ -65,13 +65,5 @@ export const manifest = setupManifest({
       optional: true,
       s9pk: null,
     },
-  },
-  alerts: {
-    install: null,
-    update: null,
-    uninstall: null,
-    restore: null,
-    start: null,
-    stop: null,
-  },
+  }
 })
