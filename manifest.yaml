@@ -1,9 +1,8 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.2.1
+version: 2.3.2
 release-notes: |
-  * Bump max Bitcoin version
-  * Bump max LND version
+  * Update btcpayserver to 2.3.2
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"

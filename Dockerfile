@@ -1,6 +1,6 @@
-FROM btcpayserver/monero:0.18.3.4 AS monero-wallet-rpc
-FROM nicolasdorier/nbxplorer:2.5.26 AS nbx-builder
-FROM btcpayserver/shopify-app-deployer:1.3 AS shopify-app
+FROM btcpayserver/monero:0.18.4.3 AS monero-wallet-rpc
+FROM nicolasdorier/nbxplorer:2.6.0 AS nbx-builder
+FROM btcpayserver/shopify-app-deployer:1.5 AS shopify-app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
@@ -10,7 +10,7 @@ RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
 
-FROM btcpayserver/btcpayserver:2.2.1
+FROM btcpayserver/btcpayserver:2.3.2
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
