@@ -2,7 +2,7 @@ id: btcpayserver
 title: BTCPay Server
 version: 2.3.2
 release-notes: |
-  * Update btcpayserver to 2.3.2
+  * Update BTCPay Server to 2.3.2
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
