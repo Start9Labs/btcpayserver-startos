@@ -19,22 +19,22 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.2.1',
+        dockerTag: 'btcpayserver/btcpayserver:2.3.2',
       },
     },
     nbx: {
       source: {
-        dockerTag: 'nicolasdorier/nbxplorer:2.5.30-1',
+        dockerTag: 'nicolasdorier/nbxplorer:2.6.0',
       },
     },
     postgres: {
       source: {
-        dockerTag: 'btcpayserver/postgres:13.18',
+        dockerTag: 'btcpayserver/postgres:13.23',
       },
     },
     shopify: {
       source: {
-        dockerTag: 'btcpayserver/shopify-app-deployer:1.4',
+        dockerTag: 'btcpayserver/shopify-app-deployer:1.5',
       },
     },
   },
@@ -53,25 +53,23 @@ export const manifest = setupManifest({
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.20.0-beta.1-beta.1/lnd.s9pk',
+      metadata: {
+        title: 'LND Lightning Node',
+        icon: 'https://github.com/Start9Labs/lnd-startos/blob/master/icon.png?raw=true',
+      }
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.12.0.1-beta.0/c-lightning.s9pk',
+      metadata: {
+        title: 'Core Lightning Node',
+        icon: 'https://github.com/Start9Labs/cln-startos/blob/master/icon.png?raw=true',
+      }
     },
     monerod: {
       description: 'Used to connect to the Monero network.',
       optional: true,
       s9pk: null,
     },
-  },
-  alerts: {
-    install: null,
-    update: null,
-    uninstall: null,
-    restore: null,
-    start: null,
-    stop: null,
   },
 })
