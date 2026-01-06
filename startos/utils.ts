@@ -8,7 +8,7 @@ export const clnMountpoint = '/mnt/cln'
 export const btcpsEnvDefaults = {
   BTCPAY_NETWORK: 'mainnet',
   BTCPAY_CHAINS: 'btc',
-  BTCPAY_BIND: '0.0.0.0:23000',  
+  BTCPAY_BIND: '0.0.0.0:23000',
   BTCPAY_BTCEXPLORERCOOKIEFILE: '/root/.nbxplorer/Main/.cookie',
   BTCPAY_SOCKSENDPOINT: 'startos:9050',
 } as const

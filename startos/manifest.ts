@@ -65,5 +65,5 @@ export const manifest = setupManifest({
       optional: true,
       s9pk: null,
     },
-  }
+  },
 })

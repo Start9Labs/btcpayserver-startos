@@ -26,7 +26,8 @@ export const lightningNode = sdk.Action.withInput(
     name: 'Choose Lightning Node',
     description:
       'Use this setting to grant access to the selected internal Lightning node to use lightning for invoices.',
-    warning: "If this is the first time selecting a lightning node, you need to go into BTCPay Server, click on 'Lightning', choose 'Internal Node' and save.",
+    warning:
+      "If this is the first time selecting a lightning node, you need to go into BTCPay Server, click on 'Lightning', choose 'Internal Node' and save.",
     allowedStatuses: 'any',
     group: null,
     visibility: 'enabled',

@@ -1,4 +1,4 @@
-import { FileHelper, matches, T } from "@start9labs/start-sdk"
+import { FileHelper, matches, T } from '@start9labs/start-sdk'
 
 // @todo remove when FileHelper.env is fixed
 
@@ -7,22 +7,22 @@ type Validator<T, U> = matches.Validator<T, U> | matches.Validator<unknown, U>
 
 export function env<A extends {}, Transformed = Record<string, string>>(
   path: ToPath,
-  shape: Validator<Transformed, A>,  
-): FileHelper<A> {  
+  shape: Validator<Transformed, A>,
+): FileHelper<A> {
   return FileHelper.raw<A>(
     path,
     (inData) =>
       Object.entries(inData)
         .map(([k, v]) => `${k}=${v}`)
-        .join("\n"),
+        .join('\n'),
     (inString) =>
       Object.fromEntries(
         inString
-          .split("\n")
+          .split('\n')
           .map((line) => line.trim())
-          .filter((line) => !line.startsWith("#") && line.includes("="))
+          .filter((line) => !line.startsWith('#') && line.includes('='))
           .map((line) => {
-            const pos = line.indexOf("=")
+            const pos = line.indexOf('=')
             return [line.slice(0, pos), line.slice(pos + 1)]
           }),
       ),

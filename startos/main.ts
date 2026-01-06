@@ -132,13 +132,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const postgresContainer = await sdk.SubContainer.of(
     effects,
     { imageId: 'postgres' },
-    sdk.Mounts.of()
-      .mountVolume({
-        volumeId: 'main',
-        subpath: 'postgresql',
-        mountpoint: '/var/lib/postgresql',
-        readonly: false,
-      }),
+    sdk.Mounts.of().mountVolume({
+      volumeId: 'main',
+      subpath: 'postgresql',
+      mountpoint: '/var/lib/postgresql',
+      readonly: false,
+    }),
     'postgres',
   )
 
@@ -168,10 +167,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             'postgres',
           ])
           if (status.stderr) {
-            console.error(
-              'Error running postgres: ',
-              status.stderr.toString(),
-            )
+            console.error('Error running postgres: ', status.stderr.toString())
             return {
               result: 'loading',
               message: 'Waiting for PostgreSQL to be ready',
