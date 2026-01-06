@@ -19,12 +19,12 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.3.1',
+        dockerTag: 'btcpayserver/btcpayserver:2.3.2',
       },
     },
     nbx: {
       source: {
-        dockerTag: 'nicolasdorier/nbxplorer:2.5.30-1',
+        dockerTag: 'nicolasdorier/nbxplorer:2.6.0',
       },
     },
     postgres: {
@@ -53,12 +53,12 @@ export const manifest = setupManifest({
     lnd: {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.20.0-beta.1-beta.1/lnd.s9pk',
+      s9pk: 'https://github.com/Start9Labs/lnd-startos/releases/download/v0.20.0-beta.1-beta.2/lnd.s9pk',
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
       optional: true,
-      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.12.0.1-beta.0/c-lightning.s9pk',
+      s9pk: 'https://github.com/Start9Labs/cln-startos/releases/download/v25.12.0_1-beta.1/c-lightning.s9pk',
     },
     monerod: {
       description: 'Used to connect to the Monero network.',

@@ -6,8 +6,8 @@ import { NBXplorerEnv } from '../../fileModels/nbxplorer.env'
 import { clnMountpoint, lndMountpoint, nbxEnvDefaults } from '../../utils'
 import { sdk } from '../../sdk'
 
-export const v_2_3_1_1 = VersionInfo.of({
-  version: '2.3.1:1-beta.0',
+export const v_2_3_2_1 = VersionInfo.of({
+  version: '2.3.2:1-beta.0',
   releaseNotes: 'Updated for StartOS v0.4.0.',
   migrations: {
     up: async ({ effects }) => {
@@ -47,14 +47,14 @@ export const v_2_3_1_1 = VersionInfo.of({
         if (lightning.type === 'lnd') {
           await storeJson.merge(effects, { lightning: lightning.type })
           await BTCPSEnv.merge(effects, {
-            BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`,
+            BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/data/chain/bitcoin/mainnet/admin.macaroon;allowinsecure=true`,
           })
         }
 
         if (lightning.type === 'c-lightning') {
           await storeJson.merge(effects, { lightning: 'cln' })
           await BTCPSEnv.merge(effects, {
-            BTCPAY_BTCLIGHTNING: `type=clightning;server=unix://${clnMountpoint}/lightning-rpc`,
+            BTCPAY_BTCLIGHTNING: `type=clightning;server=unix:/${clnMountpoint}/bitcoin/lightning-rpc`,
           })
         }
 
