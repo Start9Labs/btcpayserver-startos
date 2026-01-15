@@ -1,6 +1,7 @@
 import { matches, FileHelper } from '@start9labs/start-sdk'
 import { btcpsEnvDefaults } from '../utils'
-import { env } from './EnvFileHelper'
+import { sdk } from '../sdk'
+
 const { object, string, literal } = matches
 
 const {
@@ -29,9 +30,10 @@ const shape = object({
   BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: string.optional(),
 })
 
-// @todo re-enable when FileHelper.env is fixed
-// export const BTCPSEnv = FileHelper.env(
-//   { volumeId: 'main', subpath: '/btcpay.env' },
-//   shape,
-// )
-export const BTCPSEnv = env({ volumeId: 'main', subpath: '/btcpay.env' }, shape)
+export const BTCPSEnv = FileHelper.env(
+  {
+    base: sdk.volumes.main,
+    subpath: '/btcpay.env',
+  },
+  shape,
+)

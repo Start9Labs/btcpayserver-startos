@@ -216,7 +216,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .addHealthCheck('utxo-sync', {
       ready: {
         display: 'UTXO Tracker Sync',
-        gracePeriod: 10_000,
         fn: async () => {
           const auth = await readFile(
             `${nbxContainer.rootfs}/datadir/Main/.cookie`,
@@ -238,7 +237,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
               return jsonRes
             })
             .catch((e) => {
-              console.log(e)
               throw new Error(e)
             })
           return nbxHealthCheck(res)
@@ -338,9 +336,11 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
       message: `The UTXO tracker is syncing. Sync progress: ${progress}%`,
     }
   } else {
+    // when bitcoinStatus is undefined, it usually means NBXplorer cannot connect to bitcoind
+    // but this seems to happen regularly, even when bitcoind is running fine.
     return {
-      result: 'starting',
-      message: 'BTCPay is starting',
+      result: 'loading',
+      message: 'The UTXO tracker is syncing.',
     }
   }
 }

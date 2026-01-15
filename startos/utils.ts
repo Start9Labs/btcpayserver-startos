@@ -22,7 +22,7 @@ export const nbxEnvDefaults = {
   NBXPLORER_BTCSTARTHEIGHT: '-1',
   NBXPLORER_BTCRPCCOOKIEFILE: '/root/.bitcoin/.cookie',
   NBXPLORER_POSTGRES:
-    'User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
+    'User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer;GSS Encryption Mode=Disable',
   NBXPLORER_DATADIR: '/datadir',
 } as const
 
