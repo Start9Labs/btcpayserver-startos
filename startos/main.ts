@@ -223,23 +223,38 @@ export const main = sdk.setupMain(async ({ effects }) => {
               encoding: 'base64',
             },
           )
-          const res = await fetch(
-            `http://0.0.0.0:${nbxPort}/v1/cryptos/BTC/status`,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Basic ${auth}`,
+
+          const fetchStatus = async (): Promise<NbxStatusRes> => {
+            const res = await fetch(
+              `http://0.0.0.0:${nbxPort}/v1/cryptos/BTC/status`,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Basic ${auth}`,
+                },
               },
-            },
-          )
-            .then(async (res) => {
-              const jsonRes = (await res.json()) as NbxStatusRes
-              return jsonRes
-            })
-            .catch((e) => {
-              throw new Error(e)
-            })
-          return nbxHealthCheck(res)
+            )
+            return await res.json() as NbxStatusRes
+          }
+
+          try {
+            let res = await fetchStatus()
+
+            if (!res.bitcoinStatus) {
+              // Retry once if bitcoinStatus is missing. This happens when bitcoind closes idle pooled
+              // TCP connections, causing "response ended prematurely" errors that leave bitcoinStatus undefined.
+              // This is an issue with how .NET handles tcp/http connection pooling.
+              res = await fetchStatus()
+            }
+
+            return nbxHealthCheck(res)
+          }
+          catch (e) {
+            return {
+              result: 'failure',
+              message: 'Failed to get UTXO tracker status.',
+            }
+          }
         },
       },
       requires: ['nbxplorer'],
@@ -336,11 +351,9 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
       message: `The UTXO tracker is syncing. Sync progress: ${progress}%`,
     }
   } else {
-    // when bitcoinStatus is undefined, it usually means NBXplorer cannot connect to bitcoind
-    // but this seems to happen regularly, even when bitcoind is running fine.
     return {
-      result: 'loading',
-      message: 'The UTXO tracker is syncing.',
+      result: 'failure',
+      message: 'Failed to connect to Bitcoin node.',
     }
   }
 }
