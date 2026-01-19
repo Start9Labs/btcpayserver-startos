@@ -19,7 +19,7 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver:2.3.2',
+        dockerTag: 'btcpayserver/btcpayserver:2.3.3',
       },
     },
     nbx: {
@@ -56,7 +56,7 @@ export const manifest = setupManifest({
       metadata: {
         title: 'LND Lightning Node',
         icon: 'https://github.com/Start9Labs/lnd-startos/blob/master/icon.png?raw=true',
-      }
+      },
     },
     'c-lightning': {
       description: 'Used to communicate with the Lightning Network.',
@@ -64,7 +64,7 @@ export const manifest = setupManifest({
       metadata: {
         title: 'Core Lightning Node',
         icon: 'https://github.com/Start9Labs/cln-startos/blob/master/icon.png?raw=true',
-      }
+      },
     },
     monerod: {
       description: 'Used to connect to the Monero network.',

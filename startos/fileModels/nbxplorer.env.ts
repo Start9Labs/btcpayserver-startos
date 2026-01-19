@@ -1,5 +1,7 @@
 import { FileHelper, matches } from '@start9labs/start-sdk'
 import { nbxEnvDefaults } from '../utils'
+import { sdk } from '../sdk'
+
 const { object, string, literal, literals } = matches
 
 const {
@@ -34,7 +36,10 @@ const shape = object({
 })
 
 export const NBXplorerEnv = FileHelper.env(
-  { volumeId: 'main', subpath: '/nbxplorer.env' },
+  {
+    base: sdk.volumes.main,
+    subpath: '/nbxplorer.env',
+  },
   shape,
 )
 

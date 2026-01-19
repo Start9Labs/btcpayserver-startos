@@ -216,7 +216,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .addHealthCheck('utxo-sync', {
       ready: {
         display: 'UTXO Tracker Sync',
-        gracePeriod: 10_000,
         fn: async () => {
           const auth = await readFile(
             `${nbxContainer.rootfs}/datadir/Main/.cookie`,
@@ -224,24 +223,38 @@ export const main = sdk.setupMain(async ({ effects }) => {
               encoding: 'base64',
             },
           )
-          const res = await fetch(
-            `http://0.0.0.0:${nbxPort}/v1/cryptos/BTC/status`,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Basic ${auth}`,
+
+          const fetchStatus = async (): Promise<NbxStatusRes> => {
+            const res = await fetch(
+              `http://0.0.0.0:${nbxPort}/v1/cryptos/BTC/status`,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Basic ${auth}`,
+                },
               },
-            },
-          )
-            .then(async (res) => {
-              const jsonRes = (await res.json()) as NbxStatusRes
-              return jsonRes
-            })
-            .catch((e) => {
-              console.log(e)
-              throw new Error(e)
-            })
-          return nbxHealthCheck(res)
+            )
+            return await res.json() as NbxStatusRes
+          }
+
+          try {
+            let res = await fetchStatus()
+
+            if (!res.bitcoinStatus) {
+              // Retry once if bitcoinStatus is missing. This happens when bitcoind closes idle pooled
+              // TCP connections, causing "response ended prematurely" errors that leave bitcoinStatus undefined.
+              // This is an issue with how .NET handles tcp/http connection pooling.
+              res = await fetchStatus()
+            }
+
+            return nbxHealthCheck(res)
+          }
+          catch (e) {
+            return {
+              result: 'failure',
+              message: 'Failed to get UTXO tracker status.',
+            }
+          }
         },
       },
       requires: ['nbxplorer'],
@@ -339,8 +352,8 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
     }
   } else {
     return {
-      result: 'starting',
-      message: 'BTCPay is starting',
+      result: 'failure',
+      message: 'Failed to connect to Bitcoin node.',
     }
   }
 }

@@ -6,8 +6,8 @@ import { NBXplorerEnv } from '../../fileModels/nbxplorer.env'
 import { clnMountpoint, lndMountpoint, nbxEnvDefaults } from '../../utils'
 import { sdk } from '../../sdk'
 
-export const v_2_3_2_1 = VersionInfo.of({
-  version: '2.3.2:1-beta.0',
+export const v_2_3_3_1 = VersionInfo.of({
+  version: '2.3.3:1-beta.0',
   releaseNotes: 'Updated for StartOS v0.4.0.',
   migrations: {
     up: async ({ effects }) => {
