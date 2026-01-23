@@ -1,6 +1,6 @@
 FROM btcpayserver/monero:0.18.4.3 AS monero-wallet-rpc
 FROM nicolasdorier/nbxplorer:2.5.30-1 AS nbx-builder
-FROM btcpayserver/shopify-app-deployer:1.5 AS shopify-app
+FROM btcpayserver/shopify-app-deployer:1.6 AS shopify-app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
 ARG TARGETARCH
@@ -10,7 +10,7 @@ RUN dotnet restore "utils/actions/actions.csproj" -a $TARGETARCH
 WORKDIR "/actions"
 RUN dotnet build "utils/actions/actions.csproj" -c Release -a $TARGETARCH -o /actions/build
 
-FROM btcpayserver/btcpayserver:2.3.2
+FROM btcpayserver/btcpayserver:2.3.3
 
 COPY --from=nbx-builder "/app" /nbxplorer
 COPY --from=actions-builder "/actions/build" /actions
@@ -41,8 +41,8 @@ RUN apt-get update \
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Download and install NVM & Node.js
-ENV NODE_VERSION=18.20.7
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
+ENV NODE_VERSION=18.20.8
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
   && source $HOME/.nvm/nvm.sh \
   && nvm install $NODE_VERSION \
   && nvm use --delete-prefix $NODE_VERSION \
@@ -50,7 +50,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | b
   && ln -s "$HOME/.nvm/versions/node/v$NODE_VERSION/bin/node" "/usr/bin/node" \
   && ln -s "$HOME/.nvm/versions/node/v$NODE_VERSION/bin/npm" "/usr/bin/npm" \
   && npm install -g npm \
-  && npm install -g @shopify/cli@3.75.3 \
+  && npm install -g @shopify/cli@3.84.1 \
   && ln -s "$HOME/.nvm/versions/node/v$NODE_VERSION/bin/shopify" "/usr/local/bin/shopify"
 
 # install S6 overlay for proces mgmt
