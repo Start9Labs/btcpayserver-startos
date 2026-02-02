@@ -1,8 +1,9 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.3.2
+version: 2.3.3
 release-notes: |
-  * Update BTCPay Server to 2.3.2
+  * Update BTCPay Server to 2.3.3
+  * Update Shopify components to latest versions
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
@@ -65,7 +66,7 @@ config:
     type: script
 dependencies:
   bitcoind:
-    version: ">=0.21.1.2 <32.0.0"
+    version: ">=0.21.1.2 <33.0.0"
     requirement:
       type: "required"
     description: Used for the RPC and P2P connection interfaces.
@@ -75,14 +76,14 @@ dependencies:
       auto-configure:
         type: script
   lnd:
-    version: ">=0.13.3.1 <0.21.0"
+    version: ">=0.13.3.1 <0.22.0"
     requirement:
       type: "opt-in"
       how: Optionally use LND for internal lightning network node implementation.
     description: Used to communicate with the Lightning Network.
     config: ~
   c-lightning:
-    version: ">=0.10.0.1 <26.0"
+    version: ">=0.10.0.1 <27.0"
     requirement:
       type: "opt-in"
       how: Optionally use Core Lightning for internal lightning network node implementation.
