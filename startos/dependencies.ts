@@ -15,25 +15,22 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
 
   if (ln === 'lnd') {
     deps['lnd'] = {
-      kind: 'running',
-      versionRange: '>=0.19.3-beta:1-beta.0',
-      healthChecks: [],
+      kind: 'exists',
+      versionRange: '>=0.19.3-beta:1-beta.0',      
     }
   }
 
   if (ln === 'cln') {
     deps['c-lightning'] = {
-      kind: 'running',
+      kind: 'exists',
       versionRange: '>=25.9.0:1-beta.0',
-      healthChecks: [],
     }
   }
 
   if (getEnabledAltcoin('xmr', chains)) {
     deps['monerod'] = {
-      kind: 'running',
+      kind: 'exists',
       versionRange: '>=0.18.4:0',
-      healthChecks: [],
     }
   }
 

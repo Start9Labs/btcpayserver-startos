@@ -12,6 +12,7 @@ import {
 } from './utils'
 import { storeJson } from './fileModels/store.json'
 import { NBXplorerEnv } from './fileModels/nbxplorer.env'
+import { i18n } from './i18n'
 
 /**
  * ======================== Mounts ========================
@@ -47,7 +48,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // ========================
 
   const store = await storeJson.read().const(effects)
-  if (!store) throw new Error('Store not found')
+  if (!store) throw new Error(i18n('Store not found'))
 
   const { plugins, lightning } = store
 
@@ -59,7 +60,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   depResult.throwIfNotSatisfied()
 
   const chains = await BTCPSEnv.read((e) => e.BTCPAY_CHAINS).const(effects)
-  if (!chains) throw new Error('BTCPay chains does not exist')
+  if (!chains) throw new Error(i18n('BTCPay chains does not exist'))
 
   let btcpayMounts = btcpayMountsDefault
   if (getEnabledAltcoin('xmr', chains)) {
@@ -170,12 +171,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
             console.error('Error running postgres: ', status.stderr.toString())
             return {
               result: 'loading',
-              message: 'Waiting for PostgreSQL to be ready',
+              message: i18n('Waiting for PostgreSQL to be ready'),
             }
           }
           return {
             result: 'success',
-            message: 'PostgreSQL is ready',
+            message: i18n('PostgreSQL is ready'),
           }
         },
       },
@@ -191,11 +192,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
         sigtermTimeout: 60_000,
       },
       ready: {
-        display: 'UTXO Tracker',
+        display: i18n('UTXO Tracker'),
         fn: async () =>
           sdk.healthCheck.checkPortListening(effects, nbxPort, {
-            successMessage: 'The explorer is reachable',
-            errorMessage: 'The explorer is unreachable',
+            successMessage: i18n('The explorer is reachable'),
+            errorMessage: i18n('The explorer is unreachable'),
           }),
       },
       requires: ['postgres'],
@@ -215,7 +216,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
     .addHealthCheck('utxo-sync', {
       ready: {
-        display: 'UTXO Tracker Sync',
+        display: i18n('UTXO Tracker Sync'),
         fn: async () => {
           const auth = await readFile(
             `${nbxContainer.rootfs}/datadir/Main/.cookie`,
@@ -252,7 +253,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
           catch (e) {
             return {
               result: 'failure',
-              message: 'Failed to get UTXO tracker status.',
+              message: i18n('Failed to get UTXO tracker status.'),
             }
           }
         },
@@ -277,14 +278,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
         sigtermTimeout: 60_000,
       },
       ready: {
-        display: 'Web Interface',
+        display: i18n('Web Interface'),
         fn: () =>
           sdk.healthCheck.checkWebUrl(
             effects,
             `http://0.0.0.0:${uiPort}/api/v1/health`,
             {
-              successMessage: `The web interface is reachable`,
-              errorMessage: `The web interface is unreachable`,
+              successMessage: i18n('The web interface is reachable'),
+              errorMessage: i18n('The web interface is unreachable'),
             },
           ),
       },
@@ -304,11 +305,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
         command: sdk.useEntrypoint(),
       },
       ready: {
-        display: 'Shopify Plugin',
+        display: i18n('Shopify Plugin'),
         fn: () =>
           sdk.healthCheck.checkPortListening(effects, 5000, {
-            successMessage: 'The Shopify app is running',
-            errorMessage: 'The Shopify app is not running',
+            successMessage: i18n('The Shopify app is running'),
+            errorMessage: i18n('The Shopify app is not running'),
           }),
       },
       requires: ['webui'],
@@ -336,24 +337,24 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
   if (isFullySynched) {
     return {
       result: 'success',
-      message: 'Synced to the tip of the Bitcoin blockchain',
+      message: i18n('Synced to the tip of the Bitcoin blockchain'),
     }
   } else if (!isFullySynched && bitcoinStatus && !bitcoinStatus.isSynched) {
     const percentage = (bitcoinStatus.verificationProgress * 100).toFixed(2)
     return {
       result: 'loading',
-      message: `The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%`,
+      message: i18n('The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%', { percentage }),
     }
   } else if (!isFullySynched && bitcoinStatus && bitcoinStatus.isSynched) {
     const progress = ((syncHeight / chainHeight) * 100).toFixed(2)
     return {
       result: 'loading',
-      message: `The UTXO tracker is syncing. Sync progress: ${progress}%`,
+      message: i18n('The UTXO tracker is syncing. Sync progress: ${progress}%', { progress }),
     }
   } else {
     return {
       result: 'failure',
-      message: 'Failed to connect to Bitcoin node.',
+      message: i18n('Failed to connect to Bitcoin node.'),
     }
   }
 }
