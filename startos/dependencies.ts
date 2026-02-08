@@ -16,7 +16,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (ln === 'lnd') {
     deps['lnd'] = {
       kind: 'exists',
-      versionRange: '>=0.19.3-beta:1-beta.0',      
+      versionRange: '>=0.19.3-beta:1-beta.0',
     }
   }
 
