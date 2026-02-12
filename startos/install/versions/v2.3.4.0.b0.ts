@@ -6,9 +6,9 @@ import { NBXplorerEnv } from '../../fileModels/nbxplorer.env'
 import { clnMountpoint, lndMountpoint, nbxEnvDefaults } from '../../utils'
 import { sdk } from '../../sdk'
 
-export const v_2_3_3_1 = VersionInfo.of({
-  version: '2.3.3:1-beta.0',
-  releaseNotes: 'Updated for StartOS v0.4.0.',
+export const v_2_3_4_0_b0 = VersionInfo.of({
+  version: '2.3.4:0-beta.0',
+  releaseNotes: 'Updated upstream to BTCPay Server 2.3.4.',
   migrations: {
     up: async ({ effects }) => {
       // get old config.yaml
@@ -38,64 +38,64 @@ export const v_2_3_3_1 = VersionInfo.of({
 
         await storeJson.write(effects, {
           plugins: {
-            shopify: plugins.shopify.status === 'enabled' ? true : false,
+            shopify: plugins?.shopify?.status === 'enabled' ? true : false,
           },
           lightning: 'none',
         })
 
         // Set lightning node selection
-        if (lightning.type === 'lnd') {
+        if (lightning?.type === 'lnd') {
           await storeJson.merge(effects, { lightning: lightning.type })
           await BTCPSEnv.merge(effects, {
             BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/data/chain/bitcoin/mainnet/admin.macaroon;allowinsecure=true`,
           })
         }
 
-        if (lightning.type === 'c-lightning') {
+        if (lightning?.type === 'c-lightning') {
           await storeJson.merge(effects, { lightning: 'cln' })
           await BTCPSEnv.merge(effects, {
             BTCPAY_BTCLIGHTNING: `type=clightning;server=unix:/${clnMountpoint}/bitcoin/lightning-rpc`,
           })
         }
 
-        if (altcoins.monero.status === 'enabled') {
+        if (altcoins?.monero?.status === 'enabled') {
           await BTCPSEnv.merge(effects, {
             BTCPAY_CHAINS: 'btc,xmr',
           })
         }
+
+        // set nbx config
+        await NBXplorerEnv.write(effects, { ...nbxEnvDefaults })
+
+        // set postgres permissions
+        await sdk.SubContainer.withTemp(
+          effects,
+          { imageId: 'postgres' },
+          sdk.Mounts.of().mountVolume({
+            volumeId: 'main',
+            subpath: null,
+            mountpoint: '/datadir',
+            readonly: false,
+          }),
+          'set-postgres',
+          async (sub) => {
+            await sub.exec(['chmod', '777', '/datadir'])
+            await sub.exec(['mkdir', '-p', '/datadir/postgresql/data'])
+            await sub.exec(['chmod', '777', '/datadir/postgresql'])
+            await sub.exec([
+              'chown',
+              '-R',
+              'postgres:postgres',
+              '/datadir/postgresql/data',
+            ])
+          },
+        )
 
         // remove old start9 dir
         await rm('/media/startos/volumes/main/start9', {
           recursive: true,
         }).catch((e) => console.error(e))
       }
-
-      // set nbx config
-      await NBXplorerEnv.write(effects, { ...nbxEnvDefaults })
-
-      // set postgres permissions
-      await sdk.SubContainer.withTemp(
-        effects,
-        { imageId: 'postgres' },
-        sdk.Mounts.of().mountVolume({
-          volumeId: 'main',
-          subpath: null,
-          mountpoint: '/datadir',
-          readonly: false,
-        }),
-        'set-postgres',
-        async (sub) => {
-          await sub.exec(['chmod', '777', '/datadir'])
-          await sub.exec(['mkdir', '-p', '/datadir/postgresql/data'])
-          await sub.exec(['chmod', '777', '/datadir/postgresql'])
-          await sub.exec([
-            'chown',
-            '-R',
-            'postgres:postgres',
-            '/datadir/postgresql/data',
-          ])
-        },
-      )
     },
     down: IMPOSSIBLE,
   },
