@@ -146,7 +146,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
             '-h',
             '127.0.0.1',
             '-d',
-            'btcpayserver',
+            'postgres',
             '-U',
             'postgres',
           ])
@@ -177,6 +177,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       },
       ready: {
         display: 'UTXO Tracker',
+        gracePeriod: 30_000,
         fn: async () =>
           sdk.healthCheck.checkPortListening(effects, nbxPort, {
             successMessage: 'The explorer is reachable',
@@ -326,7 +327,8 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
       message: `The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%`,
     }
   } else if (!isFullySynched && bitcoinStatus && bitcoinStatus.isSynched) {
-    const progress = chainHeight > 0 ? ((syncHeight / chainHeight) * 100).toFixed(2) : '0.00'
+    const progress =
+      chainHeight > 0 ? ((syncHeight / chainHeight) * 100).toFixed(2) : '0.00'
     return {
       result: 'loading',
       message: `The UTXO tracker is syncing. Sync progress: ${progress}%`,
