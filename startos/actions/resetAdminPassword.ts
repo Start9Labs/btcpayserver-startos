@@ -1,15 +1,20 @@
 import { utils } from '@start9labs/start-sdk'
 import { pbkdf2Sync, randomBytes } from 'node:crypto'
 import { Client } from 'pg'
+import { storeJson } from '../fileModels/store.json'
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
 export const resetAdminPassword = sdk.Action.withoutInput(
   'reset-admin-password',
   async ({ effects }) => ({
-    name: 'Reset Server Admin Password',
-    description:
+    name: i18n('Reset Server Admin Password'),
+    description: i18n(
       'Resets the first server admin user with a temporary password. You should only need to perform this action if a single admin user exists. Otherwise, another admin can reset their password.',
-    warning: 'Are you sure you want to reset the server admin password?',
+    ),
+    warning: i18n(
+      'Are you sure you want to reset the server admin password?',
+    ),
     allowedStatuses: 'only-running',
     group: null,
     visibility: 'enabled',
@@ -20,13 +25,17 @@ export const resetAdminPassword = sdk.Action.withoutInput(
       len: 22,
     })
 
-    await resetServerAdminPassword(password)
+    const pgPassword =
+      (await storeJson.read((s) => s.pgPassword).once()) || ''
+
+    await resetServerAdminPassword(password, pgPassword)
 
     return {
       version: '1',
-      title: 'Password reset successful',
-      message:
+      title: i18n('Password reset successful'),
+      message: i18n(
         "This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in.",
+      ),
       result: {
         type: 'single',
         value: password,
@@ -38,9 +47,13 @@ export const resetAdminPassword = sdk.Action.withoutInput(
   },
 )
 
-async function resetServerAdminPassword(newPassword: string) {
+async function resetServerAdminPassword(
+  newPassword: string,
+  pgPassword: string,
+) {
   const client = new Client({
     user: 'postgres',
+    password: pgPassword,
     host: '127.0.0.1',
     database: 'btcpayserver',
     port: 5432,

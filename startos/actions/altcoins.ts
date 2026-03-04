@@ -1,12 +1,13 @@
 import { BTCPSEnv } from '../fileModels/btcpay.env'
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { getEnabledAltcoin } from '../utils'
 const { InputSpec, Value } = sdk
 
 const input = InputSpec.of({
   monero: Value.toggle({
-    name: 'Monero',
-    description: 'Enable Monero integration',
+    name: i18n('Monero'),
+    description: i18n('Enable Monero integration'),
     default: false,
   }),
 })
@@ -15,8 +16,8 @@ export const enableAltcoins = sdk.Action.withInput(
   'enable-altcoins',
 
   async ({ effects }) => ({
-    name: 'Enable Altcoins',
-    description: 'Choose which altcoins to enable.',
+    name: i18n('Enable Altcoins'),
+    description: i18n('Choose which altcoins to enable.'),
     warning: null,
     allowedStatuses: 'any',
     group: null,

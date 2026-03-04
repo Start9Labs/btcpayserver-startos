@@ -6,6 +6,7 @@ import { storeJson } from '../../fileModels/store.json'
 import { sdk } from '../../sdk'
 import {
   clnConnectionString,
+  getDefaultPgPassword,
   lndConnectionString,
   PG_MOUNT,
   pgMounts,
@@ -134,6 +135,7 @@ export const v_2_3_5_0_b0 = VersionInfo.of({
         const { plugins, lightning, altcoins } = configYaml
 
         await storeJson.write(effects, {
+          pgPassword: getDefaultPgPassword(),
           plugins: {
             shopify: plugins.shopify.status === 'enabled',
           },
@@ -156,8 +158,11 @@ export const v_2_3_5_0_b0 = VersionInfo.of({
           recursive: true,
         }).catch((e) => console.error(e))
       } else {
-        // Previous 0.4.0 beta — ensure store exists
-        await storeJson.merge(effects, {})
+        // Previous 0.4.0 beta — ensure pgPassword exists
+        const existing = await storeJson.read((s) => s.pgPassword).once()
+        await storeJson.merge(effects, {
+          pgPassword: existing || getDefaultPgPassword(),
+        })
       }
 
       // Upgrade PostgreSQL 13 → 18 (runs for 0.3.x and previous 0.4.0 betas)

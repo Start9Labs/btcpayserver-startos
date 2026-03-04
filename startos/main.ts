@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises'
 import { BTCPSEnv } from './fileModels/btcpay.env'
 import { nbxEnvDefaults, NBXplorerEnv } from './fileModels/nbxplorer.env'
 import { storeJson } from './fileModels/store.json'
+import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
   clnConnectionString,
@@ -25,9 +26,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Read config
   // ========================
 
-  const shopifyEnabled = await storeJson
-    .read((s) => s.plugins.shopify)
+  const store = await storeJson
+    .read((s) => ({
+      pgPassword: s.pgPassword,
+      shopifyEnabled: s.plugins.shopify,
+    }))
     .const(effects)
+  if (!store) throw new Error('Store not found')
+  const { pgPassword, shopifyEnabled } = store
 
   const btcpayEnv = await BTCPSEnv.read().const(effects)
   if (!btcpayEnv) throw new Error('BTCPay env not found')
@@ -134,7 +140,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       exec: {
         command: sdk.useEntrypoint(['-c', 'listen_addresses=127.0.0.1']),
         env: {
-          POSTGRES_HOST_AUTH_METHOD: 'trust',
+          POSTGRES_PASSWORD: pgPassword,
         },
       },
       ready: {
@@ -153,12 +159,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
           if (result.exitCode !== 0) {
             return {
               result: 'loading',
-              message: 'Waiting for PostgreSQL to be ready',
+              message: null,
             }
           }
           return {
             result: 'success',
-            message: 'PostgreSQL is ready',
+            message: null,
           }
         },
       },
@@ -171,17 +177,17 @@ export const main = sdk.setupMain(async ({ effects }) => {
         env: {
           ...nbxEnv,
           NBXPLORER_POSTGRES:
-            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
+            `User ID=postgres;Password=${pgPassword};Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer`,
         },
         sigtermTimeout: 60_000,
       },
       ready: {
-        display: 'UTXO Tracker',
+        display: i18n('UTXO Tracker'),
         gracePeriod: 30_000,
         fn: async () =>
           sdk.healthCheck.checkPortListening(effects, nbxPort, {
-            successMessage: 'The explorer is reachable',
-            errorMessage: 'The explorer is unreachable',
+            successMessage: i18n('The explorer is reachable'),
+            errorMessage: i18n('The explorer is unreachable'),
           }),
       },
       requires: ['postgres'],
@@ -201,7 +207,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
     .addHealthCheck('utxo-sync', {
       ready: {
-        display: 'UTXO Tracker Sync',
+        display: i18n('UTXO Tracker Sync'),
         fn: async () => {
           const auth = await readFile(`${nbxSub.rootfs}/datadir/Main/.cookie`, {
             encoding: 'base64',
@@ -234,7 +240,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
           } catch (e) {
             return {
               result: 'failure',
-              message: 'Failed to get UTXO tracker status.',
+              message: i18n('Failed to get UTXO tracker status.'),
             }
           }
         },
@@ -248,9 +254,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
         env: {
           ...btcpayEnv,
           BTCPAY_EXPLORERPOSTGRES:
-            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
+            `User ID=postgres;Password=${pgPassword};Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer`,
           BTCPAY_POSTGRES:
-            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=btcpayserver;Database=btcpayserver',
+            `User ID=postgres;Password=${pgPassword};Host=127.0.0.1;Port=5432;Application Name=btcpayserver;Database=btcpayserver`,
           BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: 'http://127.0.0.1:5000/',
           LC_ALL: 'C',
           BTCPAY_DEBUGLOG: 'btcpay.log',
@@ -259,15 +265,15 @@ export const main = sdk.setupMain(async ({ effects }) => {
         sigtermTimeout: 60_000,
       },
       ready: {
-        display: 'Web Interface',
+        display: i18n('Web Interface'),
         gracePeriod: 60_000,
         fn: () =>
           sdk.healthCheck.checkWebUrl(
             effects,
             `http://127.0.0.1:${uiPort}/api/v1/health`,
             {
-              successMessage: 'The web interface is reachable',
-              errorMessage: 'The web interface is unreachable',
+              successMessage: i18n('The web interface is reachable'),
+              errorMessage: i18n('The web interface is unreachable'),
             },
           ),
       },
@@ -287,11 +293,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
         command: sdk.useEntrypoint(),
       },
       ready: {
-        display: 'Shopify Plugin',
+        display: i18n('Shopify Plugin'),
         fn: () =>
           sdk.healthCheck.checkPortListening(effects, 5000, {
-            successMessage: 'The Shopify app is running',
-            errorMessage: 'The Shopify app is not running',
+            successMessage: i18n('The Shopify app is running'),
+            errorMessage: i18n('The Shopify app is not running'),
           }),
       },
       requires: ['btcpay'],
@@ -319,7 +325,7 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
   if (isFullySynched) {
     return {
       result: 'success',
-      message: 'Synced to the tip of the Bitcoin blockchain',
+      message: i18n('Synced to the tip of the Bitcoin blockchain'),
     }
   } else if (!isFullySynched && bitcoinStatus && !bitcoinStatus.isSynched) {
     const percentage = (bitcoinStatus.verificationProgress * 100).toFixed(2)
@@ -337,7 +343,7 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
   } else {
     return {
       result: 'failure',
-      message: 'Failed to connect to Bitcoin node.',
+      message: i18n('Failed to connect to Bitcoin node.'),
     }
   }
 }

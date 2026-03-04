@@ -1,3 +1,4 @@
+import { utils } from '@start9labs/start-sdk'
 import { sdk } from './sdk'
 
 export const lndMountpoint = '/mnt/lnd'
@@ -21,6 +22,10 @@ export const pgMounts = sdk.Mounts.of().mountVolume({
   mountpoint: PG_MOUNT,
   readonly: false,
 })
+
+export function getDefaultPgPassword(): string {
+  return utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 22 })
+}
 
 export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
