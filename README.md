@@ -7,7 +7,7 @@
 > **Upstream docs:** <https://docs.btcpayserver.org/>
 >
 > Everything not listed in this document should behave the same as upstream
-> BTCPay Server v2.3.3. If a feature, setting, or behavior is not mentioned
+> BTCPay Server. If a feature, setting, or behavior is not mentioned
 > here, the upstream documentation is accurate and fully applicable.
 
 [BTCPay Server](https://github.com/btcpayserver/btcpayserver) is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) directly, with no fees, transaction cost or a middleman.
@@ -34,13 +34,13 @@
 
 ## Image and Container Runtime
 
-| Property       | Value                                   |
-| -------------- | --------------------------------------- |
-| BTCPay Server  | `btcpayserver/btcpayserver:2.3.3`       |
-| NBXplorer      | `nicolasdorier/nbxplorer:2.6.0`         |
-| PostgreSQL     | `btcpayserver/postgres:13.23`           |
-| Shopify Plugin | `btcpayserver/shopify-app-deployer:1.5` |
-| Architectures  | x86_64, aarch64                         |
+| Property       | Value                                |
+| -------------- | ------------------------------------ |
+| BTCPay Server  | `btcpayserver/btcpayserver`          |
+| NBXplorer      | `nicolasdorier/nbxplorer`            |
+| PostgreSQL     | `btcpayserver/postgres`              |
+| Shopify Plugin | `btcpayserver/shopify-app-deployer`  |
+| Architectures  | x86_64, aarch64                      |
 
 All images are upstream unmodified. The service runs four containers: BTCPay Server, NBXplorer (UTXO tracker), PostgreSQL, and optionally the Shopify plugin deployer.
 
@@ -57,7 +57,7 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 **StartOS-specific files on `main` volume:**
 
-- `store.json` — persists lightning node selection and plugin state
+- `store.json` — persists PostgreSQL password, lightning node selection, and plugin state
 - `btcpay.env` — BTCPay Server environment variables
 - `nbxplorer.env` — NBXplorer environment variables
 
@@ -95,7 +95,7 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
 | `NBXPLORER_BTCNODEENDPOINT`    | `bitcoind.startos:8333`         | Bitcoin P2P     |
 | `NBXPLORER_BTCRPCURL`          | `http://bitcoind.startos:8332/` | Bitcoin RPC     |
-| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                         | Database auth   |
+| `POSTGRES_PASSWORD`            | Auto-generated                  | Database auth   |
 
 ### Configurable via Actions
 
@@ -188,12 +188,12 @@ Requires `monerod` service to be installed when enabled.
 
 ## Dependencies
 
-| Dependency     | Required | Version       | Purpose             | Auto-Config   |
-| -------------- | -------- | ------------- | ------------------- | ------------- |
-| Bitcoin Core   | Yes      | >=29.1        | Blockchain data     | Via NBXplorer |
-| LND            | Optional | >=0.19.3-beta | Lightning invoicing | Via action    |
-| Core Lightning | Optional | >=25.9.0      | Lightning invoicing | Via action    |
-| Monerod        | Optional | >=0.18.4      | Monero payments     | Via action    |
+| Dependency     | Required | Purpose             | Auto-Config   |
+| -------------- | -------- | ------------------- | ------------- |
+| Bitcoin Core   | Yes      | Blockchain data     | Via NBXplorer |
+| LND            | Optional | Lightning invoicing | Via action    |
+| Core Lightning | Optional | Lightning invoicing | Via action    |
+| Monerod        | Optional | Monero payments     | Via action    |
 
 Dependencies are dynamically resolved based on which features are enabled.
 
@@ -263,12 +263,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and development wo
 
 ```yaml
 package_id: btcpayserver
-upstream_version: 2.3.3
 images:
-  btcpay: btcpayserver/btcpayserver:2.3.3
-  nbx: nicolasdorier/nbxplorer:2.6.0
-  postgres: btcpayserver/postgres:13.23
-  shopify: btcpayserver/shopify-app-deployer:1.5
+  btcpay: btcpayserver/btcpayserver
+  nbx: nicolasdorier/nbxplorer
+  postgres: btcpayserver/postgres
+  shopify: btcpayserver/shopify-app-deployer
 architectures: [x86_64, aarch64]
 volumes:
   main:
@@ -282,18 +281,10 @@ ports:
   postgres: 5432 (internal)
   shopify: 5000 (internal, optional)
 dependencies:
-  bitcoind:
-    required: true
-    min_version: '>=29.1'
-  lnd:
-    required: false
-    min_version: '>=0.19.3-beta'
-  c-lightning:
-    required: false
-    min_version: '>=25.9.0'
-  monerod:
-    required: false
-    min_version: '>=0.18.4'
+  bitcoind: required
+  lnd: optional
+  c-lightning: optional
+  monerod: optional
 actions:
   - lightning-node (enabled, any)
   - resync-nbx (enabled, any)
@@ -312,6 +303,7 @@ startos_managed_config:
   BTCPAY_NETWORK: mainnet
   BTCPAY_BIND: 0.0.0.0:23000
   BTCPAY_SOCKSENDPOINT: startos:9050
+  POSTGRES_PASSWORD: auto-generated
   NBXPLORER_BTCNODEENDPOINT: bitcoind.startos:8333
   NBXPLORER_BTCRPCURL: http://bitcoind.startos:8332/
 not_available:
