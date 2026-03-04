@@ -1,7 +1,7 @@
-import { sdk } from '../sdk'
-import { query } from '../utils'
-import { pbkdf2Sync, randomBytes } from 'node:crypto'
 import { utils } from '@start9labs/start-sdk'
+import { pbkdf2Sync, randomBytes } from 'node:crypto'
+import { Client } from 'pg'
+import { sdk } from '../sdk'
 
 export const resetAdminPassword = sdk.Action.withoutInput(
   'reset-admin-password',
@@ -19,6 +19,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
       charset: 'a-z,A-Z,1-9,!,@,$,%,&,*',
       len: 22,
     })
+
     await resetServerAdminPassword(password)
 
     return {
@@ -38,33 +39,43 @@ export const resetAdminPassword = sdk.Action.withoutInput(
 )
 
 async function resetServerAdminPassword(newPassword: string) {
-  const admins = await query(
-    `
-      SELECT u."Id"
-      FROM "AspNetUsers" u
-      INNER JOIN "AspNetUserRoles" ur ON ur."UserId" = u."Id"
-      INNER JOIN "AspNetRoles" r ON r."Id" = ur."RoleId"
-      WHERE r."Name" = 'ServerAdmin'
-      ORDER BY u."Created" ASC
-      `,
-  )
+  const client = new Client({
+    user: 'postgres',
+    host: '127.0.0.1',
+    database: 'btcpayserver',
+    port: 5432,
+  })
 
-  if (!admins || admins.rows.length === 0) {
-    throw new Error('No server admins exist')
-  }
+  try {
+    await client.connect()
 
-  if (admins.rows.length > 1) {
-    throw new Error(
-      'More than one server admin user exists, use another admin account to reset the password.',
+    const admins = await client.query(
+      `SELECT u."Id"
+       FROM "AspNetUsers" u
+       INNER JOIN "AspNetUserRoles" ur ON ur."UserId" = u."Id"
+       INNER JOIN "AspNetRoles" r ON r."Id" = ur."RoleId"
+       WHERE r."Name" = 'ServerAdmin'
+       ORDER BY u."Created" ASC`,
     )
-  }
 
-  const firstAdminId = admins.rows[0].Id
-  const hash = generateHash(newPassword)
-  await query(`UPDATE "AspNetUsers" SET "PasswordHash"=$1 WHERE "Id"=$2`, [
-    hash,
-    firstAdminId,
-  ])
+    if (admins.rows.length === 0) {
+      throw new Error('No server admins exist')
+    }
+
+    if (admins.rows.length > 1) {
+      throw new Error(
+        'More than one server admin user exists, use another admin account to reset the password.',
+      )
+    }
+
+    const hash = generateHash(newPassword)
+    await client.query(
+      `UPDATE "AspNetUsers" SET "PasswordHash"=$1 WHERE "Id"=$2`,
+      [hash, admins.rows[0].Id],
+    )
+  } finally {
+    await client.end()
+  }
 }
 
 function generateHash(input: string): string {

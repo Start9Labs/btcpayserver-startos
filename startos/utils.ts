@@ -1,49 +1,27 @@
-import { Client } from 'pg'
+import { sdk } from './sdk'
 
-export const uiPort = 23000
-export const nbxPort = 24444
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
 
-export const btcpsEnvDefaults = {
-  BTCPAY_NETWORK: 'mainnet',
-  BTCPAY_CHAINS: 'btc',
-  BTCPAY_BIND: '0.0.0.0:23000',
-  BTCPAY_BTCEXPLORERCOOKIEFILE: '/root/.nbxplorer/Main/.cookie',
-  BTCPAY_SOCKSENDPOINT: 'startos:9050',
-} as const
+export const lndConnectionString = `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/data/chain/bitcoin/mainnet/admin.macaroon;allowinsecure=true`
+export const clnConnectionString = `type=clightning;server=unix:/${clnMountpoint}/bitcoin/lightning-rpc`
 
-export const nbxEnvDefaults = {
-  NBXPLORER_NETWORK: 'mainnet',
-  NBXPLORER_PORT: '24444',
-  NBXPLORER_BTCNODEENDPOINT: 'bitcoind.startos:8333', // p2p
-  NBXPLORER_BTCRPCURL: 'http://bitcoind.startos:8332/', // rpc server url
-  NBXPLORER_BTCRESCAN: '0',
-  NBXPLORER_BTCSTARTHEIGHT: '-1',
-  NBXPLORER_BTCRPCCOOKIEFILE: '/root/.bitcoin/.cookie',
-  NBXPLORER_POSTGRES:
-    'User ID=postgres;Host=localhost;Port=5432;Application Name=nbxplorer;Database=nbxplorer;GSS Encryption Mode=Disable',
-  NBXPLORER_DATADIR: '/datadir',
-} as const
+export const uiPort = 23000
+export const nbxPort = 24444
+
+export const xmrDaemonUri = 'http://monerod.embassy:18089'
+export const xmrWalletDaemonUri = 'http://127.0.0.1:18082'
+export const xmrWalletDir = '/datadir/btcpayserver/altcoins/monero/wallets'
+
+export const PG_MOUNT = '/var/lib/postgresql'
+
+export const pgMounts = sdk.Mounts.of().mountVolume({
+  volumeId: 'main',
+  subpath: 'postgresql',
+  mountpoint: PG_MOUNT,
+  readonly: false,
+})
 
 export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
-}
-
-export async function query(statement: string, values?: string[]) {
-  const postgresClient = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'btcpayserver',
-    port: 5432,
-  })
-  try {
-    await postgresClient.connect()
-    const res = await postgresClient.query(statement, values)
-    return res
-  } catch (err) {
-    console.error('Database error:', err)
-  } finally {
-    await postgresClient.end()
-  }
 }

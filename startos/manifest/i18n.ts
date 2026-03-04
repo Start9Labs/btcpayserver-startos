@@ -10,6 +10,38 @@ export const short = {
     'Processeur de paiement Bitcoin et cryptomonnaies et système de point de vente.',
 }
 
+export const bitcoindDescription = {
+  en_US: 'Used to subscribe to new block events.',
+  es_ES: 'Se utiliza para suscribirse a eventos de nuevos bloques.',
+  de_DE: 'Wird verwendet, um neue Block-Ereignisse zu abonnieren.',
+  pl_PL: 'Używany do subskrybowania nowych wydarzeń blokowych.',
+  fr_FR: "Utilisé pour s'abonner aux événements de nouveaux blocs.",
+}
+
+export const lndDescription = {
+  en_US: 'Used to communicate with the Lightning Network.',
+  es_ES: 'Se utiliza para comunicarse con la red Lightning.',
+  de_DE: 'Wird verwendet, um mit dem Lightning-Netzwerk zu kommunizieren.',
+  pl_PL: 'Używany do komunikacji z siecią Lightning.',
+  fr_FR: 'Utilisé pour communiquer avec le réseau Lightning.',
+}
+
+export const clnDescription = {
+  en_US: 'Used to communicate with the Lightning Network.',
+  es_ES: 'Se utiliza para comunicarse con la red Lightning.',
+  de_DE: 'Wird verwendet, um mit dem Lightning-Netzwerk zu kommunizieren.',
+  pl_PL: 'Używany do komunikacji z siecią Lightning.',
+  fr_FR: 'Utilisé pour communiquer avec le réseau Lightning.',
+}
+
+export const monerodDescription = {
+  en_US: 'Used to connect to the Monero network.',
+  es_ES: 'Se utiliza para conectarse a la red Monero.',
+  de_DE: 'Wird verwendet, um sich mit dem Monero-Netzwerk zu verbinden.',
+  pl_PL: 'Używany do połączenia z siecią Monero.',
+  fr_FR: 'Utilisé pour se connecter au réseau Monero.',
+}
+
 export const long = {
   en_US:
     'BTCPay Server is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) and altcoins directly, with no fees, transaction cost or a middleman. \n\nBTCPay is a non-custodial invoicing system which eliminates the involvement of a third-party. Payments with BTCPay go directly to your wallet, which increases the privacy and security. Your private keys are never required to receive payments to your BTCPay Server. There is no address re-use since each invoice uses a new address for receiving payments to your wallet.',

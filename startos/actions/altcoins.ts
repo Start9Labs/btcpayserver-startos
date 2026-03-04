@@ -25,34 +25,18 @@ export const enableAltcoins = sdk.Action.withInput(
 
   input,
 
+  // pre-fill the form
   async ({ effects }) => {
     const chains = await BTCPSEnv.read((s) => s.BTCPAY_CHAINS).const(effects)
     if (!chains) throw new Error('BTCPay environment file unreadable')
     return { monero: getEnabledAltcoin('xmr', chains) }
   },
 
+  // execution function
   async ({ effects, input }) => {
-    if (input.monero) {
-      await BTCPSEnv.merge(effects, {
-        BTCPAY_CHAINS: 'btc,xmr',
-        BTCPAYGEN_CRYPTO2: 'xmr',
-        BTCPAY_XMR_DAEMON_URI: 'http://monerod.embassy:18089',
-        BTCPAY_XMR_DAEMON_USERNAME: '', // @TODO get rpc creds from monero service
-        BTCPAY_XMR_DAEMON_PASSWORD: '', // @TODO get rpc creds from monero service
-        BTCPAY_XMR_WALLET_DAEMON_URI: 'http://127.0.0.1:18082',
-        BTCPAY_XMR_WALLET_DAEMON_WALLETDIR:
-          '/datadir/btcpayserver/altcoins/monero/wallets',
-      })
-    } else {
-      await BTCPSEnv.merge(effects, {
-        BTCPAY_CHAINS: 'btc',
-        BTCPAYGEN_CRYPTO2: undefined,
-        BTCPAY_XMR_DAEMON_URI: undefined,
-        BTCPAY_XMR_DAEMON_USERNAME: undefined,
-        BTCPAY_XMR_DAEMON_PASSWORD: undefined,
-        BTCPAY_XMR_WALLET_DAEMON_URI: undefined,
-        BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: undefined,
-      })
-    }
+    await BTCPSEnv.merge(effects, {
+      BTCPAY_CHAINS: input.monero ? 'btc,xmr' : 'btc',
+      BTCPAYGEN_CRYPTO2: input.monero ? 'xmr' : undefined,
+    })
   },
 )

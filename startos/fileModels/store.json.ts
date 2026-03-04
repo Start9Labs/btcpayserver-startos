@@ -1,13 +1,12 @@
-import { matches, FileHelper } from '@start9labs/start-sdk'
+import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 
-const { object, boolean, literals } = matches
-
-const shape = object({
-  plugins: object({
-    shopify: boolean.onMismatch(false),
-  }),
-  lightning: literals('lnd', 'cln', 'none').onMismatch('none'),
+const shape = z.object({
+  plugins: z
+    .object({
+      shopify: z.boolean().catch(false),
+    })
+    .catch({ shopify: false }),
 })
 
 export const storeJson = FileHelper.json(

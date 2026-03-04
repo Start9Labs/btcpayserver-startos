@@ -1,7 +1,6 @@
 import { BTCPSEnv } from '../fileModels/btcpay.env'
-import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
-import { clnMountpoint, lndMountpoint } from '../utils'
+import { clnConnectionString, lndConnectionString } from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -36,32 +35,20 @@ export const lightningNode = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => {
-    const lightning = await storeJson.read((s) => s.lightning).const(effects)
-    if (!lightning) throw new Error('No lightning attribute in store')
-
-    return {
-      lightning,
-    }
+    const ln = await BTCPSEnv.read((e) => e.BTCPAY_BTCLIGHTNING).const(effects)
+    const lightning: 'lnd' | 'cln' | 'none' =
+      ln === lndConnectionString ? 'lnd' : ln === clnConnectionString ? 'cln' : 'none'
+    return { lightning }
   },
 
   async ({ effects, input }) => {
-    switch (input.lightning) {
-      case 'lnd':
-        await BTCPSEnv.merge(effects, {
-          BTCPAY_BTCLIGHTNING: `type=lnd-rest;server=https://lnd.startos:8080/;macaroonfilepath=${lndMountpoint}/data/chain/bitcoin/mainnet/admin.macaroon;allowinsecure=true`,
-        })
-        break
-      case 'cln':
-        await BTCPSEnv.merge(effects, {
-          BTCPAY_BTCLIGHTNING: `type=clightning;server=unix:/${clnMountpoint}/bitcoin/lightning-rpc`,
-        })
-        break
-      default:
-        await BTCPSEnv.merge(effects, {
-          BTCPAY_BTCLIGHTNING: undefined,
-        })
+    const connectionStrings: Record<string, typeof lndConnectionString | typeof clnConnectionString> = {
+      lnd: lndConnectionString,
+      cln: clnConnectionString,
     }
 
-    await storeJson.merge(effects, { lightning: input.lightning })
+    await BTCPSEnv.merge(effects, {
+      BTCPAY_BTCLIGHTNING: connectionStrings[input.lightning],
+    })
   },
 )

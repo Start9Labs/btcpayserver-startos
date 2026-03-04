@@ -1,33 +1,34 @@
-import { matches, FileHelper } from '@start9labs/start-sdk'
-import { btcpsEnvDefaults } from '../utils'
+import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
+import {
+  clnConnectionString,
+  lndConnectionString,
+  uiPort,
+  xmrDaemonUri,
+  xmrWalletDaemonUri,
+  xmrWalletDir,
+} from '../utils'
 
-const { object, string, literal } = matches
+const btcpayBind = `0.0.0.0:${uiPort}` as const
 
-const {
-  BTCPAY_NETWORK,
-  BTCPAY_CHAINS,
-  BTCPAY_BIND,
-  BTCPAY_BTCEXPLORERCOOKIEFILE,
-  BTCPAY_SOCKSENDPOINT,
-} = btcpsEnvDefaults
-
-const shape = object({
-  BTCPAY_NETWORK: literal(BTCPAY_NETWORK).onMismatch(BTCPAY_NETWORK),
-  BTCPAY_CHAINS: string.onMismatch(BTCPAY_CHAINS),
-  BTCPAY_BIND: literal(BTCPAY_BIND).onMismatch(BTCPAY_BIND),
-  BTCPAY_BTCEXPLORERCOOKIEFILE: literal(
-    BTCPAY_BTCEXPLORERCOOKIEFILE,
-  ).onMismatch(BTCPAY_BTCEXPLORERCOOKIEFILE),
-  BTCPAY_SOCKSENDPOINT:
-    literal(BTCPAY_SOCKSENDPOINT).onMismatch(BTCPAY_SOCKSENDPOINT),
-  BTCPAY_BTCLIGHTNING: string.optional(),
-  BTCPAYGEN_CRYPTO2: string.optional(),
-  BTCPAY_XMR_DAEMON_URI: string.optional(),
-  BTCPAY_XMR_DAEMON_USERNAME: string.optional(),
-  BTCPAY_XMR_DAEMON_PASSWORD: string.optional(),
-  BTCPAY_XMR_WALLET_DAEMON_URI: string.optional(),
-  BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: string.optional(),
+const shape = z.object({
+  BTCPAY_NETWORK: z.literal('mainnet').catch('mainnet'),
+  BTCPAY_CHAINS: z.enum(['btc', 'btc,xmr']).catch('btc'),
+  BTCPAY_BIND: z.literal(btcpayBind).catch(btcpayBind),
+  BTCPAY_BTCEXPLORERCOOKIEFILE: z
+    .literal('/root/.nbxplorer/Main/.cookie')
+    .catch('/root/.nbxplorer/Main/.cookie'),
+  BTCPAY_SOCKSENDPOINT: z.literal('startos:9050').catch('startos:9050'),
+  BTCPAY_BTCLIGHTNING: z
+    .enum([lndConnectionString, clnConnectionString])
+    .optional(),
+  // alts
+  BTCPAYGEN_CRYPTO2: z.literal('xmr').optional(),
+  BTCPAY_XMR_DAEMON_URI: z.literal(xmrDaemonUri).catch(xmrDaemonUri),
+  BTCPAY_XMR_DAEMON_USERNAME: z.literal('').catch(''),
+  BTCPAY_XMR_DAEMON_PASSWORD: z.literal('').catch(''),
+  BTCPAY_XMR_WALLET_DAEMON_URI: z.literal(xmrWalletDaemonUri).catch(xmrWalletDaemonUri),
+  BTCPAY_XMR_WALLET_DAEMON_WALLETDIR: z.literal(xmrWalletDir).catch(xmrWalletDir),
 })
 
 export const BTCPSEnv = FileHelper.env(

@@ -1,39 +1,28 @@
-import { FileHelper, matches } from '@start9labs/start-sdk'
-import { nbxEnvDefaults } from '../utils'
+import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
+import { nbxPort } from '../utils'
 
-const { object, string, literal, literals } = matches
-
-const {
-  NBXPLORER_NETWORK,
-  NBXPLORER_PORT,
-  NBXPLORER_BTCNODEENDPOINT,
-  NBXPLORER_BTCRPCURL,
-  NBXPLORER_BTCRESCAN,
-  NBXPLORER_BTCSTARTHEIGHT,
-  NBXPLORER_BTCRPCCOOKIEFILE,
-  NBXPLORER_POSTGRES,
-  NBXPLORER_DATADIR,
-} = nbxEnvDefaults
-
-// ts matches will preserve existing keys, wont throw an error for extra keys
-const shape = object({
-  NBXPLORER_NETWORK: literal(NBXPLORER_NETWORK).onMismatch(NBXPLORER_NETWORK),
-  NBXPLORER_PORT: literal(NBXPLORER_PORT).onMismatch(NBXPLORER_PORT),
-  NBXPLORER_BTCNODEENDPOINT: literal(NBXPLORER_BTCNODEENDPOINT).onMismatch(
-    NBXPLORER_BTCNODEENDPOINT,
-  ),
-  NBXPLORER_BTCRPCURL:
-    literal(NBXPLORER_BTCRPCURL).onMismatch(NBXPLORER_BTCRPCURL),
-  NBXPLORER_BTCRESCAN: literals('0', '1').onMismatch(NBXPLORER_BTCRESCAN),
-  NBXPLORER_BTCSTARTHEIGHT: string.onMismatch(NBXPLORER_BTCSTARTHEIGHT),
-  NBXPLORER_BTCRPCCOOKIEFILE: literal(NBXPLORER_BTCRPCCOOKIEFILE).onMismatch(
-    NBXPLORER_BTCRPCCOOKIEFILE,
-  ),
-  NBXPLORER_POSTGRES:
-    literal(NBXPLORER_POSTGRES).onMismatch(NBXPLORER_POSTGRES),
-  NBXPLORER_DATADIR: literal(NBXPLORER_DATADIR).onMismatch(NBXPLORER_DATADIR),
+const shape = z.object({
+  NBXPLORER_NETWORK: z.literal('mainnet').catch('mainnet'),
+  NBXPLORER_PORT: z.literal(`${nbxPort}`).catch(`${nbxPort}`),
+  NBXPLORER_BTCNODEENDPOINT: z
+    .literal('bitcoind.startos:8333')
+    .catch('bitcoind.startos:8333'),
+  NBXPLORER_BTCRPCURL: z
+    .literal('http://bitcoind.startos:8332/')
+    .catch('http://bitcoind.startos:8332/'),
+  NBXPLORER_BTCRESCAN: z.enum(['0', '1']).catch('0'),
+  NBXPLORER_BTCSTARTHEIGHT: z.string().catch('-1'),
+  NBXPLORER_BTCRPCCOOKIEFILE: z
+    .literal('/root/.bitcoin/.cookie')
+    .catch('/root/.bitcoin/.cookie'),
+  NBXPLORER_DATADIR: z.literal('/datadir').catch('/datadir'),
 })
+
+export const nbxEnvDefaults = {
+  NBXPLORER_BTCRESCAN: '0' as const,
+  NBXPLORER_BTCSTARTHEIGHT: '-1',
+}
 
 export const NBXplorerEnv = FileHelper.env(
   {
@@ -42,5 +31,3 @@ export const NBXplorerEnv = FileHelper.env(
   },
   shape,
 )
-
-export type NBXEnv = typeof shape._TYPE

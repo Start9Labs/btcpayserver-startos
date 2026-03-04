@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icon.png" alt="BTCPay Server Logo" width="21%">
+  <img src="icon.svg" alt="BTCPay Server Logo" width="21%">
 </p>
 
 # BTCPay Server on StartOS
@@ -34,13 +34,13 @@
 
 ## Image and Container Runtime
 
-| Property | Value |
-|----------|-------|
-| BTCPay Server | `btcpayserver/btcpayserver:2.3.3` |
-| NBXplorer | `nicolasdorier/nbxplorer:2.6.0` |
-| PostgreSQL | `btcpayserver/postgres:13.23` |
+| Property       | Value                                   |
+| -------------- | --------------------------------------- |
+| BTCPay Server  | `btcpayserver/btcpayserver:2.3.3`       |
+| NBXplorer      | `nicolasdorier/nbxplorer:2.6.0`         |
+| PostgreSQL     | `btcpayserver/postgres:13.23`           |
 | Shopify Plugin | `btcpayserver/shopify-app-deployer:1.5` |
-| Architectures | x86_64, aarch64 |
+| Architectures  | x86_64, aarch64                         |
 
 All images are upstream unmodified. The service runs four containers: BTCPay Server, NBXplorer (UTXO tracker), PostgreSQL, and optionally the Shopify plugin deployer.
 
@@ -48,12 +48,12 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ## Volume and Data Layout
 
-| Volume | Subpath | Mount Point | Purpose |
-|--------|---------|-------------|---------|
-| `main` | `btcpayserver` | `/datadir` | BTCPay Server data |
-| `main` | `plugins` | `/root/.btcpayserver/Plugins` | BTCPay plugins |
-| `main` | `nbxplorer` | `/root/.nbxplorer` | NBXplorer data |
-| `main` | `postgresql` | `/var/lib/postgresql` | PostgreSQL database |
+| Volume | Subpath        | Mount Point                   | Purpose             |
+| ------ | -------------- | ----------------------------- | ------------------- |
+| `main` | `btcpayserver` | `/datadir`                    | BTCPay Server data  |
+| `main` | `plugins`      | `/root/.btcpayserver/Plugins` | BTCPay plugins      |
+| `main` | `nbxplorer`    | `/root/.nbxplorer`            | NBXplorer data      |
+| `main` | `postgresql`   | `/var/lib/postgresql`         | PostgreSQL database |
 
 **StartOS-specific files on `main` volume:**
 
@@ -65,13 +65,13 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ## Installation and First-Run Flow
 
-| Step | Upstream | StartOS |
-|------|----------|---------|
-| Installation | Docker Compose with multiple config files | Install from marketplace |
-| Database | Manual PostgreSQL setup | Automatic |
-| Bitcoin Core | Manual RPC configuration | Auto-configured via dependency |
-| NBXplorer | Separate manual setup | Bundled and auto-configured |
-| Lightning | Manual configuration | Select via action |
+| Step         | Upstream                                  | StartOS                        |
+| ------------ | ----------------------------------------- | ------------------------------ |
+| Installation | Docker Compose with multiple config files | Install from marketplace       |
+| Database     | Manual PostgreSQL setup                   | Automatic                      |
+| Bitcoin Core | Manual RPC configuration                  | Auto-configured via dependency |
+| NBXplorer    | Separate manual setup                     | Bundled and auto-configured    |
+| Lightning    | Manual configuration                      | Select via action              |
 
 **First-run steps:**
 
@@ -87,32 +87,32 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ### Auto-Configured by StartOS
 
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| `BTCPAY_NETWORK` | `mainnet` | Bitcoin network |
-| `BTCPAY_BIND` | `0.0.0.0:23000` | Web UI binding |
-| `BTCPAY_SOCKSENDPOINT` | `startos:9050` | Tor proxy |
-| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth |
-| `NBXPLORER_BTCNODEENDPOINT` | `bitcoind.startos:8333` | Bitcoin P2P |
-| `NBXPLORER_BTCRPCURL` | `http://bitcoind.startos:8332/` | Bitcoin RPC |
-| `POSTGRES_HOST_AUTH_METHOD` | `trust` | Database auth |
+| Setting                        | Value                           | Purpose         |
+| ------------------------------ | ------------------------------- | --------------- |
+| `BTCPAY_NETWORK`               | `mainnet`                       | Bitcoin network |
+| `BTCPAY_BIND`                  | `0.0.0.0:23000`                 | Web UI binding  |
+| `BTCPAY_SOCKSENDPOINT`         | `startos:9050`                  | Tor proxy       |
+| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
+| `NBXPLORER_BTCNODEENDPOINT`    | `bitcoind.startos:8333`         | Bitcoin P2P     |
+| `NBXPLORER_BTCRPCURL`          | `http://bitcoind.startos:8332/` | Bitcoin RPC     |
+| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                         | Database auth   |
 
 ### Configurable via Actions
 
-| Setting | Action | Purpose |
-|---------|--------|---------|
-| Lightning node | Choose Lightning Node | LND, CLN, or none |
-| Altcoins (Monero) | Enable Altcoins | Enable XMR support |
-| Shopify plugin | Enable Plugins | Shopify store integration |
-| NBXplorer resync | Resync NBXplorer | Resync from a specific block height |
+| Setting           | Action                | Purpose                             |
+| ----------------- | --------------------- | ----------------------------------- |
+| Lightning node    | Choose Lightning Node | LND, CLN, or none                   |
+| Altcoins (Monero) | Enable Altcoins       | Enable XMR support                  |
+| Shopify plugin    | Enable Plugins        | Shopify store integration           |
+| NBXplorer resync  | Resync NBXplorer      | Resync from a specific block height |
 
 ---
 
 ## Network Access and Interfaces
 
-| Interface | Port | Protocol | Purpose |
-|-----------|------|----------|---------|
-| Web UI | 23000 | HTTP | BTCPay Server web interface |
+| Interface | Port  | Protocol | Purpose                     |
+| --------- | ----- | -------- | --------------------------- |
+| Web UI    | 23000 | HTTP     | BTCPay Server web interface |
 
 **Access methods (StartOS 0.4.0):**
 
@@ -127,12 +127,12 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ### Choose Lightning Node
 
-| Property | Value |
-|----------|-------|
-| ID | `lightning-node` |
-| Visibility | Enabled |
-| Availability | Any status |
-| Purpose | Select internal Lightning node for invoicing |
+| Property     | Value                                        |
+| ------------ | -------------------------------------------- |
+| ID           | `lightning-node`                             |
+| Visibility   | Enabled                                      |
+| Availability | Any status                                   |
+| Purpose      | Select internal Lightning node for invoicing |
 
 **Options:**
 
@@ -144,56 +144,56 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ### Resync NBXplorer
 
-| Property | Value |
-|----------|-------|
-| ID | `resync-nbx` |
-| Visibility | Enabled |
-| Availability | Any status |
-| Purpose | Resync UTXO tracker from a specific block height |
+| Property     | Value                                            |
+| ------------ | ------------------------------------------------ |
+| ID           | `resync-nbx`                                     |
+| Visibility   | Enabled                                          |
+| Availability | Any status                                       |
+| Purpose      | Resync UTXO tracker from a specific block height |
 
 **Input:** Block height (integer, minimum 0)
 
 ### Reset Server Admin Password
 
-| Property | Value |
-|----------|-------|
-| ID | `reset-admin-password` |
-| Visibility | Enabled |
-| Availability | Running only |
-| Purpose | Reset the admin user's password |
+| Property     | Value                           |
+| ------------ | ------------------------------- |
+| ID           | `reset-admin-password`          |
+| Visibility   | Enabled                         |
+| Availability | Running only                    |
+| Purpose      | Reset the admin user's password |
 
 Generates a random temporary password. Only works for servers with a single admin user.
 
 ### Enable Altcoins
 
-| Property | Value |
-|----------|-------|
-| ID | `enable-altcoins` |
-| Visibility | Enabled |
-| Availability | Any status |
-| Purpose | Enable Monero integration |
+| Property     | Value                     |
+| ------------ | ------------------------- |
+| ID           | `enable-altcoins`         |
+| Visibility   | Enabled                   |
+| Availability | Any status                |
+| Purpose      | Enable Monero integration |
 
 Requires `monerod` service to be installed when enabled.
 
 ### Enable Plugins
 
-| Property | Value |
-|----------|-------|
-| ID | `enable-plugins` |
-| Visibility | Enabled |
-| Availability | Any status |
-| Purpose | Enable Shopify store integration |
+| Property     | Value                            |
+| ------------ | -------------------------------- |
+| ID           | `enable-plugins`                 |
+| Visibility   | Enabled                          |
+| Availability | Any status                       |
+| Purpose      | Enable Shopify store integration |
 
 ---
 
 ## Dependencies
 
-| Dependency | Required | Version | Purpose | Auto-Config |
-|------------|----------|---------|---------|-------------|
-| Bitcoin Core | Yes | >=29.1 | Blockchain data | Via NBXplorer |
-| LND | Optional | >=0.19.3-beta | Lightning invoicing | Via action |
-| Core Lightning | Optional | >=25.9.0 | Lightning invoicing | Via action |
-| Monerod | Optional | >=0.18.4 | Monero payments | Via action |
+| Dependency     | Required | Version       | Purpose             | Auto-Config   |
+| -------------- | -------- | ------------- | ------------------- | ------------- |
+| Bitcoin Core   | Yes      | >=29.1        | Blockchain data     | Via NBXplorer |
+| LND            | Optional | >=0.19.3-beta | Lightning invoicing | Via action    |
+| Core Lightning | Optional | >=25.9.0      | Lightning invoicing | Via action    |
+| Monerod        | Optional | >=0.18.4      | Monero payments     | Via action    |
 
 Dependencies are dynamically resolved based on which features are enabled.
 
@@ -214,13 +214,13 @@ Dependencies are dynamically resolved based on which features are enabled.
 
 ## Health Checks
 
-| Check | Display Name | Method | Messages |
-|-------|--------------|--------|----------|
-| PostgreSQL | (internal) | `pg_isready` on port 5432 | Ready / Waiting |
-| NBXplorer | UTXO Tracker | Port 24444 listening | Reachable / Unreachable |
-| UTXO Sync | UTXO Tracker Sync | NBXplorer `/v1/cryptos/BTC/status` | Synced / Bitcoin syncing X% / UTXO syncing X% |
-| Web UI | Web Interface | `/api/v1/health` on port 23000 | Reachable / Unreachable |
-| Shopify | Shopify Plugin | Port 5000 listening (when enabled) | Running / Not running |
+| Check      | Display Name      | Method                             | Messages                                      |
+| ---------- | ----------------- | ---------------------------------- | --------------------------------------------- |
+| PostgreSQL | (internal)        | `pg_isready` on port 5432          | Ready / Waiting                               |
+| NBXplorer  | UTXO Tracker      | Port 24444 listening               | Reachable / Unreachable                       |
+| UTXO Sync  | UTXO Tracker Sync | NBXplorer `/v1/cryptos/BTC/status` | Synced / Bitcoin syncing X% / UTXO syncing X% |
+| Web UI     | Web Interface     | `/api/v1/health` on port 23000     | Reachable / Unreachable                       |
+| Shopify    | Shopify Plugin    | Port 5000 listening (when enabled) | Running / Not running                         |
 
 ---
 
@@ -284,16 +284,16 @@ ports:
 dependencies:
   bitcoind:
     required: true
-    min_version: ">=29.1"
+    min_version: '>=29.1'
   lnd:
     required: false
-    min_version: ">=0.19.3-beta"
+    min_version: '>=0.19.3-beta'
   c-lightning:
     required: false
-    min_version: ">=25.9.0"
+    min_version: '>=25.9.0'
   monerod:
     required: false
-    min_version: ">=0.18.4"
+    min_version: '>=0.18.4'
 actions:
   - lightning-node (enabled, any)
   - resync-nbx (enabled, any)

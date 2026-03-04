@@ -6,8 +6,8 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@start9labs/start-sdk": "^0.4.0-beta.47",
-    "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#update/040",
+    "@start9labs/start-sdk": "^0.4.0-beta.55",
+    "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#040/30.2",
     "pg": "^8.17.1"
   },
   "devDependencies": {
