@@ -260,6 +260,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       },
       ready: {
         display: 'Web Interface',
+        gracePeriod: 60_000,
         fn: () =>
           sdk.healthCheck.checkWebUrl(
             effects,
