@@ -1,9 +1,15 @@
 id: btcpayserver
 title: BTCPay Server
-version: 2.3.4
+version: 2.3.5
 release-notes: |
-  * Update BTCPay Server to 2.3.4
-  * Update Shopify components to latest versions
+  * Update BTCPay Server to 2.3.5
+  * Allow BTCPay Server to start without any on-chain payment methods (BTCPAY_NODEFAULTCHAIN)
+  * Add custom textbox for checkout
+  * Add CoinDCX and Desiboard rate providers
+  * Dashboard: Multi-crypto wallet balance widgets
+  * Ability to update previously downloaded language packs
+  * Fix: Images in PoS Cart on mobile, LND payment detection on restart, claim button in archived pull payments, role editing
+  * Throttle Greenfield API calls with Basic auth
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
 upstream-repo: "https://github.com/btcpayserver/btcpayserver"
