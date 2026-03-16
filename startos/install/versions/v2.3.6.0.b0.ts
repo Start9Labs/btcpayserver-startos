@@ -99,14 +99,10 @@ async function migratePostgres(effects: T.Effects) {
   )
 }
 
-export const v_2_3_5_1_b0 = VersionInfo.of({
-  version: '2.3.5:1-beta.0',
+export const v_2_3_6_0_b0 = VersionInfo.of({
+  version: '2.3.6:0-beta.0',
   releaseNotes: {
-    en_US: 'Update to StartOS SDK beta.59',
-    es_ES: 'Actualización a StartOS SDK beta.59',
-    de_DE: 'Update auf StartOS SDK beta.59',
-    pl_PL: 'Aktualizacja do StartOS SDK beta.59',
-    fr_FR: 'Mise à jour vers StartOS SDK beta.59',
+    en_US: 'Update BTCPay Server to 2.3.6',
   },
   migrations: {
     up: async ({ effects }) => {
