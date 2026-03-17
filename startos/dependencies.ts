@@ -16,7 +16,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (env.BTCPAY_BTCLIGHTNING === lndConnectionString) {
     deps['lnd'] = {
       kind: 'running',
-      versionRange: '>=0.20.0-beta:2-beta.0',
+      versionRange: '>=0.20.1-beta:1-beta.1',
       healthChecks: ['lnd'],
     }
   }
@@ -24,7 +24,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (env.BTCPAY_BTCLIGHTNING === clnConnectionString) {
     deps['c-lightning'] = {
       kind: 'running',
-      versionRange: '>=25.12.1:2-beta.0',
+      versionRange: '>=25.12.1:4-beta.1',
       healthChecks: ['lightningd'],
     }
   }
@@ -32,7 +32,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (getEnabledAltcoin('xmr', env.BTCPAY_CHAINS)) {
     deps['monerod'] = {
       kind: 'running',
-      versionRange: '>=0.18.4:6-beta.0',
+      versionRange: '>=0.18.4.6:0-beta.0',
       healthChecks: ['monerod'],
     }
   }
@@ -41,7 +41,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     ...deps,
     bitcoind: {
       kind: 'running',
-      versionRange: '>=28.3:0-beta.0',
+      versionRange: '>=28.3:5-beta.1',
       healthChecks: ['bitcoind'],
     },
   }
