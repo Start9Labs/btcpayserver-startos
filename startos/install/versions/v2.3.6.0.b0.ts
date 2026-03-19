@@ -133,19 +133,19 @@ export const v_2_3_6_0_b0 = VersionInfo.of({
         await storeJson.write(effects, {
           pgPassword: getDefaultPgPassword(),
           plugins: {
-            shopify: plugins.shopify.status === 'enabled',
+            shopify: plugins?.shopify?.status === 'enabled',
           },
         })
 
         await BTCPSEnv.merge(effects, {
           BTCPAY_BTCLIGHTNING:
-            lightning.type === 'lnd'
+            lightning?.type === 'lnd'
               ? lndConnectionString
-              : lightning.type === 'c-lightning'
+              : lightning?.type === 'c-lightning'
                 ? clnConnectionString
                 : undefined,
           BTCPAY_CHAINS:
-            altcoins.monero.status === 'enabled' ? 'btc,xmr' : 'btc',
+            altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
         })
 
         await NBXplorerEnv.merge(effects, {})
