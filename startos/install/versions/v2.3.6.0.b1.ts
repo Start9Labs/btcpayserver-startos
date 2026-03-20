@@ -99,8 +99,8 @@ async function migratePostgres(effects: T.Effects) {
   )
 }
 
-export const v_2_3_6_0_b0 = VersionInfo.of({
-  version: '2.3.6:0-beta.0',
+export const v_2_3_6_0_b1 = VersionInfo.of({
+  version: '2.3.6:0-beta.1',
   releaseNotes: {
     en_US: 'Update BTCPay Server to 2.3.6',
   },
