@@ -1,6 +1,3 @@
-import { utils } from '@start9labs/start-sdk'
-import { sdk } from './sdk'
-
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
 
@@ -15,17 +12,6 @@ export const xmrWalletDaemonUri = 'http://127.0.0.1:18082'
 export const xmrWalletDir = '/datadir/btcpayserver/altcoins/monero/wallets'
 
 export const PG_MOUNT = '/var/lib/postgresql'
-
-export const pgMounts = sdk.Mounts.of().mountVolume({
-  volumeId: 'main',
-  subpath: 'postgresql',
-  mountpoint: PG_MOUNT,
-  readonly: false,
-})
-
-export function getDefaultPgPassword(): string {
-  return utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 22 })
-}
 
 export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)

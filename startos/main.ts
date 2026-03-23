@@ -12,7 +12,7 @@ import {
   lndConnectionString,
   lndMountpoint,
   nbxPort,
-  pgMounts,
+  PG_MOUNT,
   uiPort,
 } from './utils'
 
@@ -26,14 +26,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Read config
   // ========================
 
-  const store = await storeJson
-    .read((s) => ({
-      pgPassword: s.pgPassword,
-      shopifyEnabled: s.plugins.shopify,
-    }))
+  const shopifyEnabled = await storeJson
+    .read((s) => s.plugins.shopify)
     .const(effects)
-  if (!store) throw new Error('Store not found')
-  const { pgPassword, shopifyEnabled } = store
 
   const btcpayEnv = await BTCPSEnv.read().const(effects)
   if (!btcpayEnv) throw new Error('BTCPay env not found')
@@ -47,20 +42,20 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
   let mounts = sdk.Mounts.of()
     .mountVolume({
-      volumeId: 'main',
-      subpath: 'btcpayserver',
+      volumeId: 'btcpayserver',
+      subpath: null,
       mountpoint: '/datadir',
       readonly: false,
     })
     .mountVolume({
-      volumeId: 'main',
-      subpath: 'plugins',
+      volumeId: 'btcpayserver',
+      subpath: 'Plugins',
       mountpoint: '/root/.btcpayserver/Plugins',
       readonly: false,
     })
     .mountVolume({
-      volumeId: 'main',
-      subpath: 'nbxplorer',
+      volumeId: 'nbxplorer',
+      subpath: null,
       mountpoint: '/root/.nbxplorer',
       readonly: false,
     })
@@ -109,8 +104,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
     { imageId: 'nbx' },
     sdk.Mounts.of()
       .mountVolume({
-        volumeId: 'main',
-        subpath: 'nbxplorer',
+        volumeId: 'nbxplorer',
+        subpath: null,
         mountpoint: '/datadir',
         readonly: false,
       })
@@ -123,6 +118,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
       }),
     'nbx',
   )
+
+  const pgMounts = sdk.Mounts.of().mountVolume({
+    volumeId: 'db',
+    subpath: null,
+    mountpoint: PG_MOUNT,
+    readonly: false,
+  })
 
   const postgresSub = await sdk.SubContainer.of(
     effects,
@@ -140,7 +142,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       exec: {
         command: sdk.useEntrypoint(['-c', 'listen_addresses=127.0.0.1']),
         env: {
-          POSTGRES_PASSWORD: pgPassword,
+          POSTGRES_HOST_AUTH_METHOD: 'trust',
         },
       },
       ready: {
@@ -177,7 +179,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         env: {
           ...nbxEnv,
           NBXPLORER_POSTGRES:
-            `User ID=postgres;Password=${pgPassword};Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer`,
+            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
         },
         sigtermTimeout: 60_000,
       },
@@ -254,9 +256,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
         env: {
           ...btcpayEnv,
           BTCPAY_EXPLORERPOSTGRES:
-            `User ID=postgres;Password=${pgPassword};Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer`,
+            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
           BTCPAY_POSTGRES:
-            `User ID=postgres;Password=${pgPassword};Host=127.0.0.1;Port=5432;Application Name=btcpayserver;Database=btcpayserver`,
+            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=btcpayserver;Database=btcpayserver',
           BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: 'http://127.0.0.1:5000/',
           LC_ALL: 'C',
           BTCPAY_DEBUGLOG: 'btcpay.log',

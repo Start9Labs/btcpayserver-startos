@@ -1,7 +1,6 @@
 import { utils } from '@start9labs/start-sdk'
 import { pbkdf2Sync, randomBytes } from 'node:crypto'
 import { Client } from 'pg'
-import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 
@@ -25,10 +24,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
       len: 22,
     })
 
-    const pgPassword =
-      (await storeJson.read((s) => s.pgPassword).once()) || ''
-
-    await resetServerAdminPassword(password, pgPassword)
+    await resetServerAdminPassword(password)
 
     return {
       version: '1',
@@ -47,13 +43,9 @@ export const resetAdminPassword = sdk.Action.withoutInput(
   },
 )
 
-async function resetServerAdminPassword(
-  newPassword: string,
-  pgPassword: string,
-) {
+async function resetServerAdminPassword(newPassword: string) {
   const client = new Client({
     user: 'postgres',
-    password: pgPassword,
     host: '127.0.0.1',
     database: 'btcpayserver',
     port: 5432,

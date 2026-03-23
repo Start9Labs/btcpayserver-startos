@@ -19,7 +19,7 @@ export const manifest = setupManifest({
   donationUrl: 'https://btcpayserver.org/donate/',
   docsUrls: ['https://docs.btcpayserver.org/'],
   description: { short, long },
-  volumes: ['main'],
+  volumes: ['main', 'db', 'btcpayserver', 'nbxplorer'],
   images: {
     btcpay: {
       source: {

@@ -48,16 +48,16 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ## Volume and Data Layout
 
-| Volume | Subpath        | Mount Point                   | Purpose             |
-| ------ | -------------- | ----------------------------- | ------------------- |
-| `main` | `btcpayserver` | `/datadir`                    | BTCPay Server data  |
-| `main` | `plugins`      | `/root/.btcpayserver/Plugins` | BTCPay plugins      |
-| `main` | `nbxplorer`    | `/root/.nbxplorer`            | NBXplorer data      |
-| `main` | `postgresql`   | `/var/lib/postgresql`         | PostgreSQL database |
+| Volume         | Mount Point                   | Purpose             |
+| -------------- | ----------------------------- | ------------------- |
+| `btcpayserver` | `/datadir`                    | BTCPay Server data  |
+| `btcpayserver` | `/root/.btcpayserver/Plugins` | BTCPay plugins      |
+| `nbxplorer`    | `/datadir`                    | NBXplorer data      |
+| `db`           | `/var/lib/postgresql`         | PostgreSQL database |
 
 **StartOS-specific files on `main` volume:**
 
-- `store.json` — persists PostgreSQL password, lightning node selection, and plugin state
+- `store.json` — persists plugin state
 - `btcpay.env` — BTCPay Server environment variables
 - `nbxplorer.env` — NBXplorer environment variables
 
@@ -95,7 +95,7 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
 | `NBXPLORER_BTCNODEENDPOINT`    | `bitcoind.startos:8333`         | Bitcoin P2P     |
 | `NBXPLORER_BTCRPCURL`          | `http://bitcoind.startos:8332/` | Bitcoin RPC     |
-| `POSTGRES_PASSWORD`            | Auto-generated                  | Database auth   |
+| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                         | Database auth   |
 
 ### Configurable via Actions
 
@@ -203,12 +203,19 @@ Dependencies are dynamically resolved based on which features are enabled.
 
 **Included in backup:**
 
-- `main` volume — all BTCPay data, database, NBXplorer state, plugins, configuration
+- `db` volume — PostgreSQL `btcpayserver` database via `pg_dump` (users, stores, invoices)
+- `btcpayserver` volume — BTCPay app data and plugins
+- `main` volume — configuration files (store.json, env files)
+
+**Not backed up (regenerable):**
+
+- `nbxplorer` volume — resyncs from Bitcoin Core on restore
+- `nbxplorer` database — recreated and resynced on restore
 
 **Restore behavior:**
 
-- All data fully restored
-- May need time for NBXplorer to catch up on recent blocks
+- BTCPay data and database fully restored
+- NBXplorer will need time to resync from Bitcoin Core
 
 ---
 
@@ -270,11 +277,10 @@ images:
   shopify: btcpayserver/shopify-app-deployer
 architectures: [x86_64, aarch64]
 volumes:
-  main:
-    btcpayserver: /datadir
-    plugins: /root/.btcpayserver/Plugins
-    nbxplorer: /root/.nbxplorer
-    postgresql: /var/lib/postgresql
+  db: /var/lib/postgresql
+  btcpayserver: /datadir + /root/.btcpayserver/Plugins
+  nbxplorer: /datadir
+  main: store.json, btcpay.env, nbxplorer.env
 ports:
   ui: 23000
   nbxplorer: 24444 (internal)
@@ -297,13 +303,15 @@ health_checks:
   - utxo-sync: /v1/cryptos/BTC/status
   - webui: /api/v1/health 23000
   - shopify: port_listening 5000 (optional)
-backup_volumes:
-  - main
+backup:
+  pg_dump: btcpayserver (db volume)
+  volumes: [btcpayserver, main]
+  not_backed_up: [nbxplorer (regenerable)]
 startos_managed_config:
   BTCPAY_NETWORK: mainnet
   BTCPAY_BIND: 0.0.0.0:23000
   BTCPAY_SOCKSENDPOINT: startos:9050
-  POSTGRES_PASSWORD: auto-generated
+  POSTGRES_HOST_AUTH_METHOD: trust
   NBXPLORER_BTCNODEENDPOINT: bitcoind.startos:8333
   NBXPLORER_BTCRPCURL: http://bitcoind.startos:8332/
 not_available:
