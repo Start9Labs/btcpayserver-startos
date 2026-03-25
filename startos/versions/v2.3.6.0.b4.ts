@@ -1,14 +1,14 @@
 import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
 import { readFile } from 'fs/promises'
-import { BTCPSEnv } from '../../fileModels/btcpay.env'
-import { NBXplorerEnv } from '../../fileModels/nbxplorer.env'
-import { storeJson } from '../../fileModels/store.json'
-import { sdk } from '../../sdk'
+import { BTCPSEnv } from '../fileModels/btcpay.env'
+
+import { storeJson } from '../fileModels/store.json'
+import { sdk } from '../sdk'
 import {
   clnConnectionString,
   lndConnectionString,
   PG_MOUNT,
-} from '../../utils'
+} from '../utils'
 
 const OLD_PGDATA = '/mnt/main/postgresql/data'
 
@@ -111,8 +111,8 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_6_0_b3 = VersionInfo.of({
-  version: '2.3.6:0-beta.3',
+export const v_2_3_6_0_b4 = VersionInfo.of({
+  version: '2.3.6:0-beta.4',
   releaseNotes: {
     en_US: 'Update BTCPay Server to 2.3.6',
   },
@@ -160,8 +160,6 @@ export const v_2_3_6_0_b3 = VersionInfo.of({
         BTCPAY_CHAINS:
           altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
       })
-
-      await NBXplorerEnv.merge(effects, {})
 
       // Move data to dedicated volumes; pg_upgrade runs on first daemon start
       await migrateVolumes(effects)
