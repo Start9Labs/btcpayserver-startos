@@ -4,11 +4,7 @@ import { BTCPSEnv } from '../fileModels/btcpay.env'
 
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
-import {
-  clnConnectionString,
-  lndConnectionString,
-  PG_MOUNT,
-} from '../utils'
+import { clnConnectionString, lndConnectionString, PG_MOUNT } from '../utils'
 
 const OLD_PGDATA = '/mnt/main/postgresql/data'
 
@@ -62,6 +58,14 @@ async function migrateVolumes(effects: T.Effects) {
 
       console.info('Moving BTCPay data to dedicated volumes...')
 
+      // The old monero-wallet-rpc s6 service ran as UID 30236:GID 302340,
+      // which are outside the 0.4.0 ID mapping range. Normalize ownership
+      // before copying so the files are accessible on the destination volume.
+      await sub.execFail(
+        ['chown', '-R', '1654:1654', '/mnt/main/btcpayserver/altcoins/monero'],
+        { user: 'root' },
+      )
+
       await sub.execFail(
         ['sh', '-c', 'cp -a /mnt/main/btcpayserver/. /mnt/btcpay/'],
         { user: 'root' },
@@ -83,10 +87,9 @@ async function migrateVolumes(effects: T.Effects) {
       // not in a data/ subdirectory. It detects PG 13, runs pg_upgrade, and places
       // the upgraded data at PGDATA (/var/lib/postgresql/data).
 
-      await sub.execFail(
-        ['sh', '-c', `cp -a ${OLD_PGDATA}/. ${PG_MOUNT}/`],
-        { user: 'root' },
-      )
+      await sub.execFail(['sh', '-c', `cp -a ${OLD_PGDATA}/. ${PG_MOUNT}/`], {
+        user: 'root',
+      })
       await sub.execFail(['chown', '-R', 'postgres:postgres', PG_MOUNT], {
         user: 'root',
       })
@@ -106,13 +109,15 @@ async function migrateVolumes(effects: T.Effects) {
         { user: 'root' },
       )
 
-      console.info('Volume migration complete — pg_upgrade will run on first start')
+      console.info(
+        'Volume migration complete — pg_upgrade will run on first start',
+      )
     },
   )
 }
 
-export const v_2_3_6_0_b4 = VersionInfo.of({
-  version: '2.3.6:0-beta.4',
+export const v_2_3_6_0_b5 = VersionInfo.of({
+  version: '2.3.6:0-beta.5',
   releaseNotes: {
     en_US: 'Update BTCPay Server to 2.3.6',
   },
