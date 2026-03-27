@@ -1,16 +1,19 @@
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
 import { readFile } from 'fs/promises'
-import { BTCPSEnv } from './fileModels/btcpay.env'
-import { nbxEnvDefaults, NBXplorerEnv } from './fileModels/nbxplorer.env'
+import { btcpayConfig } from './fileModels/btcpay.config'
+import { nbxConfigDefaults, nbxplorerConfig } from './fileModels/nbxplorer.config'
 import { storeJson } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
+  bitcoindMountpoint,
   clnConnectionString,
   clnMountpoint,
+  dataDir,
   getEnabledAltcoin,
   lndConnectionString,
   lndMountpoint,
+  nbxMountpoint,
   nbxPort,
   PG_MOUNT,
   uiPort,
@@ -30,11 +33,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .read((s) => s.plugins.shopify)
     .const(effects)
 
-  const btcpayEnv = await BTCPSEnv.read().const(effects)
-  if (!btcpayEnv) throw new Error('BTCPay env not found')
+  const config = await btcpayConfig.read().const(effects)
+  if (!config) throw new Error('BTCPay config not found')
 
-  const nbxEnv = await NBXplorerEnv.read().const(effects)
-  if (!nbxEnv) throw new Error('NBXplorer env not found')
+  const nbxConfig = await nbxplorerConfig.read().const(effects)
+  if (!nbxConfig) throw new Error('NBXplorer config not found')
 
   // ========================
   // Dependency mounts
@@ -44,7 +47,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .mountVolume({
       volumeId: 'btcpayserver',
       subpath: null,
-      mountpoint: '/datadir',
+      mountpoint: dataDir,
       readonly: false,
     })
     .mountVolume({
@@ -56,11 +59,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .mountVolume({
       volumeId: 'nbxplorer',
       subpath: null,
-      mountpoint: '/root/.nbxplorer',
+      mountpoint: nbxMountpoint,
       readonly: false,
     })
 
-  if (getEnabledAltcoin('xmr', btcpayEnv.BTCPAY_CHAINS)) {
+  if (getEnabledAltcoin('xmr', config.chains)) {
     mounts = mounts.mountDependency({
       dependencyId: 'monerod',
       volumeId: 'main',
@@ -70,7 +73,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
   }
 
-  if (btcpayEnv.BTCPAY_BTCLIGHTNING === lndConnectionString) {
+  if (config.btclightning === lndConnectionString) {
     mounts = mounts.mountDependency({
       dependencyId: 'lnd',
       volumeId: 'main',
@@ -78,7 +81,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: lndMountpoint,
       readonly: true,
     })
-  } else if (btcpayEnv.BTCPAY_BTCLIGHTNING === clnConnectionString) {
+  } else if (config.btclightning === clnConnectionString) {
     mounts = mounts.mountDependency({
       dependencyId: 'c-lightning',
       volumeId: 'main',
@@ -106,14 +109,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
       .mountVolume({
         volumeId: 'nbxplorer',
         subpath: null,
-        mountpoint: '/datadir',
+        mountpoint: dataDir,
         readonly: false,
       })
       .mountDependency({
         dependencyId: 'bitcoind',
         volumeId: 'main',
         subpath: null,
-        mountpoint: '/root/.bitcoin',
+        mountpoint: bitcoindMountpoint,
         readonly: false,
       }),
     'nbx',
@@ -177,9 +180,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       exec: {
         command: sdk.useEntrypoint(),
         env: {
-          ...nbxEnv,
-          NBXPLORER_POSTGRES:
-            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
+          NBXPLORER_DATADIR: dataDir,
         },
         sigtermTimeout: 60_000,
       },
@@ -198,9 +199,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
       subcontainer: nbxSub,
       exec: {
         fn: async () => {
-          await NBXplorerEnv.merge(effects, {
-            NBXPLORER_BTCRESCAN: nbxEnvDefaults.NBXPLORER_BTCRESCAN,
-            NBXPLORER_BTCSTARTHEIGHT: nbxEnvDefaults.NBXPLORER_BTCSTARTHEIGHT,
+          await nbxplorerConfig.merge(effects, {
+            'btc.rescan': nbxConfigDefaults['btc.rescan'],
+            'btc.startheight': nbxConfigDefaults['btc.startheight'],
           })
           return null
         },
@@ -211,7 +212,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ready: {
         display: i18n('UTXO Tracker Sync'),
         fn: async () => {
-          const auth = await readFile(`${nbxSub.rootfs}/datadir/Main/.cookie`, {
+          const auth = await readFile(`${nbxSub.rootfs}${dataDir}/Main/.cookie`, {
             encoding: 'base64',
           })
 
@@ -254,15 +255,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
       exec: {
         command: sdk.useEntrypoint(),
         env: {
-          ...btcpayEnv,
-          BTCPAY_EXPLORERPOSTGRES:
-            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=nbxplorer;Database=nbxplorer',
-          BTCPAY_POSTGRES:
-            'User ID=postgres;Host=127.0.0.1;Port=5432;Application Name=btcpayserver;Database=btcpayserver',
+          BTCPAY_DATADIR: dataDir,
           BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: 'http://127.0.0.1:5000/',
           LC_ALL: 'C',
-          BTCPAY_DEBUGLOG: 'btcpay.log',
-          BTCPAY_DOCKERDEPLOYMENT: 'false',
         },
         sigtermTimeout: 60_000,
       },

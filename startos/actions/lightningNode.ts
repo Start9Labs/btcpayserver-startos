@@ -1,4 +1,4 @@
-import { BTCPSEnv } from '../fileModels/btcpay.env'
+import { btcpayConfig } from '../fileModels/btcpay.config'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { clnConnectionString, lndConnectionString } from '../utils'
@@ -39,20 +39,27 @@ export const lightningNode = sdk.Action.withInput(
   inputSpec,
 
   async ({ effects }) => {
-    const ln = await BTCPSEnv.read((e) => e.BTCPAY_BTCLIGHTNING).const(effects)
+    const ln = await btcpayConfig.read((s) => s.btclightning).once()
     const lightning: 'lnd' | 'cln' | 'none' =
-      ln === lndConnectionString ? 'lnd' : ln === clnConnectionString ? 'cln' : 'none'
+      ln === lndConnectionString
+        ? 'lnd'
+        : ln === clnConnectionString
+          ? 'cln'
+          : 'none'
     return { lightning }
   },
 
   async ({ effects, input }) => {
-    const connectionStrings: Record<string, typeof lndConnectionString | typeof clnConnectionString> = {
+    const connectionStrings: Record<
+      string,
+      typeof lndConnectionString | typeof clnConnectionString
+    > = {
       lnd: lndConnectionString,
       cln: clnConnectionString,
     }
 
-    await BTCPSEnv.merge(effects, {
-      BTCPAY_BTCLIGHTNING: connectionStrings[input.lightning],
+    await btcpayConfig.merge(effects, {
+      btclightning: connectionStrings[input.lightning],
     })
   },
 )

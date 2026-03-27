@@ -1,19 +1,21 @@
 import { T } from '@start9labs/start-sdk'
-import { BTCPSEnv } from './fileModels/btcpay.env'
+import { btcpayConfig } from './fileModels/btcpay.config'
 import { sdk } from './sdk'
 import {
+  clnConnectionString,
   getEnabledAltcoin,
   lndConnectionString,
-  clnConnectionString,
 } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const deps: T.CurrentDependenciesResult<any> = {}
 
-  const env = await BTCPSEnv.read().const(effects)
-  if (!env) throw new Error('BTCPay env not found')
+  const config = await btcpayConfig
+    .read((c) => ({ btclightning: c.btclightning, chains: c.chains }))
+    .const(effects)
+  if (!config) throw new Error('BTCPay config not found')
 
-  if (env.BTCPAY_BTCLIGHTNING === lndConnectionString) {
+  if (config.btclightning === lndConnectionString) {
     deps['lnd'] = {
       kind: 'running',
       versionRange: '>=0.20.1-beta:1-beta.3',
@@ -21,7 +23,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     }
   }
 
-  if (env.BTCPAY_BTCLIGHTNING === clnConnectionString) {
+  if (config.btclightning === clnConnectionString) {
     deps['c-lightning'] = {
       kind: 'running',
       versionRange: '>=25.12.1:4-beta.5',
@@ -29,7 +31,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     }
   }
 
-  if (getEnabledAltcoin('xmr', env.BTCPAY_CHAINS)) {
+  if (getEnabledAltcoin('xmr', config.chains)) {
     deps['monerod'] = {
       kind: 'running',
       versionRange: '>=0.18.4.6:0-beta.2',

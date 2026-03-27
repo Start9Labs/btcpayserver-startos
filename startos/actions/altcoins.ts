@@ -1,4 +1,4 @@
-import { BTCPSEnv } from '../fileModels/btcpay.env'
+import { btcpayConfig } from '../fileModels/btcpay.config'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { getEnabledAltcoin } from '../utils'
@@ -28,16 +28,15 @@ export const enableAltcoins = sdk.Action.withInput(
 
   // pre-fill the form
   async ({ effects }) => {
-    const chains = await BTCPSEnv.read((s) => s.BTCPAY_CHAINS).const(effects)
-    if (!chains) throw new Error('BTCPay environment file unreadable')
+    const chains = await btcpayConfig.read((s) => s.chains).const(effects)
+    if (!chains) throw new Error('BTCPay config unreadable')
     return { monero: getEnabledAltcoin('xmr', chains) }
   },
 
   // execution function
   async ({ effects, input }) => {
-    await BTCPSEnv.merge(effects, {
-      BTCPAY_CHAINS: input.monero ? 'btc,xmr' : 'btc',
-      BTCPAYGEN_CRYPTO2: input.monero ? 'xmr' : undefined,
+    await btcpayConfig.merge(effects, {
+      chains: input.monero ? 'btc,xmr' : 'btc',
     })
   },
 )

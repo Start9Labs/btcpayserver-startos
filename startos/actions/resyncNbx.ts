@@ -1,4 +1,4 @@
-import { NBXplorerEnv } from '../fileModels/nbxplorer.env'
+import { nbxplorerConfig } from '../fileModels/nbxplorer.config'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 const { InputSpec, Value } = sdk
@@ -33,9 +33,9 @@ export const resyncNbx = sdk.Action.withInput(
   async ({ effects, input }) => {
     const startHeight = input.startHeight
 
-    await NBXplorerEnv.merge(effects, {
-      NBXPLORER_BTCSTARTHEIGHT: String(startHeight),
-      NBXPLORER_BTCRESCAN: '1',
+    await nbxplorerConfig.merge(effects, {
+      'btc.startheight': String(startHeight),
+      'btc.rescan': '1',
     })
 
     await sdk.restart(effects)

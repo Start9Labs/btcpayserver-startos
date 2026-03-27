@@ -1,8 +1,7 @@
 import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
 import { chown, readdir, readFile } from 'fs/promises'
 import { join } from 'path'
-import { BTCPSEnv } from '../fileModels/btcpay.env'
-
+import { btcpayConfig } from '../fileModels/btcpay.config'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 import { clnConnectionString, lndConnectionString, PG_MOUNT } from '../utils'
@@ -124,8 +123,8 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_6_0_b6 = VersionInfo.of({
-  version: '2.3.6:0-beta.6',
+export const v_2_3_6_0_b7 = VersionInfo.of({
+  version: '2.3.6:0-beta.7',
   releaseNotes: {
     en_US: 'Fix migration',
   },
@@ -163,15 +162,14 @@ export const v_2_3_6_0_b6 = VersionInfo.of({
         },
       })
 
-      await BTCPSEnv.merge(effects, {
-        BTCPAY_BTCLIGHTNING:
+      await btcpayConfig.merge(effects, {
+        btclightning:
           lightning?.type === 'lnd'
             ? lndConnectionString
             : lightning?.type === 'c-lightning'
               ? clnConnectionString
               : undefined,
-        BTCPAY_CHAINS:
-          altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
+        chains: altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
       })
 
       // The old monero-wallet-rpc s6 service ran as UID 30236:GID 302340,
