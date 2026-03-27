@@ -1,5 +1,6 @@
 import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
-import { readFile } from 'fs/promises'
+import { chown, readdir, readFile } from 'fs/promises'
+import { join } from 'path'
 import { BTCPSEnv } from '../fileModels/btcpay.env'
 
 import { storeJson } from '../fileModels/store.json'
@@ -7,6 +8,21 @@ import { sdk } from '../sdk'
 import { clnConnectionString, lndConnectionString, PG_MOUNT } from '../utils'
 
 const OLD_PGDATA = '/mnt/main/postgresql/data'
+
+async function chownRecursive(path: string, uid: number, gid: number) {
+  let entries
+  try {
+    entries = await readdir(path, { withFileTypes: true })
+  } catch {
+    return
+  }
+  for (const entry of entries) {
+    const full = join(path, entry.name)
+    if (entry.isDirectory()) await chownRecursive(full, uid, gid)
+    await chown(full, uid, gid)
+  }
+  await chown(path, uid, gid)
+}
 
 /**
  * Migrate data from the old single `main` volume layout to dedicated volumes.
@@ -58,14 +74,6 @@ async function migrateVolumes(effects: T.Effects) {
 
       console.info('Moving BTCPay data to dedicated volumes...')
 
-      // The old monero-wallet-rpc s6 service ran as UID 30236:GID 302340,
-      // which are outside the 0.4.0 ID mapping range. Normalize ownership
-      // before copying so the files are accessible on the destination volume.
-      await sub.execFail(
-        ['chown', '-R', '1654:1654', '/mnt/main/btcpayserver/altcoins/monero'],
-        { user: 'root' },
-      )
-
       await sub.execFail(
         ['sh', '-c', 'cp -a /mnt/main/btcpayserver/. /mnt/btcpay/'],
         { user: 'root' },
@@ -116,10 +124,10 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_6_0_b5 = VersionInfo.of({
-  version: '2.3.6:0-beta.5',
+export const v_2_3_6_0_b6 = VersionInfo.of({
+  version: '2.3.6:0-beta.6',
   releaseNotes: {
-    en_US: 'Update BTCPay Server to 2.3.6',
+    en_US: 'Fix migration',
   },
   migrations: {
     up: async ({ effects }) => {
@@ -165,6 +173,15 @@ export const v_2_3_6_0_b5 = VersionInfo.of({
         BTCPAY_CHAINS:
           altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
       })
+
+      // The old monero-wallet-rpc s6 service ran as UID 30236:GID 302340,
+      // which are outside the 0.4.0 ID mapping range. Normalize ownership
+      // at the host level (container root can't chown unmapped UIDs).
+      await chownRecursive(
+        '/media/startos/volumes/main/btcpayserver/altcoins/monero',
+        1654,
+        1654,
+      )
 
       // Move data to dedicated volumes; pg_upgrade runs on first daemon start
       await migrateVolumes(effects)
