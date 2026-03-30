@@ -34,13 +34,13 @@
 
 ## Image and Container Runtime
 
-| Property       | Value                                |
-| -------------- | ------------------------------------ |
-| BTCPay Server  | `btcpayserver/btcpayserver`          |
-| NBXplorer      | `nicolasdorier/nbxplorer`            |
-| PostgreSQL     | `btcpayserver/postgres`              |
-| Shopify Plugin | `btcpayserver/shopify-app-deployer`  |
-| Architectures  | x86_64, aarch64                      |
+| Property       | Value                               |
+| -------------- | ----------------------------------- |
+| BTCPay Server  | `btcpayserver/btcpayserver`         |
+| NBXplorer      | `nicolasdorier/nbxplorer`           |
+| PostgreSQL     | `btcpayserver/postgres`             |
+| Shopify Plugin | `btcpayserver/shopify-app-deployer` |
+| Architectures  | x86_64, aarch64                     |
 
 All images are upstream unmodified. The service runs four containers: BTCPay Server, NBXplorer (UTXO tracker), PostgreSQL, and optionally the Shopify plugin deployer.
 
@@ -120,6 +120,20 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 - `<hostname>.local` with unique port
 - Tor `.onion` address
 - Custom domains (if configured)
+
+### Mapping Custom Domains to Apps
+
+You can map custom domains (e.g., `donate.example.com`, `shop.example.com`) directly to specific BTCPay apps such as crowdfund pages or point-of-sale terminals. This lets customers visit a clean URL without needing to navigate your BTCPay dashboard.
+
+**Steps:**
+
+1. **Add domains to your BTCPay "Web UI" interface:**
+   Go to your BTCPay service in the StartOS UI, open the interface settings for the Web UI, and add custom domains. Be sure to use Let's Encrypt and create the require port forwarding rules as instructed by StartOS.
+
+2. **Map each domain to an app in BTCPay:**
+   In the BTCPay web UI, go to **Server Settings** and find the **"Map specific domains to specific apps"** option. Enter the domain name, select the app (crowdfund, POS, etc.) from the dropdown, and save.
+
+Once configured, visitors to that domain will be served the selected app directly.
 
 ---
 
