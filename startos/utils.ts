@@ -16,6 +16,7 @@ export const xmrWalletDir = `${dataDir}/btcpayserver/altcoins/monero/wallets`
 // Ports
 export const uiPort = 23000
 export const nbxPort = 24444
+export const shopifyPort = 3000
 
 // Bitcoin Core
 export const bitcoindHost = 'bitcoind.startos'

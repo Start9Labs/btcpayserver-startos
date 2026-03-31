@@ -16,6 +16,7 @@ import {
   nbxMountpoint,
   nbxPort,
   PG_MOUNT,
+  shopifyPort,
   uiPort,
 } from './utils'
 
@@ -256,7 +257,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         command: sdk.useEntrypoint(),
         env: {
           BTCPAY_DATADIR: dataDir,
-          BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: 'http://127.0.0.1:5000/',
+          BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: `http://127.0.0.1:${shopifyPort}/`,
           LC_ALL: 'C',
         },
         sigtermTimeout: 60_000,
@@ -292,7 +293,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ready: {
         display: i18n('Shopify Plugin'),
         fn: () =>
-          sdk.healthCheck.checkPortListening(effects, 5000, {
+          sdk.healthCheck.checkPortListening(effects, shopifyPort, {
             successMessage: i18n('The Shopify app is running'),
             errorMessage: i18n('The Shopify app is not running'),
           }),

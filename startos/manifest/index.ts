@@ -41,7 +41,7 @@ export const manifest = setupManifest({
     },
     shopify: {
       source: {
-        dockerTag: 'btcpayserver/shopify-app-deployer:1.5',
+        dockerTag: 'btcpayserver/shopify-app-deployer:1.8',
       },
       arch: ['x86_64', 'aarch64'],
     },
