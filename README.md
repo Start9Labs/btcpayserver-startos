@@ -91,7 +91,7 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | ------------------------------ | ------------------------------- | --------------- |
 | `BTCPAY_NETWORK`               | `mainnet`                       | Bitcoin network |
 | `BTCPAY_BIND`                  | `0.0.0.0:23000`                 | Web UI binding  |
-| `BTCPAY_SOCKSENDPOINT`         | `startos:9050`                  | Tor proxy       |
+| `BTCPAY_SOCKSENDPOINT`         | `tor.startos:9050`              | Tor proxy       |
 | `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
 | `NBXPLORER_BTCNODEENDPOINT`    | `bitcoind.startos:8333`         | Bitcoin P2P     |
 | `NBXPLORER_BTCRPCURL`          | `http://bitcoind.startos:8332/` | Bitcoin RPC     |
@@ -202,14 +202,47 @@ Requires `monerod` service to be installed when enabled.
 
 ## Dependencies
 
-| Dependency     | Required | Purpose             | Auto-Config   |
-| -------------- | -------- | ------------------- | ------------- |
-| Bitcoin Core   | Yes      | Blockchain data     | Via NBXplorer |
-| LND            | Optional | Lightning invoicing | Via action    |
-| Core Lightning | Optional | Lightning invoicing | Via action    |
-| Monerod        | Optional | Monero payments     | Via action    |
+Dependencies are dynamically resolved based on which features are enabled via actions.
 
-Dependencies are dynamically resolved based on which features are enabled.
+### Bitcoin Core (required)
+
+| Property | Value |
+|----------|-------|
+| Version constraint | `>= 28.3` |
+| Required state | Running |
+| Health checks | `bitcoind` |
+| Mounted volume | `main` → `/root/.bitcoin` (read-write, used by NBXplorer) |
+| Purpose | Blockchain data via RPC and P2P for NBXplorer UTXO tracking |
+
+### LND (optional)
+
+| Property | Value |
+|----------|-------|
+| Version constraint | `>= 0.20.1-beta` |
+| Required state | Running |
+| Health checks | `lnd` |
+| Mounted volume | `main` → `/mnt/lnd` (read-only) |
+| Purpose | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+
+### Core Lightning (optional)
+
+| Property | Value |
+|----------|-------|
+| Version constraint | `>= 25.12.1` |
+| Required state | Running |
+| Health checks | `lightningd` |
+| Mounted volume | `main` → `/mnt/cln` (read-only) |
+| Purpose | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+
+### Monerod (optional)
+
+| Property | Value |
+|----------|-------|
+| Version constraint | `>= 0.18.4.6` |
+| Required state | Running |
+| Health checks | `monerod` |
+| Mounted volume | (mounted at `/mnt/monero`, read-write) |
+| Purpose | Monero payments (when enabled via "Enable Altcoins" action) |
 
 ---
 
@@ -324,7 +357,7 @@ backup:
 startos_managed_config:
   BTCPAY_NETWORK: mainnet
   BTCPAY_BIND: 0.0.0.0:23000
-  BTCPAY_SOCKSENDPOINT: startos:9050
+  BTCPAY_SOCKSENDPOINT: tor.startos:9050
   POSTGRES_HOST_AUTH_METHOD: trust
   NBXPLORER_BTCNODEENDPOINT: bitcoind.startos:8333
   NBXPLORER_BTCRPCURL: http://bitcoind.startos:8332/
