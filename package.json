@@ -1,0 +1,26 @@
+{
+  "name": "btcpayserver-startos",
+  "scripts": {
+    "build": "rm -rf ./javascript && ncc build startos/index.ts -o ./javascript",
+    "prettier": "prettier --write startos",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@start9labs/start-sdk": "1.0.0",
+    "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#30.x",
+    "pg": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.6",
+    "@types/pg": "^8.16.0",
+    "@vercel/ncc": "^0.38.4",
+    "prettier": "^3.8.0",
+    "typescript": "^5.9.3"
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  }
+}

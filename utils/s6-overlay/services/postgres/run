@@ -1,9 +1,0 @@
-#!/command/with-contenv bash
-# ^ allows access to the Docker container's environment variables
-
-# -a  Mark variables which are modified or created for export
-# -e  Exit immediately if a command exits with a non-zero status
-set -ea
-   
-# start postgres with specified data directory, copying stderr onto stdout
-exec s6-setuidgid postgres /usr/lib/postgresql/13/bin/postgres -D /datadir/postgresql/data 2>&1
