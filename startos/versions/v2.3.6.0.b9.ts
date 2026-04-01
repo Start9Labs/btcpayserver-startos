@@ -123,8 +123,8 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_6_0_b8 = VersionInfo.of({
-  version: '2.3.6:0-beta.8',
+export const v_2_3_6_0_b9 = VersionInfo.of({
+  version: '2.3.6:0-beta.9',
   releaseNotes: {
     en_US: 'Fix migration',
   },
