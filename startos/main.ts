@@ -1,4 +1,8 @@
 import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
+import { manifest as bitcoinManifest } from 'bitcoin-core-startos/startos/manifest'
+import { manifest as clnManifest } from 'cln-startos/startos/manifest'
+import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
+import { manifest as monerodManifest } from 'monerod-startos/startos/manifest'
 import { readFile } from 'fs/promises'
 import { btcpayConfig } from './fileModels/btcpay.config'
 import { nbxConfigDefaults, nbxplorerConfig } from './fileModels/nbxplorer.config'
@@ -65,7 +69,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
 
   if (getEnabledAltcoin('xmr', config.chains)) {
-    mounts = mounts.mountDependency({
+    mounts = mounts.mountDependency<typeof monerodManifest>({
       dependencyId: 'monerod',
       volumeId: 'main',
       subpath: null,
@@ -75,7 +79,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   }
 
   if (config.btclightning === lndConnectionString) {
-    mounts = mounts.mountDependency({
+    mounts = mounts.mountDependency<typeof lndManifest>({
       dependencyId: 'lnd',
       volumeId: 'main',
       subpath: null,
@@ -83,7 +87,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       readonly: true,
     })
   } else if (config.btclightning === clnConnectionString) {
-    mounts = mounts.mountDependency({
+    mounts = mounts.mountDependency<typeof clnManifest>({
       dependencyId: 'c-lightning',
       volumeId: 'main',
       subpath: null,
@@ -113,7 +117,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         mountpoint: dataDir,
         readonly: false,
       })
-      .mountDependency({
+      .mountDependency<typeof bitcoinManifest>({
         dependencyId: 'bitcoind',
         volumeId: 'main',
         subpath: null,

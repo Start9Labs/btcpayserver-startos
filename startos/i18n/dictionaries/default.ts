@@ -54,6 +54,9 @@ const dict = {
   // interfaces.ts
   'Web UI': 38,
   'The web interface for interacting with BTCPay Server in a browser.': 39,
+
+  // dependencies.ts
+  'BTCPay Server requires a particular block-notify command': 40,
 } as const
 
 export type I18nKey = keyof typeof dict

@@ -6,8 +6,11 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@start9labs/start-sdk": "1.0.0",
-    "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#30.x",
+    "@start9labs/start-sdk": "1.3.2",
+    "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#28.x",
+    "cln-startos": "github:Start9Labs/cln-startos#master",
+    "lnd-startos": "github:Start9Labs/lnd-startos#master",
+    "monerod-startos": "github:Start9Labs/monerod-startos#master",
     "pg": "^8.17.1"
   },
   "devDependencies": {

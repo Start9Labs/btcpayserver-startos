@@ -42,6 +42,7 @@ export default {
     37: "Si es la primera vez que selecciona un nodo Lightning, necesita ir a BTCPay Server, hacer clic en 'Lightning', elegir 'Nodo interno' y guardar.",
     38: 'Interfaz web',
     39: 'La interfaz web para interactuar con BTCPay Server en un navegador.',
+    40: 'BTCPay Server requiere un comando block-notify especifico',
   } satisfies LangDict,
   de_DE: {
     0: 'UTXO-Tracker',
@@ -84,6 +85,7 @@ export default {
     37: "Wenn Sie zum ersten Mal einen Lightning-Knoten auswahlen, mussen Sie in BTCPay Server gehen, auf 'Lightning' klicken, 'Interner Knoten' wahlen und speichern.",
     38: 'Web-UI',
     39: 'Die Weboberflache fur die Interaktion mit BTCPay Server in einem Browser.',
+    40: 'BTCPay Server benotigt einen bestimmten block-notify-Befehl',
   } satisfies LangDict,
   pl_PL: {
     0: 'Sledzenie UTXO',
@@ -126,6 +128,7 @@ export default {
     37: "Jesli po raz pierwszy wybierasz wezel Lightning, musisz wejsc do BTCPay Server, kliknac 'Lightning', wybrac 'Wezel wewnetrzny' i zapisac.",
     38: 'Interfejs webowy',
     39: 'Interfejs webowy do interakcji z BTCPay Server w przegladarce.',
+    40: 'BTCPay Server wymaga konkretnego polecenia block-notify',
   } satisfies LangDict,
   fr_FR: {
     0: 'Suivi UTXO',
@@ -168,5 +171,6 @@ export default {
     37: "Si c'est la premiere fois que vous selectionnez un noeud Lightning, vous devez aller dans BTCPay Server, cliquer sur 'Lightning', choisir 'Noeud interne' et enregistrer.",
     38: 'Interface web',
     39: "L'interface web pour interagir avec BTCPay Server dans un navigateur.",
+    40: 'BTCPay Server requiert une commande block-notify specifique',
   } satisfies LangDict,
 } as const

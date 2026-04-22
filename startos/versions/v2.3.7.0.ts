@@ -123,14 +123,14 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_6_0 = VersionInfo.of({
-  version: '2.3.6:0',
+export const v_2_3_7_0 = VersionInfo.of({
+  version: '2.3.7:0',
   releaseNotes: {
-    en_US: 'Fix migration',
-    es_ES: 'Corrección de migración',
-    de_DE: 'Migrationsfehler behoben',
-    pl_PL: 'Naprawa migracji',
-    fr_FR: 'Correction de la migration',
+    en_US: 'Update BTCPay Server to 2.3.7',
+    es_ES: 'Actualización de BTCPay Server a 2.3.7',
+    de_DE: 'Update von BTCPay Server auf 2.3.7',
+    pl_PL: 'Aktualizacja BTCPay Server do 2.3.7',
+    fr_FR: 'Mise à jour de BTCPay Server vers 2.3.7',
   },
   migrations: {
     up: async ({ effects }) => {
