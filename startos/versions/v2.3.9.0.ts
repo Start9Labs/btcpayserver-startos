@@ -123,14 +123,19 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_7_1 = VersionInfo.of({
-  version: '2.3.7:1',
+export const v_2_3_9_0 = VersionInfo.of({
+  version: '2.3.9:0',
   releaseNotes: {
-    en_US: 'Internal updates (start-sdk 1.3.3)',
-    es_ES: 'Actualizaciones internas (start-sdk 1.3.3)',
-    de_DE: 'Interne Aktualisierungen (start-sdk 1.3.3)',
-    pl_PL: 'Aktualizacje wewnętrzne (start-sdk 1.3.3)',
-    fr_FR: 'Mises à jour internes (start-sdk 1.3.3)',
+    en_US:
+      'Update BTCPay Server to 2.3.9, NBXplorer to 2.6.7, postgres sidecar to 18.1-1. Fix 0.3.x → 0.4 migration: chown legacy bundled monero data to a UID that lands inside the new container’s idmap window.',
+    es_ES:
+      'Actualiza BTCPay Server a 2.3.9, NBXplorer a 2.6.7 y el contenedor postgres a 18.1-1. Corrige la migración 0.3.x → 0.4: ajusta el dueño de los datos heredados de monero a un UID dentro de la ventana de idmap del nuevo contenedor.',
+    de_DE:
+      'Aktualisiert BTCPay Server auf 2.3.9, NBXplorer auf 2.6.7 und den Postgres-Sidecar auf 18.1-1. Fix für die Migration 0.3.x → 0.4: chown der gebündelten Monero-Daten auf eine UID innerhalb des Idmap-Fensters des neuen Containers.',
+    pl_PL:
+      'Aktualizacja BTCPay Server do 2.3.9, NBXplorer do 2.6.7 oraz kontenera postgres do 18.1-1. Poprawka migracji 0.3.x → 0.4: chown starszych danych monero na UID mieszczący się w oknie idmap nowego kontenera.',
+    fr_FR:
+      'Mise à jour de BTCPay Server vers 2.3.9, NBXplorer vers 2.6.7 et du conteneur postgres vers 18.1-1. Correctif de migration 0.3.x → 0.4 : chown des données monero héritées vers un UID situé dans la fenêtre idmap du nouveau conteneur.',
   },
   migrations: {
     up: async ({ effects }) => {
@@ -160,7 +165,7 @@ export const v_2_3_7_1 = VersionInfo.of({
 
       const { plugins, lightning, altcoins } = configYaml
 
-      await storeJson.write(effects, {
+      await storeJson.merge(effects, {
         plugins: {
           shopify: plugins?.shopify?.status === 'enabled',
         },
@@ -177,12 +182,14 @@ export const v_2_3_7_1 = VersionInfo.of({
       })
 
       // The old monero-wallet-rpc s6 service ran as UID 30236:GID 302340,
-      // which are outside the 0.4.0 ID mapping range. Normalize ownership
-      // at the host level (container root can't chown unmapped UIDs).
+      // outside the 0.4 idmap window (host 100000..165535), so the migration
+      // sandbox sees those files as overflow-owned. Chown to sandbox-uid 0
+      // (= host 100000 = the new monerod-dep container's root, same idmap)
+      // before the subcontainer cp -a so the data lands accessible.
       await chownRecursive(
         '/media/startos/volumes/main/btcpayserver/altcoins/monero',
-        1654,
-        1654,
+        0,
+        0,
       )
 
       // Move data to dedicated volumes; pg_upgrade runs on first daemon start
