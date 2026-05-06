@@ -1,27 +1,11 @@
 import { IMPOSSIBLE, T, VersionInfo, YAML } from '@start9labs/start-sdk'
-import { chown, readdir, readFile } from 'fs/promises'
-import { join } from 'path'
+import { readFile } from 'fs/promises'
 import { btcpayConfig } from '../fileModels/btcpay.config'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 import { clnConnectionString, lndConnectionString, PG_MOUNT } from '../utils'
 
 const OLD_PGDATA = '/mnt/main/postgresql/data'
-
-async function chownRecursive(path: string, uid: number, gid: number) {
-  let entries
-  try {
-    entries = await readdir(path, { withFileTypes: true })
-  } catch {
-    return
-  }
-  for (const entry of entries) {
-    const full = join(path, entry.name)
-    if (entry.isDirectory()) await chownRecursive(full, uid, gid)
-    await chown(full, uid, gid)
-  }
-  await chown(path, uid, gid)
-}
 
 /**
  * Migrate data from the old single `main` volume layout to dedicated volumes.
@@ -73,8 +57,24 @@ async function migrateVolumes(effects: T.Effects) {
 
       console.info('Moving BTCPay data to dedicated volumes...')
 
+      // Skip altcoins/monero — its contents were chowned by the legacy
+      // 0.3.x s6 monero-wallet-rpc unit to UID 30236:GID 302340 (outside
+      // the 0.4 idmap window 100000..165535), so they're unreadable
+      // from inside this subcontainer. Monero is now a separate package;
+      // users with the monero altcoin re-add it via the new monerod
+      // dependency and resync.
       await sub.execFail(
-        ['sh', '-c', 'cp -a /mnt/main/btcpayserver/. /mnt/btcpay/'],
+        [
+          'sh',
+          '-c',
+          `set -e
+          cd /mnt/main/btcpayserver
+          find . -mindepth 1 -maxdepth 1 ! -name altcoins -exec cp -a {} /mnt/btcpay/ \\;
+          if [ -d altcoins ]; then
+            mkdir -p /mnt/btcpay/altcoins
+            find altcoins -mindepth 1 -maxdepth 1 ! -name monero -exec cp -a {} /mnt/btcpay/altcoins/ \\;
+          fi`,
+        ],
         { user: 'root' },
       )
       await sub.execFail(['mkdir', '-p', '/mnt/btcpay/Plugins'], {
@@ -127,15 +127,15 @@ export const v_2_3_9_0 = VersionInfo.of({
   version: '2.3.9:0',
   releaseNotes: {
     en_US:
-      'Update BTCPay Server to 2.3.9, NBXplorer to 2.6.7, postgres sidecar to 18.1-1. Fix 0.3.x → 0.4 migration: chown legacy bundled monero data to a UID that lands inside the new container’s idmap window.',
+      'Update BTCPay Server to 2.3.9, NBXplorer to 2.6.7, postgres sidecar to 18.1-1. 0.3.x → 0.4 migration skips legacy bundled monero wallet data — users with monero altcoin enabled should re-add it via the new monerod dependency and resync.',
     es_ES:
-      'Actualiza BTCPay Server a 2.3.9, NBXplorer a 2.6.7 y el contenedor postgres a 18.1-1. Corrige la migración 0.3.x → 0.4: ajusta el dueño de los datos heredados de monero a un UID dentro de la ventana de idmap del nuevo contenedor.',
+      'Actualiza BTCPay Server a 2.3.9, NBXplorer a 2.6.7 y el contenedor postgres a 18.1-1. La migración 0.3.x → 0.4 omite los datos heredados de la cartera monero — los usuarios con la altcoin monero deben volver a añadirla mediante la nueva dependencia monerod y resincronizar.',
     de_DE:
-      'Aktualisiert BTCPay Server auf 2.3.9, NBXplorer auf 2.6.7 und den Postgres-Sidecar auf 18.1-1. Fix für die Migration 0.3.x → 0.4: chown der gebündelten Monero-Daten auf eine UID innerhalb des Idmap-Fensters des neuen Containers.',
+      'Aktualisiert BTCPay Server auf 2.3.9, NBXplorer auf 2.6.7 und den Postgres-Sidecar auf 18.1-1. Die Migration 0.3.x → 0.4 überspringt die gebündelten Monero-Wallet-Daten — Nutzer mit aktiviertem Monero-Altcoin müssen ihn über die neue monerod-Abhängigkeit erneut einrichten und neu synchronisieren.',
     pl_PL:
-      'Aktualizacja BTCPay Server do 2.3.9, NBXplorer do 2.6.7 oraz kontenera postgres do 18.1-1. Poprawka migracji 0.3.x → 0.4: chown starszych danych monero na UID mieszczący się w oknie idmap nowego kontenera.',
+      'Aktualizacja BTCPay Server do 2.3.9, NBXplorer do 2.6.7 oraz kontenera postgres do 18.1-1. Migracja 0.3.x → 0.4 pomija starsze dane portfela monero — użytkownicy z włączonym altcoinem monero powinni ponownie skonfigurować go za pomocą nowej zależności monerod i ponownie zsynchronizować.',
     fr_FR:
-      'Mise à jour de BTCPay Server vers 2.3.9, NBXplorer vers 2.6.7 et du conteneur postgres vers 18.1-1. Correctif de migration 0.3.x → 0.4 : chown des données monero héritées vers un UID situé dans la fenêtre idmap du nouveau conteneur.',
+      'Mise à jour de BTCPay Server vers 2.3.9, NBXplorer vers 2.6.7 et du conteneur postgres vers 18.1-1. La migration 0.3.x → 0.4 ignore les données héritées du portefeuille monero — les utilisateurs avec l\'altcoin monero activé doivent l\'ajouter à nouveau via la nouvelle dépendance monerod et resynchroniser.',
   },
   migrations: {
     up: async ({ effects }) => {
@@ -180,17 +180,6 @@ export const v_2_3_9_0 = VersionInfo.of({
               : undefined,
         chains: altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
       })
-
-      // The old monero-wallet-rpc s6 service ran as UID 30236:GID 302340,
-      // outside the 0.4 idmap window (host 100000..165535), so the migration
-      // sandbox sees those files as overflow-owned. Chown to sandbox-uid 0
-      // (= host 100000 = the new monerod-dep container's root, same idmap)
-      // before the subcontainer cp -a so the data lands accessible.
-      await chownRecursive(
-        '/media/startos/volumes/main/btcpayserver/altcoins/monero',
-        0,
-        0,
-      )
 
       // Move data to dedicated volumes; pg_upgrade runs on first daemon start
       await migrateVolumes(effects)
