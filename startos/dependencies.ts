@@ -41,16 +41,25 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
       healthChecks: ['monerod'],
     }
 
-    await sdk.action.createTask(effects, 'monerod', autoconfig, 'important', {
-      input: {
-        kind: 'partial',
-        value: {
-          'block-notify': `/usr/bin/curl -so /dev/null "http://btcpayserver.startos:${uiPort}/monerolikedaemoncallback/block?cryptoCode=xmr&hash=%s"`,
+    await sdk.action.createTask(
+      effects,
+      'monerod',
+      // monerod-startos pins start-sdk 1.3.3 so its Action type is a distinct
+      // module instance from our 1.5.0 — structurally identical but TS won't
+      // infer GetActionInputType through it. Drop to any until the sibling bumps.
+      autoconfig as any,
+      'important',
+      {
+        input: {
+          kind: 'partial',
+          value: {
+            'block-notify': `/usr/bin/curl -so /dev/null "http://btcpayserver.startos:${uiPort}/monerolikedaemoncallback/block?cryptoCode=xmr&hash=%s"`,
+          },
         },
+        when: { condition: 'input-not-matches', once: false },
+        reason: i18n('BTCPay Server requires a particular block-notify command'),
       },
-      when: { condition: 'input-not-matches', once: false },
-      reason: i18n('BTCPay Server requires a particular block-notify command'),
-    })
+    )
   }
 
   return {
