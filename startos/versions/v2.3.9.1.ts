@@ -123,19 +123,14 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_9_0 = VersionInfo.of({
-  version: '2.3.9:0',
+export const v_2_3_9_1 = VersionInfo.of({
+  version: '2.3.9:1',
   releaseNotes: {
-    en_US:
-      'Update BTCPay Server to 2.3.9, NBXplorer to 2.6.7, postgres sidecar to 18.1-1. 0.3.x → 0.4 migration skips legacy bundled monero wallet data — users with monero altcoin enabled should re-add it via the new monerod dependency and resync.',
-    es_ES:
-      'Actualiza BTCPay Server a 2.3.9, NBXplorer a 2.6.7 y el contenedor postgres a 18.1-1. La migración 0.3.x → 0.4 omite los datos heredados de la cartera monero — los usuarios con la altcoin monero deben volver a añadirla mediante la nueva dependencia monerod y resincronizar.',
-    de_DE:
-      'Aktualisiert BTCPay Server auf 2.3.9, NBXplorer auf 2.6.7 und den Postgres-Sidecar auf 18.1-1. Die Migration 0.3.x → 0.4 überspringt die gebündelten Monero-Wallet-Daten — Nutzer mit aktiviertem Monero-Altcoin müssen ihn über die neue monerod-Abhängigkeit erneut einrichten und neu synchronisieren.',
-    pl_PL:
-      'Aktualizacja BTCPay Server do 2.3.9, NBXplorer do 2.6.7 oraz kontenera postgres do 18.1-1. Migracja 0.3.x → 0.4 pomija starsze dane portfela monero — użytkownicy z włączonym altcoinem monero powinni ponownie skonfigurować go za pomocą nowej zależności monerod i ponownie zsynchronizować.',
-    fr_FR:
-      'Mise à jour de BTCPay Server vers 2.3.9, NBXplorer vers 2.6.7 et du conteneur postgres vers 18.1-1. La migration 0.3.x → 0.4 ignore les données héritées du portefeuille monero — les utilisateurs avec l\'altcoin monero activé doivent l\'ajouter à nouveau via la nouvelle dépendance monerod et resynchroniser.',
+    en_US: 'Internal updates (start-sdk 1.5.1)',
+    es_ES: 'Actualizaciones internas (start-sdk 1.5.1)',
+    de_DE: 'Interne Aktualisierungen (start-sdk 1.5.1)',
+    pl_PL: 'Aktualizacje wewnętrzne (start-sdk 1.5.1)',
+    fr_FR: 'Mises à jour internes (start-sdk 1.5.1)',
   },
   migrations: {
     up: async ({ effects }) => {
