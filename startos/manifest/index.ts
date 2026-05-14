@@ -17,7 +17,6 @@ export const manifest = setupManifest({
   upstreamRepo: 'https://github.com/btcpayserver/btcpayserver',
   marketingUrl: 'https://btcpayserver.org/',
   donationUrl: 'https://btcpayserver.org/donate/',
-  docsUrls: ['https://docs.btcpayserver.org/'],
   description: { short, long },
   volumes: ['main', 'db', 'btcpayserver', 'nbxplorer'],
   images: {
