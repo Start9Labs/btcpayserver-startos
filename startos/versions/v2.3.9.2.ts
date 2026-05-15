@@ -123,24 +123,14 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_9_1 = VersionInfo.of({
-  version: '2.3.9:1',
+export const v_2_3_9_2 = VersionInfo.of({
+  version: '2.3.9:2',
   releaseNotes: {
-    en_US: `**Internal**
-
-- Bump start-sdk to 1.5.0.`,
-    es_ES: `**Interno**
-
-- Actualiza start-sdk a 1.5.0.`,
-    de_DE: `**Intern**
-
-- Aktualisiert start-sdk auf 1.5.0.`,
-    pl_PL: `**Wewnętrzne**
-
-- Aktualizacja start-sdk do 1.5.0.`,
-    fr_FR: `**Interne**
-
-- Mise à jour de start-sdk vers 1.5.0.`,
+    en_US: 'Fixes a bug that caused database backups to be empty.',
+    es_ES: 'Corrige un error que provocaba que las copias de seguridad de la base de datos estuvieran vacías.',
+    de_DE: 'Behebt einen Fehler, durch den Datenbank-Backups leer waren.',
+    pl_PL: 'Naprawia błąd powodujący, że kopie zapasowe bazy danych były puste.',
+    fr_FR: 'Corrige un bug qui rendait les sauvegardes de base de données vides.',
   },
   migrations: {
     up: async ({ effects }) => {
