@@ -10,7 +10,7 @@
     "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#next/28.x",
     "cln-startos": "github:Start9Labs/cln-startos#next",
     "lnd-startos": "github:Start9Labs/lnd-startos#next",
-    "monerod-startos": "github:Start9Labs/monerod-startos#next",
+    "monerod-startos": "github:Start9-Community/monerod-startos#master",
     "pg": "^8.17.1"
   },
   "devDependencies": {
