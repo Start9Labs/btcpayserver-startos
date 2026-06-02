@@ -123,7 +123,7 @@ async function migrateVolumes(effects: T.Effects) {
   )
 }
 
-export const v_2_3_9_2 = VersionInfo.of({
+export const current = VersionInfo.of({
   version: '2.3.9:2',
   releaseNotes: {
     en_US: 'Fixes a bug that caused database backups to be empty.',
