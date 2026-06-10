@@ -124,13 +124,18 @@ async function migrateVolumes(effects: T.Effects) {
 }
 
 export const current = VersionInfo.of({
-  version: '2.3.9:2',
+  version: '2.3.9:3',
   releaseNotes: {
-    en_US: 'Fixes a bug that caused database backups to be empty.',
-    es_ES: 'Corrige un error que provocaba que las copias de seguridad de la base de datos estuvieran vacías.',
-    de_DE: 'Behebt einen Fehler, durch den Datenbank-Backups leer waren.',
-    pl_PL: 'Naprawia błąd powodujący, że kopie zapasowe bazy danych były puste.',
-    fr_FR: 'Corrige un bug qui rendait les sauvegardes de base de données vides.',
+    en_US:
+      'Updated NBXplorer to 2.6.8 (dependency bumps and internal improvements). See https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
+    es_ES:
+      'Se actualizó NBXplorer a 2.6.8 (actualizaciones de dependencias y mejoras internas). Consulta https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
+    de_DE:
+      'NBXplorer auf 2.6.8 aktualisiert (Abhängigkeits-Updates und interne Verbesserungen). Siehe https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
+    pl_PL:
+      'Zaktualizowano NBXplorer do 2.6.8 (aktualizacje zależności i wewnętrzne usprawnienia). Zobacz https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
+    fr_FR:
+      'Mise à jour de NBXplorer vers 2.6.8 (mises à jour des dépendances et améliorations internes). Voir https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
   },
   migrations: {
     up: async ({ effects }) => {
