@@ -124,18 +124,38 @@ async function migrateVolumes(effects: T.Effects) {
 }
 
 export const current = VersionInfo.of({
-  version: '2.3.9:3',
+  version: '2.4.0:0',
   releaseNotes: {
-    en_US:
-      'Updated NBXplorer to 2.6.8 (dependency bumps and internal improvements). See https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
-    es_ES:
-      'Se actualizó NBXplorer a 2.6.8 (actualizaciones de dependencias y mejoras internas). Consulta https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
-    de_DE:
-      'NBXplorer auf 2.6.8 aktualisiert (Abhängigkeits-Updates und interne Verbesserungen). Siehe https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
-    pl_PL:
-      'Zaktualizowano NBXplorer do 2.6.8 (aktualizacje zależności i wewnętrzne usprawnienia). Zobacz https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
-    fr_FR:
-      'Mise à jour de NBXplorer vers 2.6.8 (mises à jour des dépendances et améliorations internes). Voir https://github.com/btcpayserver/NBXplorer/compare/v2.6.7...v2.6.8',
+    en_US: `Updated BTCPay Server to 2.4.0.
+
+- New features: multisig wallet setup, global search bar, passkey (loginless/passwordless) authentication, more granular wallet permissions, and wallet transaction search with date filters.
+- Breaking changes: the LNBank, Lightning Charge, and LNDHub Lightning backends are no longer supported; Boltcards and Shopify v2 plugin users must upgrade those plugins.
+
+See https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
+    es_ES: `Se actualizó BTCPay Server a 2.4.0.
+
+- Nuevas funciones: configuración de monedero multifirma, barra de búsqueda global, autenticación con passkey (sin inicio de sesión ni contraseña), permisos de monedero más granulares y búsqueda de transacciones del monedero con filtros de fecha.
+- Cambios importantes: los backends de Lightning LNBank, Lightning Charge y LNDHub ya no son compatibles; los usuarios de los complementos Boltcards y Shopify v2 deben actualizarlos.
+
+Consulta https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
+    de_DE: `BTCPay Server auf 2.4.0 aktualisiert.
+
+- Neue Funktionen: Einrichtung von Multisig-Wallets, globale Suchleiste, Passkey-Authentifizierung (ohne Login/Passwort), feingranularere Wallet-Berechtigungen sowie Wallet-Transaktionssuche mit Datumsfiltern.
+- Breaking Changes: Die Lightning-Backends LNBank, Lightning Charge und LNDHub werden nicht mehr unterstützt; Nutzer der Boltcards- und Shopify-v2-Plugins müssen diese aktualisieren.
+
+Siehe https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
+    pl_PL: `Zaktualizowano BTCPay Server do 2.4.0.
+
+- Nowe funkcje: konfiguracja portfela multisig, globalny pasek wyszukiwania, uwierzytelnianie passkey (bez logowania i hasła), bardziej szczegółowe uprawnienia portfela oraz wyszukiwanie transakcji portfela z filtrami dat.
+- Zmiany powodujące niezgodność: backendy Lightning LNBank, Lightning Charge i LNDHub nie są już obsługiwane; użytkownicy wtyczek Boltcards i Shopify v2 muszą je zaktualizować.
+
+Zobacz https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
+    fr_FR: `Mise à jour de BTCPay Server vers 2.4.0.
+
+- Nouvelles fonctionnalités : configuration de portefeuille multisig, barre de recherche globale, authentification par passkey (sans connexion ni mot de passe), permissions de portefeuille plus granulaires et recherche de transactions du portefeuille avec filtres de date.
+- Changements incompatibles : les backends Lightning LNBank, Lightning Charge et LNDHub ne sont plus pris en charge ; les utilisateurs des plugins Boltcards et Shopify v2 doivent les mettre à jour.
+
+Voir https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
   },
   migrations: {
     up: async ({ effects }) => {
