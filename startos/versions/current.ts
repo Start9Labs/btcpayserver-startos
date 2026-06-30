@@ -124,38 +124,23 @@ async function migrateVolumes(effects: T.Effects) {
 }
 
 export const current = VersionInfo.of({
-  version: '2.4.0:0',
+  version: '2.4.0:1',
   releaseNotes: {
-    en_US: `Updated BTCPay Server to 2.4.0.
+    en_US: `Updated the bundled PostgreSQL image to 18.4, matching BTCPay Server's upstream stack. This is a PostgreSQL 18 minor release with bug and security fixes; no action is required and existing data is upgraded automatically.
 
-- New features: multisig wallet setup, global search bar, passkey (loginless/passwordless) authentication, more granular wallet permissions, and wallet transaction search with date filters.
-- Breaking changes: the LNBank, Lightning Charge, and LNDHub Lightning backends are no longer supported; Boltcards and Shopify v2 plugin users must upgrade those plugins.
+See https://www.postgresql.org/docs/release/`,
+    es_ES: `Se actualizó la imagen de PostgreSQL incluida a 18.4, igualando la pila oficial de BTCPay Server. Es una versión menor de PostgreSQL 18 con correcciones de errores y de seguridad; no se requiere ninguna acción y los datos existentes se actualizan automáticamente.
 
-See https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
-    es_ES: `Se actualizó BTCPay Server a 2.4.0.
+Consulta https://www.postgresql.org/docs/release/`,
+    de_DE: `Das mitgelieferte PostgreSQL-Image wurde auf 18.4 aktualisiert, passend zum Upstream-Stack von BTCPay Server. Dies ist eine PostgreSQL-18-Minor-Version mit Fehler- und Sicherheitskorrekturen; es ist keine Aktion erforderlich und vorhandene Daten werden automatisch aktualisiert.
 
-- Nuevas funciones: configuración de monedero multifirma, barra de búsqueda global, autenticación con passkey (sin inicio de sesión ni contraseña), permisos de monedero más granulares y búsqueda de transacciones del monedero con filtros de fecha.
-- Cambios importantes: los backends de Lightning LNBank, Lightning Charge y LNDHub ya no son compatibles; los usuarios de los complementos Boltcards y Shopify v2 deben actualizarlos.
+Siehe https://www.postgresql.org/docs/release/`,
+    pl_PL: `Zaktualizowano dołączony obraz PostgreSQL do 18.4, zgodnie ze stosem upstream BTCPay Server. To wydanie pomocnicze PostgreSQL 18 z poprawkami błędów i zabezpieczeń; nie jest wymagane żadne działanie, a istniejące dane są aktualizowane automatycznie.
 
-Consulta https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
-    de_DE: `BTCPay Server auf 2.4.0 aktualisiert.
+Zobacz https://www.postgresql.org/docs/release/`,
+    fr_FR: `Mise à jour de l'image PostgreSQL fournie vers 18.4, en cohérence avec la pile upstream de BTCPay Server. Il s'agit d'une version mineure de PostgreSQL 18 avec des corrections de bogues et de sécurité ; aucune action n'est requise et les données existantes sont mises à jour automatiquement.
 
-- Neue Funktionen: Einrichtung von Multisig-Wallets, globale Suchleiste, Passkey-Authentifizierung (ohne Login/Passwort), feingranularere Wallet-Berechtigungen sowie Wallet-Transaktionssuche mit Datumsfiltern.
-- Breaking Changes: Die Lightning-Backends LNBank, Lightning Charge und LNDHub werden nicht mehr unterstützt; Nutzer der Boltcards- und Shopify-v2-Plugins müssen diese aktualisieren.
-
-Siehe https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
-    pl_PL: `Zaktualizowano BTCPay Server do 2.4.0.
-
-- Nowe funkcje: konfiguracja portfela multisig, globalny pasek wyszukiwania, uwierzytelnianie passkey (bez logowania i hasła), bardziej szczegółowe uprawnienia portfela oraz wyszukiwanie transakcji portfela z filtrami dat.
-- Zmiany powodujące niezgodność: backendy Lightning LNBank, Lightning Charge i LNDHub nie są już obsługiwane; użytkownicy wtyczek Boltcards i Shopify v2 muszą je zaktualizować.
-
-Zobacz https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
-    fr_FR: `Mise à jour de BTCPay Server vers 2.4.0.
-
-- Nouvelles fonctionnalités : configuration de portefeuille multisig, barre de recherche globale, authentification par passkey (sans connexion ni mot de passe), permissions de portefeuille plus granulaires et recherche de transactions du portefeuille avec filtres de date.
-- Changements incompatibles : les backends Lightning LNBank, Lightning Charge et LNDHub ne sont plus pris en charge ; les utilisateurs des plugins Boltcards et Shopify v2 doivent les mettre à jour.
-
-Voir https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.0`,
+Voir https://www.postgresql.org/docs/release/`,
   },
   migrations: {
     up: async ({ effects }) => {
