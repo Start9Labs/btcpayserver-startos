@@ -34,7 +34,7 @@ export const manifest = setupManifest({
     },
     postgres: {
       source: {
-        dockerTag: 'btcpayserver/postgres:18.1-1',
+        dockerTag: 'btcpayserver/postgres:18.4',
       },
       arch: ['x86_64', 'aarch64'],
     },
