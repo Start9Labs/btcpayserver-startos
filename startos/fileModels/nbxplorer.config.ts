@@ -13,13 +13,11 @@ const shape = z.object({
   port: z.literal(`${nbxPort}`).catch(`${nbxPort}`),
   bind: z.literal('127.0.0.1').catch('127.0.0.1'),
   mainnet: z.literal('1').catch('1'),
-  'btc.rpc.url': z.literal(bitcoindRpcUrl).catch(bitcoindRpcUrl),
+  'btc.rpc.url': z.string().catch(bitcoindRpcUrl),
   'btc.rpc.user': z.undefined().optional().catch(undefined),
   'btc.rpc.password': z.undefined().optional().catch(undefined),
   'btc.rpc.cookiefile': z.literal(bitcoindCookiePath).catch(bitcoindCookiePath),
-  'btc.node.endpoint': z
-    .literal(bitcoindPeerEndpoint)
-    .catch(bitcoindPeerEndpoint),
+  'btc.node.endpoint': z.string().catch(bitcoindPeerEndpoint),
   postgres: z.literal(nbxPostgres).catch(nbxPostgres),
 
   // Configuration

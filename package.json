@@ -6,11 +6,11 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@start9labs/start-sdk": "1.5.3",
+    "@start9labs/start-sdk": "2.0.1",
     "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#next/28.x",
     "cln-startos": "github:Start9Labs/cln-startos#next",
     "lnd-startos": "github:Start9Labs/lnd-startos#next",
-    "monerod-startos": "github:Start9-Community/monerod-startos#master",
+    "monerod-startos": "github:Start9-Community/monerod-startos#next",
     "pg": "^8.17.1"
   },
   "devDependencies": {
@@ -18,7 +18,7 @@
     "@types/pg": "^8.16.0",
     "@vercel/ncc": "^0.38.4",
     "prettier": "^3.8.0",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "prettier": {
     "trailingComma": "all",

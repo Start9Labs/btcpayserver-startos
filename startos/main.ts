@@ -1,4 +1,4 @@
-import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
+import { HealthCheckResult } from '@start9labs/start-sdk/lib/health/checkFns'
 import { manifest as bitcoinManifest } from 'bitcoin-core-startos/startos/manifest'
 import { manifest as clnManifest } from 'cln-startos/startos/manifest'
 import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
@@ -11,12 +11,17 @@ import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
   bitcoindMountpoint,
-  clnConnectionString,
+  bitcoindPeerBridge,
+  bitcoindRpcBridge,
   clnMountpoint,
   dataDir,
   getEnabledAltcoin,
+  isCln,
+  isLnd,
   lndConnectionString,
   lndMountpoint,
+  lndRestBridge,
+  monerodRpcBridge,
   nbxMountpoint,
   nbxPort,
   PG_MOUNT,
@@ -43,6 +48,51 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
   const nbxConfig = await nbxplorerConfig.read().const(effects)
   if (!nbxConfig) throw new Error('NBXplorer config not found')
+
+  // ========================
+  // Resolve dependency addresses over the LXC bridge
+  // ========================
+  // The `<pkg>.startos` DNS is gone in 2.0 — containers reach each other over
+  // the bridge. Resolve the live addresses and write them into the config files
+  // the apps read before their daemons start.
+
+  const btcRpc = await bitcoindRpcBridge(effects).const()
+  const btcPeer = await bitcoindPeerBridge(effects).const()
+  if (!btcRpc || !btcPeer)
+    throw new Error(
+      'Bitcoin Core is not yet reachable on the internal network. Ensure it is installed and running.',
+    )
+  await nbxplorerConfig.merge(
+    effects,
+    { 'btc.rpc.url': btcRpc, 'btc.node.endpoint': btcPeer },
+    { allowWriteAfterConst: true },
+  )
+
+  const torIp = await sdk.getContainerIp(effects, { packageId: 'tor' }).const()
+  const btcpayPatch: {
+    socksendpoint?: string
+    btclightning?: string
+    XMR_daemon_uri?: string
+  } = {
+    socksendpoint: torIp ? `${torIp}:9050` : undefined,
+  }
+  if (isLnd(config.btclightning)) {
+    const restUrl = await lndRestBridge(effects).const()
+    if (!restUrl)
+      throw new Error(
+        'LND is not yet reachable on the internal network. Ensure it is installed and running.',
+      )
+    btcpayPatch.btclightning = lndConnectionString(restUrl)
+  }
+  if (getEnabledAltcoin('xmr', config.chains)) {
+    const xmrUri = await monerodRpcBridge(effects).const()
+    if (!xmrUri)
+      throw new Error(
+        'Monero is not yet reachable on the internal network. Ensure it is installed and running.',
+      )
+    btcpayPatch.XMR_daemon_uri = xmrUri
+  }
+  await btcpayConfig.merge(effects, btcpayPatch, { allowWriteAfterConst: true })
 
   // ========================
   // Dependency mounts
@@ -78,7 +128,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
   }
 
-  if (config.btclightning === lndConnectionString) {
+  if (isLnd(config.btclightning)) {
     mounts = mounts.mountDependency<typeof lndManifest>({
       dependencyId: 'lnd',
       volumeId: 'main',
@@ -86,7 +136,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: lndMountpoint,
       readonly: true,
     })
-  } else if (config.btclightning === clnConnectionString) {
+  } else if (isCln(config.btclightning)) {
     mounts = mounts.mountDependency<typeof clnManifest>({
       dependencyId: 'c-lightning',
       volumeId: 'main',
@@ -100,14 +150,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Set subcontainers
   // ========================
 
-  const btcpaySub = await sdk.SubContainer.of(
+  const btcpaySub = sdk.SubContainer.of(
     effects,
     { imageId: 'btcpay' },
     mounts,
     'btcpay',
   )
 
-  const nbxSub = await sdk.SubContainer.of(
+  const nbxSub = sdk.SubContainer.of(
     effects,
     { imageId: 'nbx' },
     sdk.Mounts.of()
@@ -134,7 +184,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     readonly: false,
   })
 
-  const postgresSub = await sdk.SubContainer.of(
+  const postgresSub = sdk.SubContainer.of(
     effects,
     { imageId: 'postgres' },
     pgMounts,
@@ -217,7 +267,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ready: {
         display: i18n('UTXO Tracker Sync'),
         fn: async () => {
-          const auth = await readFile(`${nbxSub.rootfs}${dataDir}/Main/.cookie`, {
+          const nbxRootfs = await nbxSub.rootfs
+          const auth = await readFile(`${nbxRootfs}${dataDir}/Main/.cookie`, {
             encoding: 'base64',
           })
 
@@ -285,7 +336,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Add Shopify app daemon if enabled
   if (shopifyEnabled) {
     return daemons.addDaemon('shopify', {
-      subcontainer: await sdk.SubContainer.of(
+      subcontainer: sdk.SubContainer.of(
         effects,
         { imageId: 'shopify' },
         null,

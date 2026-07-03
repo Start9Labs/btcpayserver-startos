@@ -3,7 +3,12 @@ import { readFile } from 'fs/promises'
 import { btcpayConfig } from '../fileModels/btcpay.config'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
-import { clnConnectionString, lndConnectionString, PG_MOUNT } from '../utils'
+import {
+  clnConnectionString,
+  LND_REST_FALLBACK,
+  lndConnectionString,
+  PG_MOUNT,
+} from '../utils'
 
 const OLD_PGDATA = '/mnt/main/postgresql/data'
 
@@ -124,23 +129,18 @@ async function migrateVolumes(effects: T.Effects) {
 }
 
 export const current = VersionInfo.of({
-  version: '2.4.0:1',
+  version: '2.4.0:2',
   releaseNotes: {
-    en_US: `Updated the bundled PostgreSQL image to 18.4, matching BTCPay Server's upstream stack. This is a PostgreSQL 18 minor release with bug and security fixes; no action is required and existing data is upgraded automatically.
-
-See https://www.postgresql.org/docs/release/`,
-    es_ES: `Se actualizó la imagen de PostgreSQL incluida a 18.4, igualando la pila oficial de BTCPay Server. Es una versión menor de PostgreSQL 18 con correcciones de errores y de seguridad; no se requiere ninguna acción y los datos existentes se actualizan automáticamente.
-
-Consulta https://www.postgresql.org/docs/release/`,
-    de_DE: `Das mitgelieferte PostgreSQL-Image wurde auf 18.4 aktualisiert, passend zum Upstream-Stack von BTCPay Server. Dies ist eine PostgreSQL-18-Minor-Version mit Fehler- und Sicherheitskorrekturen; es ist keine Aktion erforderlich und vorhandene Daten werden automatisch aktualisiert.
-
-Siehe https://www.postgresql.org/docs/release/`,
-    pl_PL: `Zaktualizowano dołączony obraz PostgreSQL do 18.4, zgodnie ze stosem upstream BTCPay Server. To wydanie pomocnicze PostgreSQL 18 z poprawkami błędów i zabezpieczeń; nie jest wymagane żadne działanie, a istniejące dane są aktualizowane automatycznie.
-
-Zobacz https://www.postgresql.org/docs/release/`,
-    fr_FR: `Mise à jour de l'image PostgreSQL fournie vers 18.4, en cohérence avec la pile upstream de BTCPay Server. Il s'agit d'une version mineure de PostgreSQL 18 avec des corrections de bogues et de sécurité ; aucune action n'est requise et les données existantes sont mises à jour automatiquement.
-
-Voir https://www.postgresql.org/docs/release/`,
+    en_US:
+      'Internal updates (start-sdk 2.0.x). Fixes database backups that could previously be created empty.',
+    es_ES:
+      'Actualizaciones internas (start-sdk 2.0.x). Corrige las copias de seguridad de la base de datos que anteriormente podían crearse vacías.',
+    de_DE:
+      'Interne Aktualisierungen (start-sdk 2.0.x). Behebt Datenbank-Backups, die zuvor leer erstellt werden konnten.',
+    pl_PL:
+      'Aktualizacje wewnętrzne (start-sdk 2.0.x). Naprawia kopie zapasowe bazy danych, które wcześniej mogły być tworzone puste.',
+    fr_FR:
+      'Mises à jour internes (start-sdk 2.0.x). Corrige les sauvegardes de base de données qui pouvaient auparavant être créées vides.',
   },
   migrations: {
     up: async ({ effects }) => {
@@ -179,7 +179,9 @@ Voir https://www.postgresql.org/docs/release/`,
       await btcpayConfig.merge(effects, {
         btclightning:
           lightning?.type === 'lnd'
-            ? lndConnectionString
+            ? // placeholder address — setupMain resolves LND's real bridge
+              // address over the LXC bridge on first start (see utils.ts)
+              lndConnectionString(LND_REST_FALLBACK)
             : lightning?.type === 'c-lightning'
               ? clnConnectionString
               : undefined,

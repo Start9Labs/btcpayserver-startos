@@ -91,11 +91,16 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | ------------------------------ | ------------------------------- | --------------- |
 | `BTCPAY_NETWORK`               | `mainnet`                       | Bitcoin network |
 | `BTCPAY_BIND`                  | `0.0.0.0:23000`                 | Web UI binding  |
-| `BTCPAY_SOCKSENDPOINT`         | `tor.startos:9050`              | Tor proxy       |
+| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge   | Tor proxy       |
 | `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
-| `NBXPLORER_BTCNODEENDPOINT`    | `bitcoind.startos:8333`         | Bitcoin P2P     |
-| `NBXPLORER_BTCRPCURL`          | `http://bitcoind.startos:8332/` | Bitcoin RPC     |
+| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind P2P over the LXC bridge | Bitcoin P2P    |
+| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge | Bitcoin RPC    |
 | `POSTGRES_HOST_AUTH_METHOD`    | `trust`                         | Database auth   |
+
+> Cross-container addresses (bitcoind, LND, Monero, Tor, and the Web UI callback
+> monerod uses) are resolved over the LXC bridge at startup and merged into the
+> config files — the old `<pkg>.startos` DNS names are no longer used. See
+> `startos/utils.ts` for the bridge resolvers.
 
 ### Configurable via Actions
 
@@ -150,7 +155,7 @@ Once configured, visitors to that domain will be served the selected app directl
 
 **Options:**
 
-- **LND** — connects via REST at `lnd.startos:8080`
+- **LND** — connects via REST over the LXC bridge
 - **Core Lightning** — connects via Unix socket
 - **None/External** — disable internal Lightning
 
@@ -357,10 +362,10 @@ backup:
 startos_managed_config:
   BTCPAY_NETWORK: mainnet
   BTCPAY_BIND: 0.0.0.0:23000
-  BTCPAY_SOCKSENDPOINT: tor.startos:9050
+  BTCPAY_SOCKSENDPOINT: tor SOCKS over LXC bridge (resolved at startup)
   POSTGRES_HOST_AUTH_METHOD: trust
-  NBXPLORER_BTCNODEENDPOINT: bitcoind.startos:8333
-  NBXPLORER_BTCRPCURL: http://bitcoind.startos:8332/
+  NBXPLORER_BTCNODEENDPOINT: bitcoind P2P over LXC bridge (resolved at startup)
+  NBXPLORER_BTCRPCURL: bitcoind RPC over LXC bridge (resolved at startup)
 not_available:
   - Testnet/Signet networks
   - Redis caching
