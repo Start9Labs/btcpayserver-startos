@@ -5,7 +5,6 @@ import {
   nbxCookiePath,
   nbxPostgres,
   uiPort,
-  xmrDaemonUri,
   xmrWalletDaemonUri,
   xmrWalletDir,
 } from '../utils'
@@ -17,15 +16,11 @@ const shape = z.object({
   network: z.literal('mainnet').catch('mainnet'),
   bind: z.literal(btcpayBind).catch(btcpayBind),
   btcexplorercookiefile: z.literal(nbxCookiePath).catch(nbxCookiePath),
-  explorerpostgres: z
-    .literal(nbxPostgres)
-    .catch(nbxPostgres),
-  postgres: z
-    .literal(btcpayPostgres)
-    .catch(btcpayPostgres),
+  explorerpostgres: z.literal(nbxPostgres).catch(nbxPostgres),
+  postgres: z.literal(btcpayPostgres).catch(btcpayPostgres),
   debuglog: z.literal('btcpay.log').catch('btcpay.log'),
   dockerdeployment: z.literal('false').catch('false'),
-  XMR_daemon_uri: z.string().catch(xmrDaemonUri),
+  XMR_daemon_uri: z.string().optional().catch(undefined),
   XMR_wallet_daemon_uri: z
     .literal(xmrWalletDaemonUri)
     .catch(xmrWalletDaemonUri),

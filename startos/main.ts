@@ -5,22 +5,22 @@ import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
 import { manifest as monerodManifest } from 'monerod-startos/startos/manifest'
 import { readFile } from 'fs/promises'
 import { btcpayConfig } from './fileModels/btcpay.config'
-import { nbxConfigDefaults, nbxplorerConfig } from './fileModels/nbxplorer.config'
+import {
+  nbxConfigDefaults,
+  nbxplorerConfig,
+} from './fileModels/nbxplorer.config'
 import { storeJson } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
   bitcoindMountpoint,
   bitcoindPeerBridge,
-  bitcoindPeerEndpoint,
   bitcoindRpcBridge,
-  bitcoindRpcUrl,
   clnMountpoint,
   dataDir,
   getEnabledAltcoin,
   isCln,
   isLnd,
-  LND_REST_FALLBACK,
   lndConnectionString,
   lndMountpoint,
   lndRestBridge,
@@ -31,7 +31,6 @@ import {
   shopifyPort,
   torSocksBridge,
   uiPort,
-  xmrDaemonUri,
 } from './utils'
 
 export const main = sdk.setupMain(async ({ effects }) => {
@@ -61,21 +60,24 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // the bridge. Each resolver is a reactive `.const()` keyed on the dependency's
   // assigned external port: it re-runs main on dependency install / uninstall /
   // port-change, but never on a dependency update. When a dependency is absent
-  // the resolver is null and we write a dead loopback placeholder; the `.const()`
-  // heals automatically once the dependency appears.
+  // the resolver is null and we omit its value (the file-model fields are
+  // optional), letting the app fail into a red health check; the `.const()`
+  // heals it once the dependency appears.
 
-  const btcRpc = (await bitcoindRpcBridge(effects).const()) ?? bitcoindRpcUrl
-  const btcPeer =
-    (await bitcoindPeerBridge(effects).const()) ?? bitcoindPeerEndpoint
+  const btcRpc = await bitcoindRpcBridge(effects).const()
+  const btcPeer = await bitcoindPeerBridge(effects).const()
   await nbxplorerConfig.merge(
     effects,
-    { 'btc.rpc.url': btcRpc, 'btc.node.endpoint': btcPeer },
+    {
+      'btc.rpc.url': btcRpc ?? undefined,
+      'btc.node.endpoint': btcPeer ?? undefined,
+    },
     { allowWriteAfterConst: true },
   )
 
-  // Tor SOCKS over the bridge. The 9050 fallback keeps this constant across tor
-  // install/update/uninstall, so it never restarts BTCPay; a dead address is
-  // just connection-refused, so onion routing is always safe to enable.
+  // Tor SOCKS over the bridge. The allocator-guaranteed 9050 fallback keeps this
+  // constant across tor install/update/uninstall, so it never restarts BTCPay; a
+  // dead address is just connection-refused, so onion routing is always safe to enable.
   const btcpayPatch: {
     socksendpoint: string
     btclightning?: string
@@ -84,13 +86,12 @@ export const main = sdk.setupMain(async ({ effects }) => {
     socksendpoint: await torSocksBridge(effects).const(),
   }
   if (isLnd(config.btclightning)) {
-    btcpayPatch.btclightning = lndConnectionString(
-      (await lndRestBridge(effects).const()) ?? LND_REST_FALLBACK,
-    )
+    const restUrl = await lndRestBridge(effects).const()
+    if (restUrl) btcpayPatch.btclightning = lndConnectionString(restUrl)
   }
   if (getEnabledAltcoin('xmr', config.chains)) {
     btcpayPatch.XMR_daemon_uri =
-      (await monerodRpcBridge(effects).const()) ?? xmrDaemonUri
+      (await monerodRpcBridge(effects).const()) ?? undefined
   }
   await btcpayConfig.merge(effects, btcpayPatch, { allowWriteAfterConst: true })
 

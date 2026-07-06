@@ -51,13 +51,10 @@ export function pgConnectionString(appName: string, database: string) {
 export const nbxPostgres = pgConnectionString('nbxplorer', 'nbxplorer')
 export const btcpayPostgres = pgConnectionString('btcpayserver', 'btcpayserver')
 
-// Loopback placeholders: the file-model `.catch()` defaults, and the value
-// written when a dependency isn't installed. Each is a dead address
-// (connection-refused) that the reactive bridge resolvers below heal at startup
-// once the dependency appears.
-export const bitcoindRpcUrl = 'http://127.0.0.1:8332/'
-export const bitcoindPeerEndpoint = '127.0.0.1:8333'
-export const xmrDaemonUri = 'http://127.0.0.1:18089'
+// Migration-only placeholder for the LND `btclightning` connection string: the
+// `up` migration writes it to preserve a pre-existing LND selection, and main
+// heals it with the real bridge address on first start. Absent dependencies are
+// otherwise omitted (optional file-model fields), never dialed at a fake address.
 export const LND_REST_FALLBACK = 'https://127.0.0.1:8080'
 
 // Lightning connection strings written to btcpay's settings.config. CLN is a
@@ -116,7 +113,8 @@ export function bridgeAddress(
         const port =
           host?.bindings[opts.internalPort]?.net.assignedPort ??
           opts.fallbackPort
-        return port != null ? `${osIp}:${port}` : null
+        if (port == null) return null
+        return `${osIp}:${port}`
       },
     )
   }

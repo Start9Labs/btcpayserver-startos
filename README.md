@@ -69,13 +69,13 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | ------------ | ----------------------------------------- | ------------------------------ |
 | Installation | Docker Compose with multiple config files | Install from marketplace       |
 | Database     | Manual PostgreSQL setup                   | Automatic                      |
-| Bitcoin Core | Manual RPC configuration                  | Auto-configured via dependency |
+| Bitcoin      | Manual RPC configuration                  | Auto-configured via dependency |
 | NBXplorer    | Separate manual setup                     | Bundled and auto-configured    |
 | Lightning    | Manual configuration                      | Select via action              |
 
 **First-run steps:**
 
-1. Ensure Bitcoin Core is installed (will be auto-configured)
+1. Ensure Bitcoin is installed (will be auto-configured)
 2. Install BTCPay Server from the StartOS marketplace
 3. Wait for UTXO Tracker to sync (check health status)
 4. Optionally run "Choose Lightning Node" to enable Lightning invoicing
@@ -209,7 +209,7 @@ Requires `monerod` service to be installed when enabled.
 
 Dependencies are dynamically resolved based on which features are enabled via actions.
 
-### Bitcoin Core (required)
+### Bitcoin (required)
 
 | Property | Value |
 |----------|-------|
@@ -261,13 +261,13 @@ Dependencies are dynamically resolved based on which features are enabled via ac
 
 **Not backed up (regenerable):**
 
-- `nbxplorer` volume — resyncs from Bitcoin Core on restore
+- `nbxplorer` volume — resyncs from Bitcoin on restore
 - `nbxplorer` database — recreated and resynced on restore
 
 **Restore behavior:**
 
 - BTCPay data and database fully restored
-- NBXplorer will need time to resync from Bitcoin Core
+- NBXplorer will need time to resync from Bitcoin
 
 ---
 
