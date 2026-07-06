@@ -11,7 +11,8 @@
     "cln-startos": "github:Start9Labs/cln-startos#next",
     "lnd-startos": "github:Start9Labs/lnd-startos#next",
     "monerod-startos": "github:Start9-Community/monerod-startos#next",
-    "pg": "^8.17.1"
+    "pg": "^8.17.1",
+    "tor-startos": "github:Start9Labs/tor-startos#next"
   },
   "devDependencies": {
     "@types/node": "^22.19.6",

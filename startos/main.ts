@@ -12,12 +12,15 @@ import { sdk } from './sdk'
 import {
   bitcoindMountpoint,
   bitcoindPeerBridge,
+  bitcoindPeerEndpoint,
   bitcoindRpcBridge,
+  bitcoindRpcUrl,
   clnMountpoint,
   dataDir,
   getEnabledAltcoin,
   isCln,
   isLnd,
+  LND_REST_FALLBACK,
   lndConnectionString,
   lndMountpoint,
   lndRestBridge,
@@ -26,7 +29,9 @@ import {
   nbxPort,
   PG_MOUNT,
   shopifyPort,
+  torSocksBridge,
   uiPort,
+  xmrDaemonUri,
 } from './utils'
 
 export const main = sdk.setupMain(async ({ effects }) => {
@@ -53,44 +58,39 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Resolve dependency addresses over the LXC bridge
   // ========================
   // The `<pkg>.startos` DNS is gone in 2.0 — containers reach each other over
-  // the bridge. Resolve the live addresses and write them into the config files
-  // the apps read before their daemons start.
+  // the bridge. Each resolver is a reactive `.const()` keyed on the dependency's
+  // assigned external port: it re-runs main on dependency install / uninstall /
+  // port-change, but never on a dependency update. When a dependency is absent
+  // the resolver is null and we write a dead loopback placeholder; the `.const()`
+  // heals automatically once the dependency appears.
 
-  const btcRpc = await bitcoindRpcBridge(effects).const()
-  const btcPeer = await bitcoindPeerBridge(effects).const()
-  if (!btcRpc || !btcPeer)
-    throw new Error(
-      'Bitcoin Core is not yet reachable on the internal network. Ensure it is installed and running.',
-    )
+  const btcRpc = (await bitcoindRpcBridge(effects).const()) ?? bitcoindRpcUrl
+  const btcPeer =
+    (await bitcoindPeerBridge(effects).const()) ?? bitcoindPeerEndpoint
   await nbxplorerConfig.merge(
     effects,
     { 'btc.rpc.url': btcRpc, 'btc.node.endpoint': btcPeer },
     { allowWriteAfterConst: true },
   )
 
-  const torIp = await sdk.getContainerIp(effects, { packageId: 'tor' }).const()
+  // Tor SOCKS over the bridge. The 9050 fallback keeps this constant across tor
+  // install/update/uninstall, so it never restarts BTCPay; a dead address is
+  // just connection-refused, so onion routing is always safe to enable.
   const btcpayPatch: {
-    socksendpoint?: string
+    socksendpoint: string
     btclightning?: string
     XMR_daemon_uri?: string
   } = {
-    socksendpoint: torIp ? `${torIp}:9050` : undefined,
+    socksendpoint: await torSocksBridge(effects).const(),
   }
   if (isLnd(config.btclightning)) {
-    const restUrl = await lndRestBridge(effects).const()
-    if (!restUrl)
-      throw new Error(
-        'LND is not yet reachable on the internal network. Ensure it is installed and running.',
-      )
-    btcpayPatch.btclightning = lndConnectionString(restUrl)
+    btcpayPatch.btclightning = lndConnectionString(
+      (await lndRestBridge(effects).const()) ?? LND_REST_FALLBACK,
+    )
   }
   if (getEnabledAltcoin('xmr', config.chains)) {
-    const xmrUri = await monerodRpcBridge(effects).const()
-    if (!xmrUri)
-      throw new Error(
-        'Monero is not yet reachable on the internal network. Ensure it is installed and running.',
-      )
-    btcpayPatch.XMR_daemon_uri = xmrUri
+    btcpayPatch.XMR_daemon_uri =
+      (await monerodRpcBridge(effects).const()) ?? xmrDaemonUri
   }
   await btcpayConfig.merge(effects, btcpayPatch, { allowWriteAfterConst: true })
 

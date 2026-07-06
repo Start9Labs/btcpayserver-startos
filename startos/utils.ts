@@ -1,18 +1,19 @@
-import { T, utils } from '@start9labs/start-sdk'
+import { T } from '@start9labs/start-sdk'
 import {
   peerHostId as btcPeerHostId,
-  peerInterfaceId as btcPeerInterfaceId,
+  peerPortInternal as btcPeerPort,
   rpcHostId as btcRpcHostId,
-  rpcInterfaceId as btcRpcInterfaceId,
+  rpcPort as btcRpcPort,
 } from 'bitcoin-core-startos/startos/utils'
 import {
   controlHostId as lndControlHostId,
-  lndconnectRestId,
+  restPort as lndRestPort,
 } from 'lnd-startos/startos/interfaces'
 import {
   rpcRestrictedHostId as xmrRpcHostId,
-  rpcRestrictedInterfaceId as xmrRpcInterfaceId,
+  rpcRestrictedPort as xmrRpcPort,
 } from 'monerod-startos/startos/utils'
+import { socksHostId, socksPort } from 'tor-startos/startos/utils'
 import { sdk } from './sdk'
 
 // Container mountpoints
@@ -50,12 +51,14 @@ export function pgConnectionString(appName: string, database: string) {
 export const nbxPostgres = pgConnectionString('nbxplorer', 'nbxplorer')
 export const btcpayPostgres = pgConnectionString('btcpayserver', 'btcpayserver')
 
-// Legacy `.startos` values kept only as the file-model `.catch()` defaults; the
-// live addresses are resolved over the LXC bridge and merged in at startup.
-export const bitcoindRpcUrl = 'http://bitcoind.startos:8332/'
-export const bitcoindPeerEndpoint = 'bitcoind.startos:8333'
-export const xmrDaemonUri = 'http://monerod.startos:18089'
-export const LND_REST_FALLBACK = 'https://lnd.startos:8080'
+// Loopback placeholders: the file-model `.catch()` defaults, and the value
+// written when a dependency isn't installed. Each is a dead address
+// (connection-refused) that the reactive bridge resolvers below heal at startup
+// once the dependency appears.
+export const bitcoindRpcUrl = 'http://127.0.0.1:8332/'
+export const bitcoindPeerEndpoint = '127.0.0.1:8333'
+export const xmrDaemonUri = 'http://127.0.0.1:18089'
+export const LND_REST_FALLBACK = 'https://127.0.0.1:8080'
 
 // Lightning connection strings written to btcpay's settings.config. CLN is a
 // local unix socket (static); LND is reached over the LXC bridge, so its
@@ -74,79 +77,125 @@ export function getEnabledAltcoin(altcoin: string, list: string) {
 }
 
 /**
- * The IPv4 LXC-bridge `{ hostname, port }` for an interface on an already-resolved
- * host. Pure — call it INSIDE an `sdk.host` map fn so `.const()` narrows reactivity
- * to just this address. `.startos` DNS / container IPs are deprecated; containers
- * reach each other over this bridge. `ssl` narrows the http vs https variant.
+ * Bridge address (`<osIp>:<assigned external port>`) of a dependency's binding,
+ * as a minimal reactive value. Chain `.const()` in main: the mapped string only
+ * changes when the assigned port itself does, so main restarts exactly on
+ * dependency install / uninstall / port-change and never on dependency updates.
+ * Chain `.once()` in an action context. `fallbackPort` keeps the value non-null
+ * while the dependency is absent — sanctioned only for tor's allocator-
+ * guaranteed SOCKS 9050. Drop-in for the planned SDK `sdk.host.getBridgeAddress`.
  */
-const bridgeAddr = (
-  host: utils.FilledHost | null,
-  interfaceId: string,
-  ssl?: boolean,
-) => {
-  const iface =
-    host &&
-    Object.values(host.bindings)
-      .flatMap((b) => Object.values(b.interfaces))
-      .find((i) => i.id === interfaceId)
-  return iface
-    ? iface.addressInfo
-        .filter({
-          kind: 'bridge',
-          predicate: (h) =>
-            h.metadata.kind === 'ipv4' && (ssl === undefined || h.ssl === ssl),
-        })
-        .hostnames[0]
-    : undefined
+export function bridgeAddress(
+  effects: T.Effects,
+  opts: {
+    packageId: string
+    hostId: string
+    internalPort: number
+    fallbackPort: number
+  },
+): { const(): Promise<string>; once(): Promise<string> }
+export function bridgeAddress(
+  effects: T.Effects,
+  opts: { packageId: string; hostId: string; internalPort: number },
+): { const(): Promise<string | null>; once(): Promise<string | null> }
+export function bridgeAddress(
+  effects: T.Effects,
+  opts: {
+    packageId: string
+    hostId: string
+    internalPort: number
+    fallbackPort?: number
+  },
+) {
+  const watchable = async () => {
+    const osIp = await sdk.getOsIp(effects)
+    return sdk.host.get(
+      effects,
+      { packageId: opts.packageId, hostId: opts.hostId },
+      (host) => {
+        const port =
+          host?.bindings[opts.internalPort]?.net.assignedPort ??
+          opts.fallbackPort
+        return port != null ? `${osIp}:${port}` : null
+      },
+    )
+  }
+  return {
+    const: async () => (await watchable()).const(),
+    once: async () => (await watchable()).once(),
+  }
 }
 
 /** btcpayserver's own Web UI `host:port` over the bridge (for the monerod block-notify callback). */
-export const selfUiBridge = (effects: T.Effects) =>
-  sdk.host.getOwn(effects, mainHostId, (host) => {
-    const h = bridgeAddr(host, mainInterfaceId, false)
-    return h && `${h.hostname}:${h.port}`
+export const selfUiBridge = (effects: T.Effects) => ({
+  const: async () => {
+    const osIp = await sdk.getOsIp(effects)
+    return sdk.host
+      .getOwn(effects, mainHostId, (host) => {
+        const port = host?.bindings[uiPort]?.net.assignedPort
+        return port != null ? `${osIp}:${port}` : null
+      })
+      .const()
+  },
+})
+
+/** Tor's SOCKS proxy `host:port` over the bridge. The 9050 fallback keeps it constant, so main never restarts on tor churn. */
+export const torSocksBridge = (effects: T.Effects) =>
+  bridgeAddress(effects, {
+    packageId: 'tor',
+    hostId: socksHostId,
+    internalPort: socksPort,
+    fallbackPort: socksPort,
   })
 
-/** LND's REST base URL over the bridge (replaces `https://lnd.startos:8080`). */
-export const lndRestBridge = (effects: T.Effects) =>
-  sdk.host.get(
-    effects,
-    { hostId: lndControlHostId, packageId: 'lnd' },
-    (host) => {
-      const h = bridgeAddr(host, lndconnectRestId, true)
-      return h && `https://${h.hostname}:${h.port}`
-    },
-  )
+/** LND's REST base URL over the bridge; `null` until LND's first wallet unlock. */
+export const lndRestBridge = (effects: T.Effects) => {
+  const addr = bridgeAddress(effects, {
+    packageId: 'lnd',
+    hostId: lndControlHostId,
+    internalPort: lndRestPort,
+  })
+  const url = (h: string | null) => h && `https://${h}`
+  return {
+    const: async () => url(await addr.const()),
+    once: async () => url(await addr.once()),
+  }
+}
 
-/** bitcoind's RPC URL over the bridge (replaces `http://bitcoind.startos:8332/`). */
-export const bitcoindRpcBridge = (effects: T.Effects) =>
-  sdk.host.get(
-    effects,
-    { hostId: btcRpcHostId, packageId: 'bitcoind' },
-    (host) => {
-      const h = bridgeAddr(host, btcRpcInterfaceId, false)
-      return h && `http://${h.hostname}:${h.port}/`
+/** bitcoind's RPC URL over the bridge; `null` when bitcoind isn't installed. */
+export const bitcoindRpcBridge = (effects: T.Effects) => {
+  const addr = bridgeAddress(effects, {
+    packageId: 'bitcoind',
+    hostId: btcRpcHostId,
+    internalPort: btcRpcPort,
+  })
+  return {
+    const: async () => {
+      const h = await addr.const()
+      return h && `http://${h}/`
     },
-  )
+  }
+}
 
-/** bitcoind's P2P `host:port` over the bridge (replaces `bitcoind.startos:8333`). */
+/** bitcoind's P2P `host:port` over the bridge; `null` when bitcoind isn't installed. */
 export const bitcoindPeerBridge = (effects: T.Effects) =>
-  sdk.host.get(
-    effects,
-    { hostId: btcPeerHostId, packageId: 'bitcoind' },
-    (host) => {
-      const h = bridgeAddr(host, btcPeerInterfaceId)
-      return h && `${h.hostname}:${h.port}`
-    },
-  )
+  bridgeAddress(effects, {
+    packageId: 'bitcoind',
+    hostId: btcPeerHostId,
+    internalPort: btcPeerPort,
+  })
 
-/** monerod's restricted-RPC URL over the bridge (replaces `http://monerod.embassy:18089`). */
-export const monerodRpcBridge = (effects: T.Effects) =>
-  sdk.host.get(
-    effects,
-    { hostId: xmrRpcHostId, packageId: 'monerod' },
-    (host) => {
-      const h = bridgeAddr(host, xmrRpcInterfaceId, false)
-      return h && `http://${h.hostname}:${h.port}`
+/** monerod's restricted-RPC URL over the bridge; `null` when monerod isn't installed. */
+export const monerodRpcBridge = (effects: T.Effects) => {
+  const addr = bridgeAddress(effects, {
+    packageId: 'monerod',
+    hostId: xmrRpcHostId,
+    internalPort: xmrRpcPort,
+  })
+  return {
+    const: async () => {
+      const h = await addr.const()
+      return h && `http://${h}`
     },
-  )
+  }
+}
