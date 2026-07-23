@@ -3,12 +3,7 @@ import { autoconfig } from 'monerod-startos/startos/actions/config/autoconfig'
 import { btcpayConfig } from './fileModels/btcpay.config'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
-import {
-  clnConnectionString,
-  getEnabledAltcoin,
-  lndConnectionString,
-  uiPort,
-} from './utils'
+import { getEnabledAltcoin, isCln, isLnd, selfUiBridge } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const deps: T.CurrentDependenciesResult<any> = {}
@@ -18,18 +13,18 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     .const(effects)
   if (!config) throw new Error('BTCPay config not found')
 
-  if (config.btclightning === lndConnectionString) {
+  if (isLnd(config.btclightning)) {
     deps['lnd'] = {
       kind: 'running',
-      versionRange: '>=0.20.1-beta:2',
+      versionRange: '>=0.21.1-beta:0',
       healthChecks: ['lnd'],
     }
   }
 
-  if (config.btclightning === clnConnectionString) {
+  if (isCln(config.btclightning)) {
     deps['c-lightning'] = {
       kind: 'running',
-      versionRange: '>=25.12.1:8',
+      versionRange: '>=26.6.1:2',
       healthChecks: ['lightningd'],
     }
   }
@@ -37,36 +32,32 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (getEnabledAltcoin('xmr', config.chains)) {
     deps['monerod'] = {
       kind: 'running',
-      versionRange: '>=0.18.4.6:1',
+      versionRange: '>=0.18.4.6:7',
       healthChecks: ['monerod'],
     }
 
-    await sdk.action.createTask(
-      effects,
-      'monerod',
-      // monerod-startos pins start-sdk 1.3.3 so its Action type is a distinct
-      // module instance from our 1.5.0 — structurally identical but TS won't
-      // infer GetActionInputType through it. Drop to any until the sibling bumps.
-      autoconfig as any,
-      'important',
-      {
+    // monerod curls this callback on each new block; it reaches our Web UI over
+    // the LXC bridge (replaces the dead `btcpayserver.startos` DNS).
+    const uiAddr = await selfUiBridge(effects).const()
+    if (uiAddr) {
+      const blockNotify = `/usr/bin/curl -so /dev/null "http://${uiAddr}/monerolikedaemoncallback/block?cryptoCode=xmr&hash=%s"`
+      await sdk.action.createTask(effects, 'monerod', autoconfig, 'important', {
         input: {
           kind: 'partial',
-          value: {
-            'block-notify': `/usr/bin/curl -so /dev/null "http://btcpayserver.startos:${uiPort}/monerolikedaemoncallback/block?cryptoCode=xmr&hash=%s"`,
-          },
+          accept: [{ 'block-notify': blockNotify }],
+          set: { 'block-notify': blockNotify },
         },
         when: { condition: 'input-not-matches', once: false },
         reason: i18n('BTCPay Server requires a particular block-notify command'),
-      },
-    )
+      })
+    }
   }
 
   return {
     ...deps,
     bitcoind: {
       kind: 'running',
-      versionRange: '>=28.3:7',
+      versionRange: '>=28.4:13',
       healthChecks: ['bitcoind'],
     },
   }

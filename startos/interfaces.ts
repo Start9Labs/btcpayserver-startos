@@ -1,15 +1,15 @@
 import { i18n } from './i18n'
 import { sdk } from './sdk'
-import { uiPort } from './utils'
+import { mainHostId, mainInterfaceId, uiPort } from './utils'
 
 export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
-  const multi = sdk.MultiHost.of(effects, 'main')
+  const multi = sdk.MultiHost.of(effects, mainHostId)
   const multiOrigin = await multi.bindPort(uiPort, {
     protocol: 'http',
   })
   const multiInterface = sdk.createInterface(effects, {
     name: i18n('Web UI'),
-    id: 'main',
+    id: mainInterfaceId,
     description: i18n(
       'The web interface for interacting with BTCPay Server in a browser.',
     ),

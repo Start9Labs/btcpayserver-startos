@@ -8,13 +8,13 @@
 
 - The BTCPay Server **Web UI** interface — the merchant dashboard for stores, invoices, point-of-sale, crowdfund pages, pay buttons, and the Greenfield REST API.
 - A bundled **NBXplorer** UTXO tracker and a bundled **PostgreSQL** database; you do not configure either.
-- Auto-wired connection to **Bitcoin Core** (required) and, on demand, to **LND**, **Core Lightning**, or **Monerod**.
+- Auto-wired connection to **Bitcoin** (required) and, on demand, to **LND**, **Core Lightning**, or **Monerod**.
 - Optional **Shopify** integration via the bundled plugin deployer.
 
 ## Getting set up
 
-1. Install **Bitcoin Core** first and let it finish its initial block download — BTCPay Server depends on it and NBXplorer cannot index until Bitcoin Core is synced.
-2. Start BTCPay Server. NBXplorer will then sync the UTXO set from Bitcoin Core; the **UTXO Tracker Sync** health check shows progress, and the Web UI will not be fully usable until it reads "Synced".
+1. Install **Bitcoin** first and let it finish its initial block download — BTCPay Server depends on it and NBXplorer cannot index until Bitcoin is synced.
+2. Start BTCPay Server. NBXplorer will then sync the UTXO set from Bitcoin; the **UTXO Tracker Sync** health check shows progress, and the Web UI will not be fully usable until it reads "Synced".
 3. Open the **Web UI** interface and create your first server admin account. The first account registered through the UI becomes the server administrator.
 4. (Optional) Run **Choose Lightning Node** to wire BTCPay to an internal Lightning node — pick **LND**, **Core Lightning**, or **None/External**. The matching service must be installed; LND or CLN becomes a hard dependency once selected. After your first selection, open BTCPay's **Lightning** settings in the Web UI, choose **Internal Node**, and save — BTCPay requires this one-time confirmation before it will use the wired node for invoices.
 5. (Optional) Run **Enable Altcoins** to turn on Monero. Monerod becomes a required dependency, and BTCPay sets the Monero `block-notify` command on it automatically.
@@ -43,7 +43,7 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 
 ### Backups
 
-StartOS backups include the BTCPay app data, the PostgreSQL `btcpayserver` database (users, stores, invoices), and the package configuration. The NBXplorer index is **not** backed up — on restore, NBXplorer resyncs from Bitcoin Core, which can take time before the Web UI becomes fully usable again.
+StartOS backups include the BTCPay app data, the PostgreSQL `btcpayserver` database (users, stores, invoices), and the package configuration. The NBXplorer index is **not** backed up — on restore, NBXplorer resyncs from Bitcoin, which can take time before the Web UI becomes fully usable again.
 
 ## Limitations
 

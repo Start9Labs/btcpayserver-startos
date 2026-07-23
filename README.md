@@ -69,13 +69,13 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | ------------ | ----------------------------------------- | ------------------------------ |
 | Installation | Docker Compose with multiple config files | Install from marketplace       |
 | Database     | Manual PostgreSQL setup                   | Automatic                      |
-| Bitcoin Core | Manual RPC configuration                  | Auto-configured via dependency |
+| Bitcoin      | Manual RPC configuration                  | Auto-configured via dependency |
 | NBXplorer    | Separate manual setup                     | Bundled and auto-configured    |
 | Lightning    | Manual configuration                      | Select via action              |
 
 **First-run steps:**
 
-1. Ensure Bitcoin Core is installed (will be auto-configured)
+1. Ensure Bitcoin is installed (will be auto-configured)
 2. Install BTCPay Server from the StartOS marketplace
 3. Wait for UTXO Tracker to sync (check health status)
 4. Optionally run "Choose Lightning Node" to enable Lightning invoicing
@@ -91,11 +91,16 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 | ------------------------------ | ------------------------------- | --------------- |
 | `BTCPAY_NETWORK`               | `mainnet`                       | Bitcoin network |
 | `BTCPAY_BIND`                  | `0.0.0.0:23000`                 | Web UI binding  |
-| `BTCPAY_SOCKSENDPOINT`         | `tor.startos:9050`              | Tor proxy       |
+| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge   | Tor proxy       |
 | `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
-| `NBXPLORER_BTCNODEENDPOINT`    | `bitcoind.startos:8333`         | Bitcoin P2P     |
-| `NBXPLORER_BTCRPCURL`          | `http://bitcoind.startos:8332/` | Bitcoin RPC     |
+| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind P2P over the LXC bridge | Bitcoin P2P    |
+| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge | Bitcoin RPC    |
 | `POSTGRES_HOST_AUTH_METHOD`    | `trust`                         | Database auth   |
+
+> Cross-container addresses (bitcoind, LND, Monero, Tor, and the Web UI callback
+> monerod uses) are resolved over the LXC bridge at startup and merged into the
+> config files — the old `<pkg>.startos` DNS names are no longer used. See
+> `startos/utils.ts` for the bridge resolvers.
 
 ### Configurable via Actions
 
@@ -150,7 +155,7 @@ Once configured, visitors to that domain will be served the selected app directl
 
 **Options:**
 
-- **LND** — connects via REST at `lnd.startos:8080`
+- **LND** — connects via REST over the LXC bridge
 - **Core Lightning** — connects via Unix socket
 - **None/External** — disable internal Lightning
 
@@ -204,7 +209,7 @@ Requires `monerod` service to be installed when enabled.
 
 Dependencies are dynamically resolved based on which features are enabled via actions.
 
-### Bitcoin Core (required)
+### Bitcoin (required)
 
 | Property | Value |
 |----------|-------|
@@ -256,13 +261,13 @@ Dependencies are dynamically resolved based on which features are enabled via ac
 
 **Not backed up (regenerable):**
 
-- `nbxplorer` volume — resyncs from Bitcoin Core on restore
+- `nbxplorer` volume — resyncs from Bitcoin on restore
 - `nbxplorer` database — recreated and resynced on restore
 
 **Restore behavior:**
 
 - BTCPay data and database fully restored
-- NBXplorer will need time to resync from Bitcoin Core
+- NBXplorer will need time to resync from Bitcoin
 
 ---
 
@@ -357,10 +362,10 @@ backup:
 startos_managed_config:
   BTCPAY_NETWORK: mainnet
   BTCPAY_BIND: 0.0.0.0:23000
-  BTCPAY_SOCKSENDPOINT: tor.startos:9050
+  BTCPAY_SOCKSENDPOINT: tor SOCKS over LXC bridge (resolved at startup)
   POSTGRES_HOST_AUTH_METHOD: trust
-  NBXPLORER_BTCNODEENDPOINT: bitcoind.startos:8333
-  NBXPLORER_BTCRPCURL: http://bitcoind.startos:8332/
+  NBXPLORER_BTCNODEENDPOINT: bitcoind P2P over LXC bridge (resolved at startup)
+  NBXPLORER_BTCRPCURL: bitcoind RPC over LXC bridge (resolved at startup)
 not_available:
   - Testnet/Signet networks
   - Redis caching

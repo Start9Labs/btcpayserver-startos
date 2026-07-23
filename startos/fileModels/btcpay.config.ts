@@ -1,13 +1,10 @@
 import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 import {
-  clnConnectionString,
-  lndConnectionString,
   btcpayPostgres,
   nbxCookiePath,
   nbxPostgres,
   uiPort,
-  xmrDaemonUri,
   xmrWalletDaemonUri,
   xmrWalletDir,
 } from '../utils'
@@ -19,15 +16,11 @@ const shape = z.object({
   network: z.literal('mainnet').catch('mainnet'),
   bind: z.literal(btcpayBind).catch(btcpayBind),
   btcexplorercookiefile: z.literal(nbxCookiePath).catch(nbxCookiePath),
-  explorerpostgres: z
-    .literal(nbxPostgres)
-    .catch(nbxPostgres),
-  postgres: z
-    .literal(btcpayPostgres)
-    .catch(btcpayPostgres),
+  explorerpostgres: z.literal(nbxPostgres).catch(nbxPostgres),
+  postgres: z.literal(btcpayPostgres).catch(btcpayPostgres),
   debuglog: z.literal('btcpay.log').catch('btcpay.log'),
   dockerdeployment: z.literal('false').catch('false'),
-  XMR_daemon_uri: z.literal(xmrDaemonUri).catch(xmrDaemonUri),
+  XMR_daemon_uri: z.string().optional().catch(undefined),
   XMR_wallet_daemon_uri: z
     .literal(xmrWalletDaemonUri)
     .catch(xmrWalletDaemonUri),
@@ -35,14 +28,11 @@ const shape = z.object({
   'BTC.explorer.cookiefile': z.undefined().optional().catch(undefined),
 
   // Configuration
-  socksendpoint: z.string().optional().catch('tor.startos:9050'),
+  socksendpoint: z.string().optional().catch(undefined),
   XMR_daemon_username: z.string().catch(''),
   XMR_daemon_password: z.string().catch(''),
   chains: z.enum(['btc', 'btc,xmr']).catch('btc'),
-  btclightning: z
-    .enum([lndConnectionString, clnConnectionString])
-    .optional()
-    .catch(undefined),
+  btclightning: z.string().optional().catch(undefined),
 })
 
 export const btcpayConfig = FileHelper.ini(

@@ -1,7 +1,13 @@
 import { btcpayConfig } from '../fileModels/btcpay.config'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import { clnConnectionString, lndConnectionString } from '../utils'
+import {
+  clnConnectionString,
+  isCln,
+  isLnd,
+  lndConnectionString,
+  lndRestBridge,
+} from '../utils'
 
 const { InputSpec, Value } = sdk
 
@@ -40,26 +46,27 @@ export const lightningNode = sdk.Action.withInput(
 
   async ({ effects }) => {
     const ln = await btcpayConfig.read((s) => s.btclightning).once()
-    const lightning: 'lnd' | 'cln' | 'none' =
-      ln === lndConnectionString
-        ? 'lnd'
-        : ln === clnConnectionString
-          ? 'cln'
-          : 'none'
+    const lightning: 'lnd' | 'cln' | 'none' = isLnd(ln)
+      ? 'lnd'
+      : isCln(ln)
+        ? 'cln'
+        : 'none'
     return { lightning }
   },
 
   async ({ effects, input }) => {
-    const connectionStrings: Record<
-      string,
-      typeof lndConnectionString | typeof clnConnectionString
-    > = {
-      lnd: lndConnectionString,
-      cln: clnConnectionString,
+    let btclightning: string | undefined
+    if (input.lightning === 'lnd') {
+      const restUrl = await lndRestBridge(effects).once()
+      if (!restUrl)
+        throw new Error(
+          'LND is not yet reachable on the internal network. Ensure it is installed and running, then try again.',
+        )
+      btclightning = lndConnectionString(restUrl)
+    } else if (input.lightning === 'cln') {
+      btclightning = clnConnectionString
     }
 
-    await btcpayConfig.merge(effects, {
-      btclightning: connectionStrings[input.lightning],
-    })
+    await btcpayConfig.merge(effects, { btclightning })
   },
 )

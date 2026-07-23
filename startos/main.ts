@@ -1,26 +1,35 @@
-import { HealthCheckResult } from '@start9labs/start-sdk/package/lib/health/checkFns'
+import { HealthCheckResult } from '@start9labs/start-sdk/lib/health/checkFns'
 import { manifest as bitcoinManifest } from 'bitcoin-core-startos/startos/manifest'
 import { manifest as clnManifest } from 'cln-startos/startos/manifest'
 import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
 import { manifest as monerodManifest } from 'monerod-startos/startos/manifest'
 import { readFile } from 'fs/promises'
 import { btcpayConfig } from './fileModels/btcpay.config'
-import { nbxConfigDefaults, nbxplorerConfig } from './fileModels/nbxplorer.config'
+import {
+  nbxConfigDefaults,
+  nbxplorerConfig,
+} from './fileModels/nbxplorer.config'
 import { storeJson } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import {
   bitcoindMountpoint,
-  clnConnectionString,
+  bitcoindPeerBridge,
+  bitcoindRpcBridge,
   clnMountpoint,
   dataDir,
   getEnabledAltcoin,
+  isCln,
+  isLnd,
   lndConnectionString,
   lndMountpoint,
+  lndRestBridge,
+  monerodRpcBridge,
   nbxMountpoint,
   nbxPort,
   PG_MOUNT,
   shopifyPort,
+  torSocksBridge,
   uiPort,
 } from './utils'
 
@@ -43,6 +52,48 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
   const nbxConfig = await nbxplorerConfig.read().const(effects)
   if (!nbxConfig) throw new Error('NBXplorer config not found')
+
+  // ========================
+  // Resolve dependency addresses over the LXC bridge
+  // ========================
+  // The `<pkg>.startos` DNS is gone in 2.0 — containers reach each other over
+  // the bridge. Each resolver is a reactive `.const()` keyed on the dependency's
+  // assigned external port: it re-runs main on dependency install / uninstall /
+  // port-change, but never on a dependency update. When a dependency is absent
+  // the resolver is null and we omit its value (the file-model fields are
+  // optional), letting the app fail into a red health check; the `.const()`
+  // heals it once the dependency appears.
+
+  const btcRpc = await bitcoindRpcBridge(effects).const()
+  const btcPeer = await bitcoindPeerBridge(effects).const()
+  await nbxplorerConfig.merge(
+    effects,
+    {
+      'btc.rpc.url': btcRpc ?? undefined,
+      'btc.node.endpoint': btcPeer ?? undefined,
+    },
+    { allowWriteAfterConst: true },
+  )
+
+  // Tor SOCKS over the bridge. The allocator-guaranteed 9050 fallback keeps this
+  // constant across tor install/update/uninstall, so it never restarts BTCPay; a
+  // dead address is just connection-refused, so onion routing is always safe to enable.
+  const btcpayPatch: {
+    socksendpoint: string
+    btclightning?: string
+    XMR_daemon_uri?: string
+  } = {
+    socksendpoint: await torSocksBridge(effects).const(),
+  }
+  if (isLnd(config.btclightning)) {
+    const restUrl = await lndRestBridge(effects).const()
+    if (restUrl) btcpayPatch.btclightning = lndConnectionString(restUrl)
+  }
+  if (getEnabledAltcoin('xmr', config.chains)) {
+    btcpayPatch.XMR_daemon_uri =
+      (await monerodRpcBridge(effects).const()) ?? undefined
+  }
+  await btcpayConfig.merge(effects, btcpayPatch, { allowWriteAfterConst: true })
 
   // ========================
   // Dependency mounts
@@ -78,7 +129,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     })
   }
 
-  if (config.btclightning === lndConnectionString) {
+  if (isLnd(config.btclightning)) {
     mounts = mounts.mountDependency<typeof lndManifest>({
       dependencyId: 'lnd',
       volumeId: 'main',
@@ -86,7 +137,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: lndMountpoint,
       readonly: true,
     })
-  } else if (config.btclightning === clnConnectionString) {
+  } else if (isCln(config.btclightning)) {
     mounts = mounts.mountDependency<typeof clnManifest>({
       dependencyId: 'c-lightning',
       volumeId: 'main',
@@ -100,14 +151,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Set subcontainers
   // ========================
 
-  const btcpaySub = await sdk.SubContainer.of(
+  const btcpaySub = sdk.SubContainer.of(
     effects,
     { imageId: 'btcpay' },
     mounts,
     'btcpay',
   )
 
-  const nbxSub = await sdk.SubContainer.of(
+  const nbxSub = sdk.SubContainer.of(
     effects,
     { imageId: 'nbx' },
     sdk.Mounts.of()
@@ -134,7 +185,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     readonly: false,
   })
 
-  const postgresSub = await sdk.SubContainer.of(
+  const postgresSub = sdk.SubContainer.of(
     effects,
     { imageId: 'postgres' },
     pgMounts,
@@ -217,7 +268,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ready: {
         display: i18n('UTXO Tracker Sync'),
         fn: async () => {
-          const auth = await readFile(`${nbxSub.rootfs}${dataDir}/Main/.cookie`, {
+          const nbxRootfs = await nbxSub.rootfs
+          const auth = await readFile(`${nbxRootfs}${dataDir}/Main/.cookie`, {
             encoding: 'base64',
           })
 
@@ -285,7 +337,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
   // Add Shopify app daemon if enabled
   if (shopifyEnabled) {
     return daemons.addDaemon('shopify', {
-      subcontainer: await sdk.SubContainer.of(
+      subcontainer: sdk.SubContainer.of(
         effects,
         { imageId: 'shopify' },
         null,
