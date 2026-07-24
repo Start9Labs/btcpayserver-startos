@@ -73,57 +73,6 @@ export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
 }
 
-/**
- * Bridge address (`<osIp>:<assigned external port>`) of a dependency's binding,
- * as a minimal reactive value. Chain `.const()` in main: the mapped string only
- * changes when the assigned port itself does, so main restarts exactly on
- * dependency install / uninstall / port-change and never on dependency updates.
- * Chain `.once()` in an action context. `fallbackPort` keeps the value non-null
- * while the dependency is absent — sanctioned only for tor's allocator-
- * guaranteed SOCKS 9050. Drop-in for the planned SDK `sdk.host.getBridgeAddress`.
- */
-export function bridgeAddress(
-  effects: T.Effects,
-  opts: {
-    packageId: string
-    hostId: string
-    internalPort: number
-    fallbackPort: number
-  },
-): { const(): Promise<string>; once(): Promise<string> }
-export function bridgeAddress(
-  effects: T.Effects,
-  opts: { packageId: string; hostId: string; internalPort: number },
-): { const(): Promise<string | null>; once(): Promise<string | null> }
-export function bridgeAddress(
-  effects: T.Effects,
-  opts: {
-    packageId: string
-    hostId: string
-    internalPort: number
-    fallbackPort?: number
-  },
-) {
-  const watchable = async () => {
-    const osIp = await sdk.getOsIp(effects)
-    return sdk.host.get(
-      effects,
-      { packageId: opts.packageId, hostId: opts.hostId },
-      (host) => {
-        const port =
-          host?.bindings[opts.internalPort]?.net.assignedPort ??
-          opts.fallbackPort
-        if (port == null) return null
-        return `${osIp}:${port}`
-      },
-    )
-  }
-  return {
-    const: async () => (await watchable()).const(),
-    once: async () => (await watchable()).once(),
-  }
-}
-
 /** btcpayserver's own Web UI `host:port` over the bridge (for the monerod block-notify callback). */
 export const selfUiBridge = (effects: T.Effects) => ({
   const: async () => {
@@ -139,7 +88,7 @@ export const selfUiBridge = (effects: T.Effects) => ({
 
 /** Tor's SOCKS proxy `host:port` over the bridge. The 9050 fallback keeps it constant, so main never restarts on tor churn. */
 export const torSocksBridge = (effects: T.Effects) =>
-  bridgeAddress(effects, {
+  sdk.host.getBridgeAddress(effects, {
     packageId: 'tor',
     hostId: socksHostId,
     internalPort: socksPort,
@@ -148,7 +97,7 @@ export const torSocksBridge = (effects: T.Effects) =>
 
 /** LND's REST base URL over the bridge; `null` until LND's first wallet unlock. */
 export const lndRestBridge = (effects: T.Effects) => {
-  const addr = bridgeAddress(effects, {
+  const addr = sdk.host.getBridgeAddress(effects, {
     packageId: 'lnd',
     hostId: lndControlHostId,
     internalPort: lndRestPort,
@@ -162,10 +111,11 @@ export const lndRestBridge = (effects: T.Effects) => {
 
 /** bitcoind's RPC URL over the bridge; `null` when bitcoind isn't installed. */
 export const bitcoindRpcBridge = (effects: T.Effects) => {
-  const addr = bridgeAddress(effects, {
+  const addr = sdk.host.getBridgeAddress(effects, {
     packageId: 'bitcoind',
     hostId: btcRpcHostId,
     internalPort: btcRpcPort,
+    ssl: false,
   })
   return {
     const: async () => {
@@ -177,7 +127,7 @@ export const bitcoindRpcBridge = (effects: T.Effects) => {
 
 /** bitcoind's P2P `host:port` over the bridge; `null` when bitcoind isn't installed. */
 export const bitcoindPeerBridge = (effects: T.Effects) =>
-  bridgeAddress(effects, {
+  sdk.host.getBridgeAddress(effects, {
     packageId: 'bitcoind',
     hostId: btcPeerHostId,
     internalPort: btcPeerPort,
@@ -185,10 +135,11 @@ export const bitcoindPeerBridge = (effects: T.Effects) =>
 
 /** monerod's restricted-RPC URL over the bridge; `null` when monerod isn't installed. */
 export const monerodRpcBridge = (effects: T.Effects) => {
-  const addr = bridgeAddress(effects, {
+  const addr = sdk.host.getBridgeAddress(effects, {
     packageId: 'monerod',
     hostId: xmrRpcHostId,
     internalPort: xmrRpcPort,
+    ssl: false,
   })
   return {
     const: async () => {

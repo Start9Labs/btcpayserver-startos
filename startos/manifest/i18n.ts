@@ -2,10 +2,8 @@ export const short = {
   en_US: 'Bitcoin and cryptocurrency payment processor and POS system.',
   es_ES:
     'Procesador de pagos con Bitcoin y criptomonedas y sistema de punto de venta.',
-  de_DE:
-    'Bitcoin- und Kryptowährungs-Zahlungsprozessor und Kassensystem.',
-  pl_PL:
-    'Procesor płatności Bitcoin i kryptowalut oraz system POS.',
+  de_DE: 'Bitcoin- und Kryptowährungs-Zahlungsprozessor und Kassensystem.',
+  pl_PL: 'Procesor płatności Bitcoin i kryptowalut oraz system POS.',
   fr_FR:
     'Processeur de paiement Bitcoin et cryptomonnaies et système de point de vente.',
 }

@@ -1,53 +1,23 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.1:0',
+  version: '2.4.1:1',
   releaseNotes: {
-    en_US: `Updated BTCPay Server to 2.4.1, NBXplorer to 2.6.9, and the Shopify app deployer to 1.9.
+    en_US: `Keeps the the services it connects to connection working when the services it connects to changes how it serves TLS.
 
-**BTCPay Server 2.4.1**
+BTCPay Server resolved the services it connects to's address from a field that is only populated for one of the two ways a service can publish a port. It now reads the address itself, which is correct either way — so the connection survives the services it connects to's next update instead of going unreachable.`,
+    es_ES: `Mantiene la conexión con the services it connects to cuando the services it connects to cambia su forma de servir TLS.
 
-- Right-to-left (RTL) language support (Arabic, Hebrew, Persian)
-- BIP-329 wallet label import and editable invoice comments
-- Fixes for Boltcard payments and Core Lightning compatibility; LNDHub is now enabled by default
+BTCPay Server resolvía la dirección de the services it connects to a partir de un campo que solo se rellena en una de las dos formas en que un servicio puede publicar un puerto. Ahora lee la dirección en sí, que es correcta en ambos casos, así que la conexión sobrevive a la próxima actualización de the services it connects to en lugar de quedar inaccesible.`,
+    de_DE: `Hält die the services it connects to-Verbindung aufrecht, wenn the services it connects to die Art der TLS-Bereitstellung ändert.
 
-NBXplorer and the Shopify deployer receive minor maintenance updates. Full release notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.1`,
-    es_ES: `Se actualizó BTCPay Server a 2.4.1, NBXplorer a 2.6.9 y el desplegador de la app de Shopify a 1.9.
+BTCPay Server ermittelte die Adresse von the services it connects to aus einem Feld, das nur bei einer der beiden Arten gefüllt ist, auf die ein Dienst einen Port veröffentlichen kann. Jetzt wird die Adresse selbst gelesen, die in beiden Fällen stimmt — die Verbindung übersteht damit das nächste the services it connects to-Update, statt unerreichbar zu werden.`,
+    pl_PL: `Utrzymuje połączenie z the services it connects to, gdy the services it connects to zmienia sposób udostępniania TLS.
 
-**BTCPay Server 2.4.1**
+BTCPay Server ustalał adres the services it connects to na podstawie pola wypełnianego tylko przy jednym z dwóch sposobów publikowania portu przez usługę. Teraz odczytuje sam adres, poprawny w obu przypadkach — dzięki temu połączenie przetrwa kolejną aktualizację the services it connects to, zamiast stać się nieosiągalne.`,
+    fr_FR: `Maintient la connexion à the services it connects to lorsque the services it connects to change sa façon de servir TLS.
 
-- Compatibilidad con idiomas de derecha a izquierda (RTL) (árabe, hebreo, persa)
-- Importación de etiquetas de monedero BIP-329 y comentarios de factura editables
-- Correcciones para pagos con Boltcard y compatibilidad con Core Lightning; LNDHub ahora está habilitado de forma predeterminada
-
-NBXplorer y el desplegador de Shopify reciben actualizaciones de mantenimiento menores. Notas de la versión completas: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.1`,
-    de_DE: `BTCPay Server auf 2.4.1, NBXplorer auf 2.6.9 und den Shopify-App-Deployer auf 1.9 aktualisiert.
-
-**BTCPay Server 2.4.1**
-
-- Unterstützung für Rechts-nach-links-Sprachen (RTL) (Arabisch, Hebräisch, Persisch)
-- BIP-329-Wallet-Label-Import und bearbeitbare Rechnungskommentare
-- Korrekturen für Boltcard-Zahlungen und Core-Lightning-Kompatibilität; LNDHub ist jetzt standardmäßig aktiviert
-
-NBXplorer und der Shopify-Deployer erhalten kleinere Wartungsupdates. Vollständige Versionshinweise: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.1`,
-    pl_PL: `Zaktualizowano BTCPay Server do 2.4.1, NBXplorer do 2.6.9 oraz narzędzie wdrażające aplikację Shopify do 1.9.
-
-**BTCPay Server 2.4.1**
-
-- Obsługa języków pisanych od prawej do lewej (RTL) (arabski, hebrajski, perski)
-- Import etykiet portfela BIP-329 i edytowalne komentarze do faktur
-- Poprawki płatności Boltcard i zgodności z Core Lightning; LNDHub jest teraz domyślnie włączony
-
-NBXplorer i narzędzie wdrażające Shopify otrzymują drobne aktualizacje konserwacyjne. Pełne informacje o wydaniu: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.1`,
-    fr_FR: `BTCPay Server mis à jour vers 2.4.1, NBXplorer vers 2.6.9 et le déployeur d'application Shopify vers 1.9.
-
-**BTCPay Server 2.4.1**
-
-- Prise en charge des langues de droite à gauche (RTL) (arabe, hébreu, persan)
-- Import d'étiquettes de portefeuille BIP-329 et commentaires de facture modifiables
-- Corrections des paiements Boltcard et de la compatibilité Core Lightning ; LNDHub est désormais activé par défaut
-
-NBXplorer et le déployeur Shopify reçoivent des mises à jour de maintenance mineures. Notes de version complètes : https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.1`,
+BTCPay Server déterminait l'adresse de the services it connects to à partir d'un champ renseigné dans un seul des deux modes de publication d'un port par un service. Il lit désormais l'adresse elle-même, correcte dans les deux cas — la connexion survit donc à la prochaine mise à jour de the services it connects to au lieu de devenir injoignable.`,
   },
   migrations: {},
 })
