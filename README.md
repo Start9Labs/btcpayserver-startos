@@ -87,15 +87,15 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ### Auto-Configured by StartOS
 
-| Setting                        | Value                           | Purpose         |
-| ------------------------------ | ------------------------------- | --------------- |
-| `BTCPAY_NETWORK`               | `mainnet`                       | Bitcoin network |
-| `BTCPAY_BIND`                  | `0.0.0.0:23000`                 | Web UI binding  |
-| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge   | Tor proxy       |
-| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie` | NBXplorer auth  |
-| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind P2P over the LXC bridge | Bitcoin P2P    |
-| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge | Bitcoin RPC    |
-| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                         | Database auth   |
+| Setting                        | Value                            | Purpose         |
+| ------------------------------ | -------------------------------- | --------------- |
+| `BTCPAY_NETWORK`               | `mainnet`                        | Bitcoin network |
+| `BTCPAY_BIND`                  | `0.0.0.0:23000`                  | Web UI binding  |
+| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge    | Tor proxy       |
+| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie`  | NBXplorer auth  |
+| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind P2P over the LXC bridge | Bitcoin P2P     |
+| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge | Bitcoin RPC     |
+| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                          | Database auth   |
 
 > Cross-container addresses (bitcoind, LND, Monero, Tor, and the Web UI callback
 > monerod uses) are resolved over the LXC bridge at startup and merged into the
@@ -211,43 +211,43 @@ Dependencies are dynamically resolved based on which features are enabled via ac
 
 ### Bitcoin (required)
 
-| Property | Value |
-|----------|-------|
-| Version constraint | `>= 28.3` |
-| Required state | Running |
-| Health checks | `bitcoind` |
-| Mounted volume | `main` → `/root/.bitcoin` (read-write, used by NBXplorer) |
-| Purpose | Blockchain data via RPC and P2P for NBXplorer UTXO tracking |
+| Property           | Value                                                       |
+| ------------------ | ----------------------------------------------------------- |
+| Version constraint | `>= 28.3`                                                   |
+| Required state     | Running                                                     |
+| Health checks      | `bitcoind`                                                  |
+| Mounted volume     | `main` → `/root/.bitcoin` (read-write, used by NBXplorer)   |
+| Purpose            | Blockchain data via RPC and P2P for NBXplorer UTXO tracking |
 
 ### LND (optional)
 
-| Property | Value |
-|----------|-------|
-| Version constraint | `>= 0.20.1-beta` |
-| Required state | Running |
-| Health checks | `lnd` |
-| Mounted volume | `main` → `/mnt/lnd` (read-only) |
-| Purpose | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+| Property           | Value                                                                  |
+| ------------------ | ---------------------------------------------------------------------- |
+| Version constraint | `>= 0.20.1-beta`                                                       |
+| Required state     | Running                                                                |
+| Health checks      | `lnd`                                                                  |
+| Mounted volume     | `main` → `/mnt/lnd` (read-only)                                        |
+| Purpose            | Lightning invoicing (when selected via "Choose Lightning Node" action) |
 
 ### Core Lightning (optional)
 
-| Property | Value |
-|----------|-------|
-| Version constraint | `>= 25.12.1` |
-| Required state | Running |
-| Health checks | `lightningd` |
-| Mounted volume | `main` → `/mnt/cln` (read-only) |
-| Purpose | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+| Property           | Value                                                                  |
+| ------------------ | ---------------------------------------------------------------------- |
+| Version constraint | `>= 25.12.1`                                                           |
+| Required state     | Running                                                                |
+| Health checks      | `lightningd`                                                           |
+| Mounted volume     | `main` → `/mnt/cln` (read-only)                                        |
+| Purpose            | Lightning invoicing (when selected via "Choose Lightning Node" action) |
 
 ### Monerod (optional)
 
-| Property | Value |
-|----------|-------|
-| Version constraint | `>= 0.18.4.6` |
-| Required state | Running |
-| Health checks | `monerod` |
-| Mounted volume | (mounted at `/mnt/monero`, read-write) |
-| Purpose | Monero payments (when enabled via "Enable Altcoins" action) |
+| Property           | Value                                                       |
+| ------------------ | ----------------------------------------------------------- |
+| Version constraint | `>= 0.18.4.6`                                               |
+| Required state     | Running                                                     |
+| Health checks      | `monerod`                                                   |
+| Mounted volume     | (mounted at `/mnt/monero`, read-write)                      |
+| Purpose            | Monero payments (when enabled via "Enable Altcoins" action) |
 
 ---
 
