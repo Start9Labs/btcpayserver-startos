@@ -12,8 +12,7 @@ export const manifest = setupManifest({
   id: 'btcpayserver',
   title: 'BTCPay Server',
   license: 'MIT',
-  packageRepo:
-    'https://github.com/Start9Labs/btcpayserver-startos',
+  packageRepo: 'https://github.com/Start9Labs/btcpayserver-startos',
   upstreamRepo: 'https://github.com/btcpayserver/btcpayserver',
   marketingUrl: 'https://btcpayserver.org/',
   donationUrl: 'https://btcpayserver.org/donate/',

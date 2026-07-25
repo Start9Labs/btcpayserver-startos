@@ -48,7 +48,9 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
           set: { 'block-notify': blockNotify },
         },
         when: { condition: 'input-not-matches', once: false },
-        reason: i18n('BTCPay Server requires a particular block-notify command'),
+        reason: i18n(
+          'BTCPay Server requires a particular block-notify command',
+        ),
       })
     }
   }
