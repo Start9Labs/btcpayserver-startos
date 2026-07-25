@@ -1,7 +1,7 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.1:1',
+  version: '2.4.1:2',
   releaseNotes: {
     en_US: `Keeps the the services it connects to connection working when the services it connects to changes how it serves TLS.
 

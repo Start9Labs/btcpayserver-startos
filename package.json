@@ -26,5 +26,8 @@
     "tabWidth": 2,
     "semi": false,
     "singleQuote": true
+  },
+  "overrides": {
+    "@start9labs/start-sdk": "$@start9labs/start-sdk"
   }
 }
