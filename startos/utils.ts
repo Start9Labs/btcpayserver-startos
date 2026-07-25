@@ -73,18 +73,18 @@ export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
 }
 
-/** btcpayserver's own Web UI `host:port` over the bridge (for the monerod block-notify callback). */
-export const selfUiBridge = (effects: T.Effects) => ({
-  const: async () => {
-    const osIp = await sdk.getOsIp(effects)
-    return sdk.host
-      .getOwn(effects, mainHostId, (host) => {
-        const port = host?.bindings[uiPort]?.net.assignedPort
-        return port != null ? `${osIp}:${port}` : null
-      })
-      .const()
-  },
-})
+/**
+ * btcpayserver's own Web UI `host:port` over the bridge (for the monerod
+ * block-notify callback). No `packageId` — the lookup is against our own host.
+ * `ssl: false` because the UI binds `protocol: 'http'`, which publishes both a
+ * plaintext and a TLS address, and the callback curls the plaintext one.
+ */
+export const selfUiBridge = (effects: T.Effects) =>
+  sdk.host.getBridgeAddress(effects, {
+    hostId: mainHostId,
+    internalPort: uiPort,
+    ssl: false,
+  })
 
 /** Tor's SOCKS proxy `host:port` over the bridge. The 9050 fallback keeps it constant, so main never restarts on tor churn. */
 export const torSocksBridge = (effects: T.Effects) =>
