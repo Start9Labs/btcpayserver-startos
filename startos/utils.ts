@@ -1,7 +1,7 @@
 import { T } from '@start9labs/start-sdk'
 import {
-  peerHostId as btcPeerHostId,
-  peerPortInternal as btcPeerPort,
+  peerLocalHostId as btcPeerLocalHostId,
+  peerPortLocal as btcPeerPortLocal,
   rpcHostId as btcRpcHostId,
   rpcPort as btcRpcPort,
 } from 'bitcoin-core-startos/startos/utils'
@@ -125,12 +125,21 @@ export const bitcoindRpcBridge = (effects: T.Effects) => {
   }
 }
 
-/** bitcoind's P2P `host:port` over the bridge; `null` when bitcoind isn't installed. */
+/**
+ * bitcoind's P2P `host:port` over the bridge, for NBXplorer's
+ * `btc.node.endpoint`; `null` when bitcoind isn't installed.
+ *
+ * Resolves bitcoind's `peer-local` host, not `peer`. NBXplorer pulls blocks
+ * over this connection, and `peer` maps onto the plain `bind` that anonymous
+ * inbound peers share, where the connection earns no permissions: bitcoind may
+ * evict it to seat another peer, or cut it off under `maxuploadtarget`.
+ * `peer-local` is whitelisted (noban + download), so neither applies.
+ */
 export const bitcoindPeerBridge = (effects: T.Effects) =>
   sdk.host.getBridgeAddress(effects, {
     packageId: 'bitcoind',
-    hostId: btcPeerHostId,
-    internalPort: btcPeerPort,
+    hostId: btcPeerLocalHostId,
+    internalPort: btcPeerPortLocal,
   })
 
 /** monerod's restricted-RPC URL over the bridge; `null` when monerod isn't installed. */
