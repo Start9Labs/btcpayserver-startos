@@ -87,15 +87,15 @@ All images are upstream unmodified. The service runs four containers: BTCPay Ser
 
 ### Auto-Configured by StartOS
 
-| Setting                        | Value                            | Purpose         |
-| ------------------------------ | -------------------------------- | --------------- |
-| `BTCPAY_NETWORK`               | `mainnet`                        | Bitcoin network |
-| `BTCPAY_BIND`                  | `0.0.0.0:23000`                  | Web UI binding  |
-| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge    | Tor proxy       |
-| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie`  | NBXplorer auth  |
-| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind P2P over the LXC bridge | Bitcoin P2P     |
-| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge | Bitcoin RPC     |
-| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                          | Database auth   |
+| Setting                        | Value                                                       | Purpose         |
+| ------------------------------ | ----------------------------------------------------------- | --------------- |
+| `BTCPAY_NETWORK`               | `mainnet`                                                   | Bitcoin network |
+| `BTCPAY_BIND`                  | `0.0.0.0:23000`                                             | Web UI binding  |
+| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge                               | Tor proxy       |
+| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie`                             | NBXplorer auth  |
+| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind whitelisted P2P (`peer-local`) over the LXC bridge | Bitcoin P2P     |
+| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge                            | Bitcoin RPC     |
+| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                                                     | Database auth   |
 
 > Cross-container addresses (bitcoind, LND, Monero, Tor, and the Web UI callback
 > monerod uses) are resolved over the LXC bridge at startup and merged into the
@@ -211,13 +211,13 @@ Dependencies are dynamically resolved based on which features are enabled via ac
 
 ### Bitcoin (required)
 
-| Property           | Value                                                       |
-| ------------------ | ----------------------------------------------------------- |
-| Version constraint | Declared in `startos/dependencies.ts`                       |
-| Required state     | Running                                                     |
-| Health checks      | `bitcoind`                                                  |
-| Mounted volume     | `main` → `/root/.bitcoin` (read-write, used by NBXplorer)   |
-| Purpose            | Blockchain data via RPC and P2P for NBXplorer UTXO tracking |
+| Property           | Value                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| Version constraint | Declared in `startos/dependencies.ts`                                                  |
+| Required state     | Running                                                                                |
+| Health checks      | `bitcoind`                                                                             |
+| Mounted volume     | `main` → `/root/.bitcoin` (read-write, used by NBXplorer)                              |
+| Purpose            | Blockchain data via RPC and whitelisted P2P (`peer-local`) for NBXplorer UTXO tracking |
 
 ### LND (optional)
 
@@ -364,7 +364,7 @@ startos_managed_config:
   BTCPAY_BIND: 0.0.0.0:23000
   BTCPAY_SOCKSENDPOINT: tor SOCKS over LXC bridge (resolved at startup)
   POSTGRES_HOST_AUTH_METHOD: trust
-  NBXPLORER_BTCNODEENDPOINT: bitcoind P2P over LXC bridge (resolved at startup)
+  NBXPLORER_BTCNODEENDPOINT: bitcoind whitelisted P2P (peer-local) over LXC bridge (resolved at startup)
   NBXPLORER_BTCRPCURL: bitcoind RPC over LXC bridge (resolved at startup)
 not_available:
   - Testnet/Signet networks
