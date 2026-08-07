@@ -229,6 +229,8 @@ Dependencies are dynamically resolved based on which features are enabled via ac
 | Mounted volume     | `main` → `/mnt/lnd` (read-only)                                        |
 | Purpose            | Lightning invoicing (when selected via "Choose Lightning Node" action) |
 
+The connection string points at LND's `admin.macaroon` on the mount, so the credential is read at connect time rather than copied — recreating LND's macaroons re-provisions BTCPay with no reconfiguration. See [Credential rotation migration](#credential-rotation-migration).
+
 ### Core Lightning (optional)
 
 | Property           | Value                                                                  |
@@ -238,6 +240,21 @@ Dependencies are dynamically resolved based on which features are enabled via ac
 | Health checks      | `lightningd`                                                           |
 | Mounted volume     | `main` → `/mnt/cln` (read-only)                                        |
 | Purpose            | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+
+CLN is reached over its `lightning-rpc` Unix socket on the mount, which is unrestricted — there is no bearer token in the connection string, so nothing to rotate, but a compromised BTCPay could mint itself a rune through that socket. See [Credential rotation migration](#credential-rotation-migration).
+
+### Credential rotation migration
+
+`2.4.2:1`'s `up` migration raises a critical task against whichever Lightning backend `btclightning` names, so credentials BTCPay could reach before the 2.4.2 security fix get rotated:
+
+| `btclightning` | Task target                    | Rotates                                        |
+| -------------- | ------------------------------ | ---------------------------------------------- |
+| LND            | `lnd` → `recreate-macaroons`   | The admin macaroon BTCPay reads off the mount  |
+| CLN            | `c-lightning` → `revoke-runes` | Any rune mintable through the admin RPC socket |
+
+Two guards are load-bearing. The task is raised only when the backend is the configured one **and** that package is installed: a critical task stops this service and is cleared only by the _target_ service running the action, so raising one for an absent package would leave BTCPay unstartable short of a force-start. Neither the LND nor the CLN action existed in usable form before this release — `recreate-macaroons` left the macaroon root key in place until lnd-startos `0.21.1-beta:11`, and `revoke-runes` was added in cln-startos `26.6.6:9` — so the sibling pins must carry those versions.
+
+A user who pointed BTCPay at a node and later switched away is not detectable from `btclightning` alone, and a hot on-chain wallet's keys cannot be rotated at all; both are covered in the release notes and `instructions.md` instead.
 
 ### Monerod (optional)
 

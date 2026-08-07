@@ -1,68 +1,114 @@
 import { VersionInfo } from '@start9labs/start-sdk'
+import { revokeRunes } from 'cln-startos/startos/actions/revokeRunes'
+import { recreateMacaroons } from 'lnd-startos/startos/actions/recreate-macaroons'
+import { btcpayConfig } from '../fileModels/btcpay.config'
+import { i18n } from '../i18n'
+import { sdk } from '../sdk'
+import { isCln, isLnd } from '../utils'
 
 export const current = VersionInfo.of({
-  version: '2.4.2:0',
+  version: '2.4.2:1',
   releaseNotes: {
-    en_US: `Updated BTCPay Server to 2.4.2 and NBXplorer to 2.6.10.
+    en_US: `Prompts you to replace your Lightning node's credentials after the 2.4.2 security update.
 
-**This is a critical security release — upstream reports the vulnerability is being actively exploited, so update as soon as possible.**
+The vulnerability patched in 2.4.2 was being actively exploited, so on any server that ran an earlier build, treat everything BTCPay Server could reach as exposed. **Updating does not by itself undo access an attacker already took.**
 
-- Fixed a two-factor authentication (TOTP) bypass through the Greenfield API's Basic authentication
-- Basic authentication on the Greenfield API is now disabled by default five minutes after account creation; it can be re-enabled in account settings if an integration needs it
-- More reliable multisig PSBT signing and finalization, including with newer HWI and Jade firmware
-- Right-to-left (RTL) stylesheets now load correctly
-- Wallet transaction table columns can be hidden, shown, and reordered
-- Cleaner store settings pages; public invoice creation for payment requests is now rate limited
+If BTCPay Server is wired to a Lightning node, updating raises a critical task and stops BTCPay Server until you clear it:
 
-NBXplorer 2.6.10 is the version upstream recommends alongside this release. Full release notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.2`,
-    es_ES: `Se actualizó BTCPay Server a 2.4.2 y NBXplorer a 2.6.10.
+- **LND** — run LND's "Recreate Macaroons" action. BTCPay Server reads LND's admin macaroon, which grants full control of the node. Update LND first: before \`0.21.1-beta:11\` that action left the macaroon root key in place, so it did not actually revoke anything.
+- **Core Lightning** — run Core Lightning's "Revoke All Runes" action. BTCPay Server reaches CLN over its admin RPC socket, so a compromised server could have issued itself a rune that outlives the patch.
 
-**Esta es una versión de seguridad crítica: el proyecto original informa de que la vulnerabilidad se está explotando activamente, así que actualiza lo antes posible.**
+Two things this update cannot do for you:
 
-- Se corrigió una omisión de la autenticación de dos factores (TOTP) a través de la autenticación básica de la API Greenfield
-- La autenticación básica de la API Greenfield ahora se desactiva de forma predeterminada cinco minutos después de crear la cuenta; puede reactivarse en los ajustes de la cuenta si una integración la necesita
-- Firma y finalización de PSBT multifirma más fiables, incluso con firmware reciente de HWI y Jade
-- Las hojas de estilo de derecha a izquierda (RTL) ahora se cargan correctamente
-- Las columnas de la tabla de transacciones del monedero se pueden ocultar, mostrar y reordenar
-- Páginas de configuración de la tienda más claras; la creación pública de facturas para solicitudes de pago ahora tiene límite de frecuencia
+- **If you have ever connected BTCPay Server to a Lightning node** — even if you have since switched away — rotate that node's credentials anyway. The task is only raised for the node BTCPay Server is wired to right now.
+- **If you generated a hot on-chain wallet inside BTCPay Server, move those funds** to a wallet whose keys BTCPay Server has never held. A hot wallet's keys cannot be rotated.`,
+    es_ES: `Te pide sustituir las credenciales de tu nodo Lightning tras la actualización de seguridad 2.4.2.
 
-NBXplorer 2.6.10 es la versión que el proyecto original recomienda junto con esta actualización. Notas de la versión completas: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.2`,
-    de_DE: `BTCPay Server auf 2.4.2 und NBXplorer auf 2.6.10 aktualisiert.
+La vulnerabilidad corregida en 2.4.2 se estaba explotando activamente, así que en cualquier servidor que ejecutara una versión anterior debes considerar expuesto todo lo que BTCPay Server podía alcanzar. **Actualizar por sí solo no revierte el acceso que un atacante ya haya obtenido.**
 
-**Dies ist ein kritisches Sicherheitsupdate – laut Upstream wird die Schwachstelle aktiv ausgenutzt, daher so bald wie möglich aktualisieren.**
+Si BTCPay Server está conectado a un nodo Lightning, la actualización genera una tarea crítica y detiene BTCPay Server hasta que la resuelvas:
 
-- Eine Umgehung der Zwei-Faktor-Authentifizierung (TOTP) über die Basic-Authentifizierung der Greenfield-API wurde behoben
-- Die Basic-Authentifizierung der Greenfield-API wird jetzt standardmäßig fünf Minuten nach der Kontoerstellung deaktiviert; wer sie für eine Integration benötigt, kann sie in den Kontoeinstellungen wieder aktivieren
-- Zuverlässigeres Signieren und Finalisieren von Multisig-PSBTs, auch mit neuerer HWI- und Jade-Firmware
-- Stylesheets für Rechts-nach-links-Sprachen (RTL) werden wieder korrekt geladen
-- Spalten der Transaktionstabelle im Wallet lassen sich aus- und einblenden sowie neu anordnen
-- Übersichtlichere Shop-Einstellungsseiten; die öffentliche Rechnungserstellung für Zahlungsanfragen ist jetzt ratenbegrenzt
+- **LND** — ejecuta la acción «Recrear Macaroons» de LND. BTCPay Server lee el macaroon de administrador de LND, que otorga control total del nodo. Actualiza LND primero: antes de \`0.21.1-beta:11\` esa acción dejaba intacta la clave raíz de los macaroons, así que en realidad no revocaba nada.
+- **Core Lightning** — ejecuta la acción «Revocar todas las runas» de Core Lightning. BTCPay Server se comunica con CLN por su socket RPC de administración, así que un servidor comprometido pudo emitirse una runa que sobrevive al parche.
 
-NBXplorer 2.6.10 ist die Version, die Upstream zusammen mit diesem Update empfiehlt. Vollständige Versionshinweise: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.2`,
-    pl_PL: `Zaktualizowano BTCPay Server do 2.4.2 i NBXplorer do 2.6.10.
+Dos cosas que esta actualización no puede hacer por ti:
 
-**To krytyczna aktualizacja bezpieczeństwa — według twórców luka jest aktywnie wykorzystywana, dlatego zaktualizuj jak najszybciej.**
+- **Si alguna vez conectaste BTCPay Server a un nodo Lightning** —aunque ya hayas cambiado a otra opción—, rota igualmente las credenciales de ese nodo. La tarea solo se genera para el nodo al que BTCPay Server está conectado ahora mismo.
+- **Si generaste un monedero caliente on-chain dentro de BTCPay Server, mueve esos fondos** a un monedero cuyas claves BTCPay Server nunca haya tenido. Las claves de un monedero caliente no se pueden rotar.`,
+    de_DE: `Fordert Sie nach dem Sicherheitsupdate 2.4.2 auf, die Zugangsdaten Ihres Lightning-Knotens zu ersetzen.
 
-- Naprawiono obejście uwierzytelniania dwuskładnikowego (TOTP) poprzez uwierzytelnianie Basic w API Greenfield
-- Uwierzytelnianie Basic w API Greenfield jest teraz domyślnie wyłączane pięć minut po utworzeniu konta; w razie potrzeby integracji można je ponownie włączyć w ustawieniach konta
-- Bardziej niezawodne podpisywanie i finalizowanie transakcji multisig (PSBT), także z nowszym oprogramowaniem HWI i Jade
-- Arkusze stylów dla języków pisanych od prawej do lewej (RTL) ładują się teraz poprawnie
-- Kolumny tabeli transakcji portfela można ukrywać, pokazywać i zmieniać ich kolejność
-- Czytelniejsze strony ustawień sklepu; publiczne tworzenie faktur dla żądań płatności ma teraz limit częstotliwości
+Die in 2.4.2 behobene Sicherheitslücke wurde aktiv ausgenutzt. Auf jedem Server, der eine ältere Version ausgeführt hat, sollten Sie daher alles als offengelegt betrachten, was BTCPay Server erreichen konnte. **Das Update allein macht einen bereits erfolgten Zugriff nicht rückgängig.**
 
-NBXplorer 2.6.10 to wersja zalecana przez twórców razem z tą aktualizacją. Pełne informacje o wydaniu: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.2`,
-    fr_FR: `BTCPay Server mis à jour vers 2.4.2 et NBXplorer vers 2.6.10.
+Wenn BTCPay Server mit einem Lightning-Knoten verbunden ist, erzeugt das Update eine kritische Aufgabe und stoppt BTCPay Server, bis Sie sie erledigen:
 
-**Il s'agit d'une mise à jour de sécurité critique — le projet amont signale que la vulnérabilité est activement exploitée, mettez donc à jour au plus vite.**
+- **LND** — führen Sie die LND-Aktion „Macaroons neu erstellen“ aus. BTCPay Server liest das Admin-Macaroon von LND, das vollständige Kontrolle über den Knoten gewährt. Aktualisieren Sie LND zuerst: vor \`0.21.1-beta:11\` ließ diese Aktion den Macaroon-Root-Schlüssel bestehen und widerrief daher tatsächlich nichts.
+- **Core Lightning** — führen Sie die Core-Lightning-Aktion „Alle Runes widerrufen“ aus. BTCPay Server erreicht CLN über dessen Admin-RPC-Socket, sodass ein kompromittierter Server sich selbst eine Rune ausgestellt haben könnte, die den Patch überdauert.
 
-- Correction d'un contournement de l'authentification à deux facteurs (TOTP) via l'authentification Basic de l'API Greenfield
-- L'authentification Basic de l'API Greenfield est désormais désactivée par défaut cinq minutes après la création du compte ; elle peut être réactivée dans les paramètres du compte si une intégration en a besoin
-- Signature et finalisation des PSBT multisignature plus fiables, y compris avec les micrologiciels HWI et Jade récents
-- Les feuilles de style pour les langues de droite à gauche (RTL) se chargent de nouveau correctement
-- Les colonnes du tableau des transactions du portefeuille peuvent être masquées, affichées et réordonnées
-- Pages de paramètres de la boutique plus lisibles ; la création publique de factures pour les demandes de paiement est désormais limitée en fréquence
+Zwei Dinge, die dieses Update nicht für Sie erledigen kann:
 
-NBXplorer 2.6.10 est la version recommandée par le projet amont avec cette mise à jour. Notes de version complètes : https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.2`,
+- **Wenn Sie BTCPay Server jemals mit einem Lightning-Knoten verbunden haben** – auch wenn Sie inzwischen gewechselt sind –, wechseln Sie die Zugangsdaten dieses Knotens trotzdem. Die Aufgabe wird nur für den Knoten erzeugt, mit dem BTCPay Server aktuell verbunden ist.
+- **Wenn Sie in BTCPay Server eine On-Chain-Hot-Wallet erzeugt haben, verschieben Sie diese Mittel** in eine Wallet, deren Schlüssel BTCPay Server nie besessen hat. Die Schlüssel einer Hot Wallet lassen sich nicht wechseln.`,
+    pl_PL: `Przypomina o wymianie poświadczeń węzła Lightning po aktualizacji bezpieczeństwa 2.4.2.
+
+Luka naprawiona w wersji 2.4.2 była aktywnie wykorzystywana, więc na każdym serwerze, na którym działała wcześniejsza wersja, uznaj za ujawnione wszystko, do czego BTCPay Server miał dostęp. **Sama aktualizacja nie cofa dostępu, który atakujący już uzyskał.**
+
+Jeśli BTCPay Server jest połączony z węzłem Lightning, aktualizacja tworzy zadanie krytyczne i zatrzymuje BTCPay Server do czasu jego wykonania:
+
+- **LND** — uruchom akcję „Odtwórz Macaroons” w LND. BTCPay Server odczytuje macaroon administratora LND, który daje pełną kontrolę nad węzłem. Najpierw zaktualizuj LND: przed wersją \`0.21.1-beta:11\` ta akcja pozostawiała klucz główny macaroonów, więc w rzeczywistości niczego nie unieważniała.
+- **Core Lightning** — uruchom akcję „Unieważnij wszystkie runy” w Core Lightning. BTCPay Server łączy się z CLN przez jego administracyjne gniazdo RPC, więc przejęty serwer mógł wydać sobie runę, która przetrwa załatanie luki.
+
+Dwie rzeczy, których ta aktualizacja nie zrobi za ciebie:
+
+- **Jeśli kiedykolwiek łączyłeś BTCPay Server z węzłem Lightning** — nawet jeśli od tego czasu zmieniłeś konfigurację — i tak wymień poświadczenia tego węzła. Zadanie tworzone jest tylko dla węzła, z którym BTCPay Server jest połączony obecnie.
+- **Jeśli utworzyłeś w BTCPay Server gorący portfel on-chain, przenieś te środki** do portfela, którego kluczy BTCPay Server nigdy nie posiadał. Kluczy gorącego portfela nie da się wymienić.`,
+    fr_FR: `Vous invite à remplacer les identifiants de votre nœud Lightning après la mise à jour de sécurité 2.4.2.
+
+La vulnérabilité corrigée dans la version 2.4.2 était activement exploitée : sur tout serveur ayant exécuté une version antérieure, considérez comme exposé tout ce que BTCPay Server pouvait atteindre. **La mise à jour seule n'annule pas un accès déjà obtenu par un attaquant.**
+
+Si BTCPay Server est relié à un nœud Lightning, la mise à jour crée une tâche critique et arrête BTCPay Server jusqu'à ce que vous la traitiez :
+
+- **LND** — lancez l'action « Recréer les Macaroons » de LND. BTCPay Server lit le macaroon administrateur de LND, qui donne un contrôle total du nœud. Mettez d'abord LND à jour : avant \`0.21.1-beta:11\`, cette action laissait en place la clé racine des macaroons et ne révoquait donc rien en réalité.
+- **Core Lightning** — lancez l'action « Révoquer toutes les runes » de Core Lightning. BTCPay Server atteint CLN via son socket RPC d'administration : un serveur compromis a donc pu s'émettre une rune qui survit au correctif.
+
+Deux choses que cette mise à jour ne peut pas faire à votre place :
+
+- **Si vous avez déjà relié BTCPay Server à un nœud Lightning** — même si vous en avez changé depuis —, renouvelez tout de même les identifiants de ce nœud. La tâche n'est créée que pour le nœud auquel BTCPay Server est relié actuellement.
+- **Si vous avez généré un portefeuille chaud on-chain dans BTCPay Server, déplacez ces fonds** vers un portefeuille dont BTCPay Server n'a jamais détenu les clés. Les clés d'un portefeuille chaud ne peuvent pas être renouvelées.`,
   },
-  migrations: {},
+  migrations: {
+    up: async ({ effects }) => {
+      const backend = await btcpayConfig.read((s) => s.btclightning).once()
+
+      // A critical task stops this service until the target action is run, and
+      // only the target service running it clears the task — so raising one for
+      // a package that is not installed would leave BTCPay Server unstartable.
+      const installed = await effects.getInstalledPackages()
+
+      if (isLnd(backend) && installed.includes('lnd'))
+        await sdk.action.createTask(
+          effects,
+          'lnd',
+          recreateMacaroons,
+          'critical',
+          {
+            reason: i18n(
+              "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Recreate LND's macaroons to revoke the old ones.",
+            ),
+          },
+        )
+
+      if (isCln(backend) && installed.includes('c-lightning'))
+        await sdk.action.createTask(
+          effects,
+          'c-lightning',
+          revokeRunes,
+          'critical',
+          {
+            reason: i18n(
+              "BTCPay Server reaches Core Lightning over its admin RPC socket, so a server compromised through the vulnerability patched in 2.4.2 could have issued itself a rune. Revoke this node's runes to invalidate any that were.",
+            ),
+          },
+        )
+    },
+  },
 })
