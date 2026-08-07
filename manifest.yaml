@@ -4,7 +4,7 @@ version: 2.4.2
 release-notes: |
   * Update BTCPay Server to 2.4.2 with critical security fixes
   * Update NBXplorer to 2.6.10
-  * Update Shopify App to 1.10 with critical security fixes
+  * Update Shopify App to 1.10
 
 license: mit
 wrapper-repo: "https://github.com/Start9Labs/btcpayserver-startos"
