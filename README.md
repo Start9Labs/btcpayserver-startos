@@ -249,10 +249,12 @@ CLN is reached over its `lightning-rpc` Unix socket on the mount, which is unres
 
 | `btclightning` | Task target                    | Rotates                                        |
 | -------------- | ------------------------------ | ---------------------------------------------- |
-| LND            | `lnd` → `recreate-macaroons`   | The admin macaroon BTCPay reads off the mount  |
+| LND            | `lnd` → `revoke-macaroons`     | The admin macaroon BTCPay reads off the mount  |
 | CLN            | `c-lightning` → `revoke-runes` | Any rune mintable through the admin RPC socket |
 
-Two guards are load-bearing. The task is raised only when the backend is the configured one **and** that package is installed: a critical task stops this service and is cleared only by the _target_ service running the action, so raising one for an absent package would leave BTCPay unstartable short of a force-start. Neither the LND nor the CLN action existed in usable form before this release — `recreate-macaroons` left the macaroon root key in place until lnd-startos `0.21.1-beta:11`, and `revoke-runes` was added in cln-startos `26.6.6:9` — so the sibling pins must carry those versions.
+Two guards are load-bearing. The task is raised only when the backend is the configured one **and** that package is installed: a critical task stops this service and is cleared only by the _target_ service running the action, so raising one for an absent package would leave BTCPay unstartable short of a force-start.
+
+Neither action existed in usable form before this release — LND's was called `recreate-macaroons` and left the macaroon root key in place until `0.21.1-beta:11`, and `revoke-runes` was added in cln-startos `26.6.6:9`. `dependencies.ts` therefore floors both at those versions, so a user cannot end up with a task pointing at an action that does nothing.
 
 A user who pointed BTCPay at a node and later switched away is not detectable from `btclightning` alone, and a hot on-chain wallet's keys cannot be rotated at all; both are covered in the release notes and `instructions.md` instead.
 

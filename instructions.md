@@ -51,7 +51,7 @@ The vulnerability patched in BTCPay Server 2.4.2 was being actively exploited up
 
 If BTCPay is wired to a Lightning node, updating to 2.4.2:1 raises a **critical task** and stops BTCPay until you clear it. Running the action clears the task and BTCPay starts normally again.
 
-- **LND** — run LND's **Recreate Macaroons**. BTCPay reads LND's admin macaroon, which grants full control of the node. **Update LND to `0.21.1-beta:11` or later first:** earlier versions of that action deleted the macaroon files but left the root key they are signed with, so LND regenerated them from the same key and any copied macaroon kept working. BTCPay picks up the new macaroon from the same path automatically; other services connected to LND may need restarting.
+- **LND** — run LND's **Revoke Macaroons**. BTCPay reads LND's admin macaroon, which grants full control of the node. This needs LND `0.21.1-beta:11` or later, which BTCPay now requires: earlier releases called the action **Recreate Macaroons** and deleted the macaroon files while leaving the root key that signs them in place, so LND regenerated them from the same key and any copied macaroon kept working. BTCPay picks up the new macaroon from the same path automatically; other services connected to LND may need restarting.
 - **Core Lightning** — run Core Lightning's **Revoke All Runes** (added in `26.6.6:9`). BTCPay reaches CLN over its admin RPC socket, which is unrestricted, so a compromised server could have issued itself a rune that outlives the patch. CLN restarts afterwards to issue its web UI a fresh rune; re-issue any other integration's rune with **Create Rune**.
 
 Two things the update cannot do for you:

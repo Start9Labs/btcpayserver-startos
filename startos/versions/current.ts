@@ -1,6 +1,6 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 import { revokeRunes } from 'cln-startos/startos/actions/revokeRunes'
-import { recreateMacaroons } from 'lnd-startos/startos/actions/recreate-macaroons'
+import { revokeMacaroons } from 'lnd-startos/startos/actions/revoke-macaroons'
 import { btcpayConfig } from '../fileModels/btcpay.config'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
@@ -15,7 +15,7 @@ The vulnerability patched in 2.4.2 was being actively exploited, so on any serve
 
 If BTCPay Server is wired to a Lightning node, updating raises a critical task and stops BTCPay Server until you clear it:
 
-- **LND** — run LND's "Recreate Macaroons" action. BTCPay Server reads LND's admin macaroon, which grants full control of the node. Update LND first: before \`0.21.1-beta:11\` that action left the macaroon root key in place, so it did not actually revoke anything.
+- **LND** — run LND's "Revoke Macaroons" action. BTCPay Server reads LND's admin macaroon, which grants full control of the node. This needs LND \`0.21.1-beta:11\` or later, now required as a dependency: earlier releases called the action "Recreate Macaroons" and only deleted the macaroon files, leaving the root key that signs them in place, so nothing was actually revoked.
 - **Core Lightning** — run Core Lightning's "Revoke All Runes" action. BTCPay Server reaches CLN over its admin RPC socket, so a compromised server could have issued itself a rune that outlives the patch.
 
 Two things this update cannot do for you:
@@ -28,7 +28,7 @@ La vulnerabilidad corregida en 2.4.2 se estaba explotando activamente, así que 
 
 Si BTCPay Server está conectado a un nodo Lightning, la actualización genera una tarea crítica y detiene BTCPay Server hasta que la resuelvas:
 
-- **LND** — ejecuta la acción «Recrear Macaroons» de LND. BTCPay Server lee el macaroon de administrador de LND, que otorga control total del nodo. Actualiza LND primero: antes de \`0.21.1-beta:11\` esa acción dejaba intacta la clave raíz de los macaroons, así que en realidad no revocaba nada.
+- **LND** — ejecuta la acción «Revocar macaroons» de LND. BTCPay Server lee el macaroon de administrador de LND, que otorga control total del nodo. Requiere LND \`0.21.1-beta:11\` o posterior, ahora exigido como dependencia: en versiones anteriores la acción se llamaba «Recrear Macaroons» y solo borraba los archivos de macaroons, dejando intacta la clave raíz que los firma, así que no revocaba nada.
 - **Core Lightning** — ejecuta la acción «Revocar todas las runas» de Core Lightning. BTCPay Server se comunica con CLN por su socket RPC de administración, así que un servidor comprometido pudo emitirse una runa que sobrevive al parche.
 
 Dos cosas que esta actualización no puede hacer por ti:
@@ -41,7 +41,7 @@ Die in 2.4.2 behobene Sicherheitslücke wurde aktiv ausgenutzt. Auf jedem Server
 
 Wenn BTCPay Server mit einem Lightning-Knoten verbunden ist, erzeugt das Update eine kritische Aufgabe und stoppt BTCPay Server, bis Sie sie erledigen:
 
-- **LND** — führen Sie die LND-Aktion „Macaroons neu erstellen“ aus. BTCPay Server liest das Admin-Macaroon von LND, das vollständige Kontrolle über den Knoten gewährt. Aktualisieren Sie LND zuerst: vor \`0.21.1-beta:11\` ließ diese Aktion den Macaroon-Root-Schlüssel bestehen und widerrief daher tatsächlich nichts.
+- **LND** — führen Sie die LND-Aktion „Macaroons widerrufen“ aus. BTCPay Server liest das Admin-Macaroon von LND, das vollständige Kontrolle über den Knoten gewährt. Dafür wird LND \`0.21.1-beta:11\` oder neuer benötigt, jetzt als Abhängigkeit vorausgesetzt: davor hieß die Aktion „Macaroons neu erstellen“ und löschte nur die Macaroon-Dateien, ließ aber den signierenden Root-Schlüssel bestehen und widerrief damit nichts.
 - **Core Lightning** — führen Sie die Core-Lightning-Aktion „Alle Runes widerrufen“ aus. BTCPay Server erreicht CLN über dessen Admin-RPC-Socket, sodass ein kompromittierter Server sich selbst eine Rune ausgestellt haben könnte, die den Patch überdauert.
 
 Zwei Dinge, die dieses Update nicht für Sie erledigen kann:
@@ -54,7 +54,7 @@ Luka naprawiona w wersji 2.4.2 była aktywnie wykorzystywana, więc na każdym s
 
 Jeśli BTCPay Server jest połączony z węzłem Lightning, aktualizacja tworzy zadanie krytyczne i zatrzymuje BTCPay Server do czasu jego wykonania:
 
-- **LND** — uruchom akcję „Odtwórz Macaroons” w LND. BTCPay Server odczytuje macaroon administratora LND, który daje pełną kontrolę nad węzłem. Najpierw zaktualizuj LND: przed wersją \`0.21.1-beta:11\` ta akcja pozostawiała klucz główny macaroonów, więc w rzeczywistości niczego nie unieważniała.
+- **LND** — uruchom akcję „Unieważnij macaroons” w LND. BTCPay Server odczytuje macaroon administratora LND, który daje pełną kontrolę nad węzłem. Wymaga to LND \`0.21.1-beta:11\` lub nowszego, teraz wymaganego jako zależność: wcześniej akcja nazywała się „Odtwórz Macaroons” i usuwała tylko pliki macaroonów, pozostawiając podpisujący je klucz główny, więc niczego nie unieważniała.
 - **Core Lightning** — uruchom akcję „Unieważnij wszystkie runy” w Core Lightning. BTCPay Server łączy się z CLN przez jego administracyjne gniazdo RPC, więc przejęty serwer mógł wydać sobie runę, która przetrwa załatanie luki.
 
 Dwie rzeczy, których ta aktualizacja nie zrobi za ciebie:
@@ -67,7 +67,7 @@ La vulnérabilité corrigée dans la version 2.4.2 était activement exploitée 
 
 Si BTCPay Server est relié à un nœud Lightning, la mise à jour crée une tâche critique et arrête BTCPay Server jusqu'à ce que vous la traitiez :
 
-- **LND** — lancez l'action « Recréer les Macaroons » de LND. BTCPay Server lit le macaroon administrateur de LND, qui donne un contrôle total du nœud. Mettez d'abord LND à jour : avant \`0.21.1-beta:11\`, cette action laissait en place la clé racine des macaroons et ne révoquait donc rien en réalité.
+- **LND** — lancez l'action « Révoquer les macaroons » de LND. BTCPay Server lit le macaroon administrateur de LND, qui donne un contrôle total du nœud. Cela nécessite LND \`0.21.1-beta:11\` ou plus récent, désormais exigé comme dépendance : auparavant l'action s'appelait « Recréer les Macaroons » et supprimait seulement les fichiers de macaroons, laissant en place la clé racine qui les signe, sans donc rien révoquer.
 - **Core Lightning** — lancez l'action « Révoquer toutes les runes » de Core Lightning. BTCPay Server atteint CLN via son socket RPC d'administration : un serveur compromis a donc pu s'émettre une rune qui survit au correctif.
 
 Deux choses que cette mise à jour ne peut pas faire à votre place :
@@ -88,7 +88,7 @@ Deux choses que cette mise à jour ne peut pas faire à votre place :
         await sdk.action.createTask(
           effects,
           'lnd',
-          recreateMacaroons,
+          revokeMacaroons,
           'critical',
           {
             reason: i18n(

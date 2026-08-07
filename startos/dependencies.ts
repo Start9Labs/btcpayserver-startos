@@ -13,10 +13,14 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
     .const(effects)
   if (!config) throw new Error('BTCPay config not found')
 
+  // Both floors are set by the credential-rotation task 2.4.2:1 raises (see
+  // versions/current.ts): revoke-macaroons only rotates LND's macaroon root key
+  // — the thing that actually revokes — from 0.21.1-beta:11, and revoke-runes
+  // does not exist before 26.6.6:9.
   if (isLnd(config.btclightning)) {
     deps['lnd'] = {
       kind: 'running',
-      versionRange: '>=0.21.1-beta:4',
+      versionRange: '>=0.21.1-beta:11',
       healthChecks: ['lnd'],
     }
   }
@@ -24,7 +28,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   if (isCln(config.btclightning)) {
     deps['c-lightning'] = {
       kind: 'running',
-      versionRange: '>=26.6.6:1',
+      versionRange: '>=26.6.6:9',
       healthChecks: ['lightningd'],
     }
   }
