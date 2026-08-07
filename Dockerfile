@@ -2,7 +2,7 @@ FROM btcpayserver/monero:0.18.4.3 AS monero-wallet-rpc
 FROM nicolasdorier/nbxplorer:2.6.10 AS nbx-builder
 FROM btcpayserver/shopify-app-deployer:1.10 AS shopify-app
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS actions-builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble AS actions-builder
 ARG TARGETARCH
 WORKDIR /actions
 COPY . .
@@ -23,13 +23,13 @@ ARG PLATFORM
 ARG ARCH
 
 # install package dependencies
-RUN sed -i "s|http://|https://|g" /etc/apt/sources.list.d/debian.sources
+RUN sed -i "s|http://|https://|g" /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y sqlite3 libsqlite3-0 curl locales jq bc wget procps xz-utils nginx vim git \
   && mkdir -p /usr/share/postgresql-common/pgdg \
   && curl -so /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-  && sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+  && sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
   && apt-get update && apt-get install -y postgresql-13 \
   && wget https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_${PLATFORM}.tar.gz -O - |\
   tar xz && mv yq_linux_${PLATFORM} /usr/bin/yq \
