@@ -43,6 +43,8 @@ export default {
     38: 'Interfaz web',
     39: 'La interfaz web para interactuar con BTCPay Server en un navegador.',
     40: 'BTCPay Server requiere un comando block-notify especifico',
+    41: 'BTCPay Server puede leer el macaroon de administrador de LND, que pudo quedar expuesto por la vulnerabilidad corregida en 2.4.2. Vuelva a crear los macaroons de LND para revocar los anteriores.',
+    42: 'BTCPay Server se comunica con Core Lightning por su socket RPC de administracion, asi que un servidor comprometido a traves de la vulnerabilidad corregida en 2.4.2 pudo emitirse una runa. Revoque las runas de este nodo para invalidar cualquiera que se haya emitido.',
   } satisfies LangDict,
   de_DE: {
     0: 'UTXO-Tracker',
@@ -86,6 +88,8 @@ export default {
     38: 'Web-UI',
     39: 'Die Weboberflache fur die Interaktion mit BTCPay Server in einem Browser.',
     40: 'BTCPay Server benotigt einen bestimmten block-notify-Befehl',
+    41: 'BTCPay Server kann das Admin-Macaroon von LND lesen, das durch die in 2.4.2 behobene Sicherheitslucke offengelegt worden sein kann. Erstellen Sie die Macaroons von LND neu, um die alten zu widerrufen.',
+    42: 'BTCPay Server erreicht Core Lightning uber dessen Admin-RPC-Socket, sodass ein uber die in 2.4.2 behobene Sicherheitslucke kompromittierter Server sich selbst eine Rune ausgestellt haben konnte. Widerrufen Sie die Runes dieses Nodes, um alle so entstandenen ungultig zu machen.',
   } satisfies LangDict,
   pl_PL: {
     0: 'Sledzenie UTXO',
@@ -129,6 +133,8 @@ export default {
     38: 'Interfejs webowy',
     39: 'Interfejs webowy do interakcji z BTCPay Server w przegladarce.',
     40: 'BTCPay Server wymaga konkretnego polecenia block-notify',
+    41: 'BTCPay Server moze odczytac macaroon administratora LND, ktory mogl zostac ujawniony przez luke naprawiona w wersji 2.4.2. Utworz ponownie macaroony LND, aby uniewaznic poprzednie.',
+    42: 'BTCPay Server laczy sie z Core Lightning przez jego administracyjne gniazdo RPC, wiec serwer przejety przez luke naprawiona w wersji 2.4.2 mogl wydac sobie rune. Uniewaznij runy tego wezla, aby anulowac wszystkie tak wydane.',
   } satisfies LangDict,
   fr_FR: {
     0: 'Suivi UTXO',
@@ -172,5 +178,7 @@ export default {
     38: 'Interface web',
     39: "L'interface web pour interagir avec BTCPay Server dans un navigateur.",
     40: 'BTCPay Server requiert une commande block-notify specifique',
+    41: 'BTCPay Server peut lire le macaroon administrateur de LND, qui a pu etre expose par la vulnerabilite corrigee dans la version 2.4.2. Recreez les macaroons de LND pour revoquer les anciens.',
+    42: "BTCPay Server atteint Core Lightning via son socket RPC d'administration : un serveur compromis par la vulnerabilite corrigee dans la version 2.4.2 a donc pu s'emettre une rune. Revoquez les runes de ce noeud pour invalider toutes celles qui auraient ete creees.",
   } satisfies LangDict,
 } as const
