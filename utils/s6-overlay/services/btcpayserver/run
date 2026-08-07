@@ -52,8 +52,12 @@ then
   
 fi
 
-# configure templates and load environment variables generated for dependency connections 
-configurator > .env 
+# BTCPay 2.4.x resolves its content root (and therefore wwwroot) from the
+# process working directory, so run from /app like the upstream image does
+cd /app
+
+# configure templates and load environment variables generated for dependency connections
+configurator > .env
 source .env
 
 /etc/init.d/nginx restart
