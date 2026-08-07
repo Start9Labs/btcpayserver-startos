@@ -1,6 +1,8 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 import { revokeRunes } from 'cln-startos/startos/actions/revokeRunes'
+import { manifest as clnManifest } from 'cln-startos/startos/manifest'
 import { revokeMacaroons } from 'lnd-startos/startos/actions/revoke-macaroons'
+import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
 import { btcpayConfig } from '../fileModels/btcpay.config'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
@@ -82,12 +84,12 @@ Deux choses que cette mise à jour ne peut pas faire à votre place :
       // A critical task stops this service until the target action is run, and
       // only the target service running it clears the task — so raising one for
       // a package that is not installed would leave BTCPay Server unstartable.
-      const installed = await effects.getInstalledPackages()
+      const installed = await sdk.getInstalledPackages(effects)
 
-      if (isLnd(backend) && installed.includes('lnd'))
+      if (isLnd(backend) && installed.includes(lndManifest.id))
         await sdk.action.createTask(
           effects,
-          'lnd',
+          lndManifest.id,
           revokeMacaroons,
           'critical',
           {
@@ -97,10 +99,10 @@ Deux choses que cette mise à jour ne peut pas faire à votre place :
           },
         )
 
-      if (isCln(backend) && installed.includes('c-lightning'))
+      if (isCln(backend) && installed.includes(clnManifest.id))
         await sdk.action.createTask(
           effects,
-          'c-lightning',
+          clnManifest.id,
           revokeRunes,
           'critical',
           {
