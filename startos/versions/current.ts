@@ -1,116 +1,33 @@
 import { VersionInfo } from '@start9labs/start-sdk'
-import { revokeRunes } from 'cln-startos/startos/actions/revokeRunes'
-import { manifest as clnManifest } from 'cln-startos/startos/manifest'
-import { revokeMacaroons } from 'lnd-startos/startos/actions/revoke-macaroons'
-import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
-import { btcpayConfig } from '../fileModels/btcpay.config'
-import { i18n } from '../i18n'
-import { sdk } from '../sdk'
-import { isCln, isLnd } from '../utils'
 
 export const current = VersionInfo.of({
-  version: '2.4.2:1',
+  version: '2.4.3-rc.4:0',
   releaseNotes: {
-    en_US: `Prompts you to replace your Lightning node's credentials after the 2.4.2 security update.
+    en_US: `Security update — BTCPay Server 2.4.3-rc4.
 
-The vulnerability patched in 2.4.2 was being actively exploited, so on any server that ran an earlier build, treat everything BTCPay Server could reach as exposed. **Updating does not by itself undo access an attacker already took.**
+This is a **pre-release build**. It is packaged from BTCPay Server's internal image channel ahead of upstream's public release: at packaging time, 2.4.3 had no published release, git tag, or changelog, so the specifics of the fix are not yet public.
 
-If BTCPay Server is wired to a Lightning node, updating raises a critical task and stops BTCPay Server until you clear it:
+Upstream's full release notes will appear at https://github.com/btcpayserver/btcpayserver/releases once 2.4.3 is published.`,
+    es_ES: `Actualización de seguridad — BTCPay Server 2.4.3-rc4.
 
-- **LND** — run LND's "Revoke Macaroons" action. BTCPay Server reads LND's admin macaroon, which grants full control of the node. This needs LND \`0.21.1-beta:11\` or later, now required as a dependency: earlier releases called the action "Recreate Macaroons" and only deleted the macaroon files, leaving the root key that signs them in place, so nothing was actually revoked.
-- **Core Lightning** — run Core Lightning's "Revoke All Runes" action. BTCPay Server reaches CLN over its admin RPC socket, so a compromised server could have issued itself a rune that outlives the patch.
+Esta es una **versión preliminar**. Se empaqueta desde el canal de imágenes interno de BTCPay Server antes de la publicación oficial: en el momento del empaquetado, 2.4.3 no tenía publicación, etiqueta de git ni registro de cambios, por lo que los detalles de la corrección aún no son públicos.
 
-Two things this update cannot do for you:
+Las notas de versión completas aparecerán en https://github.com/btcpayserver/btcpayserver/releases cuando se publique 2.4.3.`,
+    de_DE: `Sicherheitsupdate — BTCPay Server 2.4.3-rc4.
 
-- **If you have ever connected BTCPay Server to a Lightning node** — even if you have since switched away — rotate that node's credentials anyway. The task is only raised for the node BTCPay Server is wired to right now.
-- **If you generated a hot on-chain wallet inside BTCPay Server, move those funds** to a wallet whose keys BTCPay Server has never held. A hot wallet's keys cannot be rotated.`,
-    es_ES: `Te pide sustituir las credenciales de tu nodo Lightning tras la actualización de seguridad 2.4.2.
+Dies ist ein **Vorabversions-Build**. Er wird aus dem internen Image-Kanal von BTCPay Server vor der öffentlichen Veröffentlichung paketiert: Zum Zeitpunkt der Paketierung hatte 2.4.3 weder eine veröffentlichte Release noch einen Git-Tag oder ein Changelog, sodass die Einzelheiten der Korrektur noch nicht öffentlich sind.
 
-La vulnerabilidad corregida en 2.4.2 se estaba explotando activamente, así que en cualquier servidor que ejecutara una versión anterior debes considerar expuesto todo lo que BTCPay Server podía alcanzar. **Actualizar por sí solo no revierte el acceso que un atacante ya haya obtenido.**
+Die vollständigen Release Notes erscheinen unter https://github.com/btcpayserver/btcpayserver/releases, sobald 2.4.3 veröffentlicht ist.`,
+    pl_PL: `Aktualizacja bezpieczeństwa — BTCPay Server 2.4.3-rc4.
 
-Si BTCPay Server está conectado a un nodo Lightning, la actualización genera una tarea crítica y detiene BTCPay Server hasta que la resuelvas:
+To jest **wersja przedpremierowa**. Została spakowana z wewnętrznego kanału obrazów BTCPay Server przed publicznym wydaniem: w chwili pakowania 2.4.3 nie miała opublikowanego wydania, tagu git ani listy zmian, więc szczegóły poprawki nie są jeszcze publiczne.
 
-- **LND** — ejecuta la acción «Revocar macaroons» de LND. BTCPay Server lee el macaroon de administrador de LND, que otorga control total del nodo. Requiere LND \`0.21.1-beta:11\` o posterior, ahora exigido como dependencia: en versiones anteriores la acción se llamaba «Recrear Macaroons» y solo borraba los archivos de macaroons, dejando intacta la clave raíz que los firma, así que no revocaba nada.
-- **Core Lightning** — ejecuta la acción «Revocar todas las runas» de Core Lightning. BTCPay Server se comunica con CLN por su socket RPC de administración, así que un servidor comprometido pudo emitirse una runa que sobrevive al parche.
+Pełne informacje o wydaniu pojawią się na https://github.com/btcpayserver/btcpayserver/releases po opublikowaniu 2.4.3.`,
+    fr_FR: `Mise à jour de sécurité — BTCPay Server 2.4.3-rc4.
 
-Dos cosas que esta actualización no puede hacer por ti:
+Il s'agit d'une **version préliminaire**. Elle est empaquetée depuis le canal d'images interne de BTCPay Server avant la publication officielle : au moment de l'empaquetage, 2.4.3 n'avait ni publication, ni étiquette git, ni journal des modifications, de sorte que les détails du correctif ne sont pas encore publics.
 
-- **Si alguna vez conectaste BTCPay Server a un nodo Lightning** —aunque ya hayas cambiado a otra opción—, rota igualmente las credenciales de ese nodo. La tarea solo se genera para el nodo al que BTCPay Server está conectado ahora mismo.
-- **Si generaste un monedero caliente on-chain dentro de BTCPay Server, mueve esos fondos** a un monedero cuyas claves BTCPay Server nunca haya tenido. Las claves de un monedero caliente no se pueden rotar.`,
-    de_DE: `Fordert Sie nach dem Sicherheitsupdate 2.4.2 auf, die Zugangsdaten Ihres Lightning-Knotens zu ersetzen.
-
-Die in 2.4.2 behobene Sicherheitslücke wurde aktiv ausgenutzt. Auf jedem Server, der eine ältere Version ausgeführt hat, sollten Sie daher alles als offengelegt betrachten, was BTCPay Server erreichen konnte. **Das Update allein macht einen bereits erfolgten Zugriff nicht rückgängig.**
-
-Wenn BTCPay Server mit einem Lightning-Knoten verbunden ist, erzeugt das Update eine kritische Aufgabe und stoppt BTCPay Server, bis Sie sie erledigen:
-
-- **LND** — führen Sie die LND-Aktion „Macaroons widerrufen“ aus. BTCPay Server liest das Admin-Macaroon von LND, das vollständige Kontrolle über den Knoten gewährt. Dafür wird LND \`0.21.1-beta:11\` oder neuer benötigt, jetzt als Abhängigkeit vorausgesetzt: davor hieß die Aktion „Macaroons neu erstellen“ und löschte nur die Macaroon-Dateien, ließ aber den signierenden Root-Schlüssel bestehen und widerrief damit nichts.
-- **Core Lightning** — führen Sie die Core-Lightning-Aktion „Alle Runes widerrufen“ aus. BTCPay Server erreicht CLN über dessen Admin-RPC-Socket, sodass ein kompromittierter Server sich selbst eine Rune ausgestellt haben könnte, die den Patch überdauert.
-
-Zwei Dinge, die dieses Update nicht für Sie erledigen kann:
-
-- **Wenn Sie BTCPay Server jemals mit einem Lightning-Knoten verbunden haben** – auch wenn Sie inzwischen gewechselt sind –, wechseln Sie die Zugangsdaten dieses Knotens trotzdem. Die Aufgabe wird nur für den Knoten erzeugt, mit dem BTCPay Server aktuell verbunden ist.
-- **Wenn Sie in BTCPay Server eine On-Chain-Hot-Wallet erzeugt haben, verschieben Sie diese Mittel** in eine Wallet, deren Schlüssel BTCPay Server nie besessen hat. Die Schlüssel einer Hot Wallet lassen sich nicht wechseln.`,
-    pl_PL: `Przypomina o wymianie poświadczeń węzła Lightning po aktualizacji bezpieczeństwa 2.4.2.
-
-Luka naprawiona w wersji 2.4.2 była aktywnie wykorzystywana, więc na każdym serwerze, na którym działała wcześniejsza wersja, uznaj za ujawnione wszystko, do czego BTCPay Server miał dostęp. **Sama aktualizacja nie cofa dostępu, który atakujący już uzyskał.**
-
-Jeśli BTCPay Server jest połączony z węzłem Lightning, aktualizacja tworzy zadanie krytyczne i zatrzymuje BTCPay Server do czasu jego wykonania:
-
-- **LND** — uruchom akcję „Unieważnij macaroons” w LND. BTCPay Server odczytuje macaroon administratora LND, który daje pełną kontrolę nad węzłem. Wymaga to LND \`0.21.1-beta:11\` lub nowszego, teraz wymaganego jako zależność: wcześniej akcja nazywała się „Odtwórz Macaroons” i usuwała tylko pliki macaroonów, pozostawiając podpisujący je klucz główny, więc niczego nie unieważniała.
-- **Core Lightning** — uruchom akcję „Unieważnij wszystkie runy” w Core Lightning. BTCPay Server łączy się z CLN przez jego administracyjne gniazdo RPC, więc przejęty serwer mógł wydać sobie runę, która przetrwa załatanie luki.
-
-Dwie rzeczy, których ta aktualizacja nie zrobi za ciebie:
-
-- **Jeśli kiedykolwiek łączyłeś BTCPay Server z węzłem Lightning** — nawet jeśli od tego czasu zmieniłeś konfigurację — i tak wymień poświadczenia tego węzła. Zadanie tworzone jest tylko dla węzła, z którym BTCPay Server jest połączony obecnie.
-- **Jeśli utworzyłeś w BTCPay Server gorący portfel on-chain, przenieś te środki** do portfela, którego kluczy BTCPay Server nigdy nie posiadał. Kluczy gorącego portfela nie da się wymienić.`,
-    fr_FR: `Vous invite à remplacer les identifiants de votre nœud Lightning après la mise à jour de sécurité 2.4.2.
-
-La vulnérabilité corrigée dans la version 2.4.2 était activement exploitée : sur tout serveur ayant exécuté une version antérieure, considérez comme exposé tout ce que BTCPay Server pouvait atteindre. **La mise à jour seule n'annule pas un accès déjà obtenu par un attaquant.**
-
-Si BTCPay Server est relié à un nœud Lightning, la mise à jour crée une tâche critique et arrête BTCPay Server jusqu'à ce que vous la traitiez :
-
-- **LND** — lancez l'action « Révoquer les macaroons » de LND. BTCPay Server lit le macaroon administrateur de LND, qui donne un contrôle total du nœud. Cela nécessite LND \`0.21.1-beta:11\` ou plus récent, désormais exigé comme dépendance : auparavant l'action s'appelait « Recréer les Macaroons » et supprimait seulement les fichiers de macaroons, laissant en place la clé racine qui les signe, sans donc rien révoquer.
-- **Core Lightning** — lancez l'action « Révoquer toutes les runes » de Core Lightning. BTCPay Server atteint CLN via son socket RPC d'administration : un serveur compromis a donc pu s'émettre une rune qui survit au correctif.
-
-Deux choses que cette mise à jour ne peut pas faire à votre place :
-
-- **Si vous avez déjà relié BTCPay Server à un nœud Lightning** — même si vous en avez changé depuis —, renouvelez tout de même les identifiants de ce nœud. La tâche n'est créée que pour le nœud auquel BTCPay Server est relié actuellement.
-- **Si vous avez généré un portefeuille chaud on-chain dans BTCPay Server, déplacez ces fonds** vers un portefeuille dont BTCPay Server n'a jamais détenu les clés. Les clés d'un portefeuille chaud ne peuvent pas être renouvelées.`,
+Les notes de version complètes paraîtront sur https://github.com/btcpayserver/btcpayserver/releases dès la publication de 2.4.3.`,
   },
-  migrations: {
-    up: async ({ effects }) => {
-      const backend = await btcpayConfig.read((s) => s.btclightning).once()
-
-      // A critical task stops this service until the target action is run, and
-      // only the target service running it clears the task — so raising one for
-      // a package that is not installed would leave BTCPay Server unstartable.
-      const installed = await sdk.getInstalledPackages(effects)
-
-      if (isLnd(backend) && installed.includes(lndManifest.id))
-        await sdk.action.createTask(
-          effects,
-          lndManifest.id,
-          revokeMacaroons,
-          'critical',
-          {
-            reason: i18n(
-              "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Recreate LND's macaroons to revoke the old ones.",
-            ),
-          },
-        )
-
-      if (isCln(backend) && installed.includes(clnManifest.id))
-        await sdk.action.createTask(
-          effects,
-          clnManifest.id,
-          revokeRunes,
-          'critical',
-          {
-            reason: i18n(
-              "BTCPay Server reaches Core Lightning over its admin RPC socket, so a server compromised through the vulnerability patched in 2.4.2 could have issued itself a rune. Revoke this node's runes to invalidate any that were.",
-            ),
-          },
-        )
-    },
-  },
+  migrations: {},
 })

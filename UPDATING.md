@@ -12,6 +12,17 @@ The package pulls **four** upstream images, each pinned as a `dockerTag` under `
 
   Pin lives in `startos/manifest/index.ts` → `images.btcpay.source.dockerTag` (`btcpayserver/btcpayserver:<version>`).
 
+  **Prerelease builds come from a different image repo.** Release candidates are published to `btcpayserver/btcpayserver-internal`, not `btcpayserver/btcpayserver`, and may exist with no corresponding GitHub release, tag, or changelog — upstream stages embargoed security fixes there ahead of disclosure. So an RC bump changes the image _repo_ as well as the tag. List them with:
+
+  ```sh
+  curl -fsSL "https://hub.docker.com/v2/repositories/btcpayserver/btcpayserver-internal/tags?page_size=50&ordering=last_updated" \
+    | jq -r '.results[].name'
+  ```
+
+  Move the pin back to `btcpayserver/btcpayserver` as soon as the final release is published.
+
+  **exver rejects a prerelease segment that mixes letters and digits**, so the upstream tag and the package version differ: upstream `2.4.3-rc4` must be written `2.4.3-rc.4:0` in `startos/versions/current.ts`. `rc4` fails to parse — the compile-time `ValidateExVer` on `VersionInfo.of` catches it. Ordering is unaffected: `2.4.2:1 < 2.4.3-rc.4:0 < 2.4.3:0`.
+
 - **NBXplorer** ([btcpayserver/NBXplorer](https://github.com/btcpayserver/NBXplorer)) — tagged on GitHub but no Releases are published. Strip the leading `v` for the `dockerTag`. The Docker image is published as `nicolasdorier/nbxplorer`. (The older `dgarage/NBXplorer` URL still works but 301-redirects to `btcpayserver/NBXplorer`, which is the canonical home today.)
 
   ```sh
