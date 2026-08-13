@@ -34,15 +34,17 @@
 
 ## Image and Container Runtime
 
-| Property       | Value                               |
-| -------------- | ----------------------------------- |
-| BTCPay Server  | `btcpayserver/btcpayserver`         |
-| NBXplorer      | `nicolasdorier/nbxplorer`           |
-| PostgreSQL     | `btcpayserver/postgres`             |
-| Shopify Plugin | `btcpayserver/shopify-app-deployer` |
-| Architectures  | x86_64, aarch64                     |
+| Property       | Value                                |
+| -------------- | ------------------------------------ |
+| BTCPay Server  | `btcpayserver/btcpayserver-internal` |
+| NBXplorer      | `nicolasdorier/nbxplorer`            |
+| PostgreSQL     | `btcpayserver/postgres`              |
+| Shopify Plugin | `btcpayserver/shopify-app-deployer`  |
+| Architectures  | x86_64, aarch64                      |
 
 All images are upstream unmodified. The service runs four containers: BTCPay Server, NBXplorer (UTXO tracker), PostgreSQL, and optionally the Shopify plugin deployer.
+
+BTCPay Server is pinned to a **release candidate** from upstream's internal image channel (`btcpayserver/btcpayserver-internal`) rather than the public `btcpayserver/btcpayserver` repo — see [UPDATING.md](./UPDATING.md). Move the pin back to the public repo when the final 2.4.3 release is published.
 
 ---
 
@@ -342,7 +344,7 @@ Build and development workflow follow the StartOS packaging guide: <https://docs
 ```yaml
 package_id: btcpayserver
 images:
-  btcpay: btcpayserver/btcpayserver
+  btcpay: btcpayserver/btcpayserver-internal
   nbx: nicolasdorier/nbxplorer
   postgres: btcpayserver/postgres
   shopify: btcpayserver/shopify-app-deployer
