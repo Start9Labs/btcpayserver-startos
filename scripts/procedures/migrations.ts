@@ -77,6 +77,6 @@ export const migration: T.ExpectedExports.migration = async (
         ),
       },
     },
-    "2.4.2.1"
+    "2.4.3"
   )(effects, version, ...args);
 };
