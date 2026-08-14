@@ -27,7 +27,7 @@ export const manifest = setupManifest({
     },
     nbx: {
       source: {
-        dockerTag: 'nicolasdorier/nbxplorer:2.6.10',
+        dockerTag: 'nicolasdorier/nbxplorer:2.6.11',
       },
       arch: ['x86_64', 'aarch64'],
     },
