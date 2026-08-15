@@ -1,43 +1,43 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.3-rc.4:1',
+  version: '2.4.3-rc.5:0',
   releaseNotes: {
-    en_US: `Updated NBXplorer to 2.6.11.
+    en_US: `Updated BTCPay Server to the 2.4.3-rc5 pre-release build.
 
-A maintenance release with no changes to NBXplorer itself: it rebuilds on the .NET 10.0.11 runtime, which carries this month's .NET security fixes, and on NBitcoin 10.0.9.
+This is still a **pre-release**, packaged from BTCPay Server's internal image channel ahead of upstream's public release. As with rc4, 2.4.3 has no published release, git tag, or changelog, and upstream's public branch has not moved since 2.4.2 — so what changed between rc4 and rc5 is not yet public.
 
-BTCPay Server stays on the 2.4.3-rc4 pre-release build shipped in the previous release.
+NBXplorer and PostgreSQL are unchanged.
 
-Full changes: https://github.com/btcpayserver/NBXplorer/compare/v2.6.10...v2.6.11`,
-    es_ES: `NBXplorer actualizado a 2.6.11.
+Upstream's full release notes will appear at https://github.com/btcpayserver/btcpayserver/releases once 2.4.3 is published.`,
+    es_ES: `BTCPay Server actualizado a la versión preliminar 2.4.3-rc5.
 
-Una versión de mantenimiento sin cambios en NBXplorer: se recompila sobre el entorno de ejecución .NET 10.0.11, que incluye las correcciones de seguridad de .NET de este mes, y sobre NBitcoin 10.0.9.
+Sigue siendo una **versión preliminar**, empaquetada desde el canal de imágenes interno de BTCPay Server antes de la publicación oficial. Al igual que con rc4, 2.4.3 no tiene publicación, etiqueta de git ni registro de cambios, y la rama pública no ha avanzado desde 2.4.2, por lo que los cambios entre rc4 y rc5 aún no son públicos.
 
-BTCPay Server permanece en la versión preliminar 2.4.3-rc4 publicada en la versión anterior.
+NBXplorer y PostgreSQL no han cambiado.
 
-Cambios completos: https://github.com/btcpayserver/NBXplorer/compare/v2.6.10...v2.6.11`,
-    de_DE: `NBXplorer auf 2.6.11 aktualisiert.
+Las notas de versión completas aparecerán en https://github.com/btcpayserver/btcpayserver/releases cuando se publique 2.4.3.`,
+    de_DE: `BTCPay Server auf den Vorabversions-Build 2.4.3-rc5 aktualisiert.
 
-Eine Wartungsversion ohne Änderungen an NBXplorer selbst: Sie wird auf der .NET-Laufzeit 10.0.11 neu gebaut, die die .NET-Sicherheitskorrekturen dieses Monats enthält, sowie auf NBitcoin 10.0.9.
+Dies ist weiterhin eine **Vorabversion**, paketiert aus dem internen Image-Kanal von BTCPay Server vor der öffentlichen Veröffentlichung. Wie schon bei rc4 hat 2.4.3 weder eine veröffentlichte Release noch einen Git-Tag oder ein Changelog, und der öffentliche Zweig hat sich seit 2.4.2 nicht bewegt — was sich zwischen rc4 und rc5 geändert hat, ist daher noch nicht öffentlich.
 
-BTCPay Server bleibt beim Vorabversions-Build 2.4.3-rc4 aus der vorherigen Veröffentlichung.
+NBXplorer und PostgreSQL bleiben unverändert.
 
-Vollständige Änderungen: https://github.com/btcpayserver/NBXplorer/compare/v2.6.10...v2.6.11`,
-    pl_PL: `Zaktualizowano NBXplorer do 2.6.11.
+Die vollständigen Release Notes erscheinen unter https://github.com/btcpayserver/btcpayserver/releases, sobald 2.4.3 veröffentlicht ist.`,
+    pl_PL: `Zaktualizowano BTCPay Server do wersji przedpremierowej 2.4.3-rc5.
 
-Wydanie konserwacyjne bez zmian w samym NBXplorerze: zostało przebudowane na środowisku uruchomieniowym .NET 10.0.11, które zawiera tegomiesięczne poprawki bezpieczeństwa .NET, oraz na NBitcoin 10.0.9.
+To nadal **wersja przedpremierowa**, spakowana z wewnętrznego kanału obrazów BTCPay Server przed publicznym wydaniem. Podobnie jak przy rc4, wersja 2.4.3 nie ma opublikowanego wydania, tagu git ani listy zmian, a publiczna gałąź nie zmieniła się od 2.4.2 — dlatego zmiany między rc4 a rc5 nie są jeszcze publiczne.
 
-BTCPay Server pozostaje na wersji przedpremierowej 2.4.3-rc4 opublikowanej w poprzednim wydaniu.
+NBXplorer i PostgreSQL pozostają bez zmian.
 
-Pełna lista zmian: https://github.com/btcpayserver/NBXplorer/compare/v2.6.10...v2.6.11`,
-    fr_FR: `NBXplorer mis à jour vers 2.6.11.
+Pełne informacje o wydaniu pojawią się na https://github.com/btcpayserver/btcpayserver/releases po opublikowaniu 2.4.3.`,
+    fr_FR: `BTCPay Server mis à jour vers la version préliminaire 2.4.3-rc5.
 
-Une version de maintenance sans modification de NBXplorer lui-même : elle est reconstruite sur l'environnement d'exécution .NET 10.0.11, qui intègre les correctifs de sécurité .NET de ce mois-ci, ainsi que sur NBitcoin 10.0.9.
+Il s'agit toujours d'une **version préliminaire**, empaquetée depuis le canal d'images interne de BTCPay Server avant la publication officielle. Comme pour rc4, 2.4.3 n'a ni publication, ni étiquette git, ni journal des modifications, et la branche publique n'a pas évolué depuis 2.4.2 : les changements entre rc4 et rc5 ne sont donc pas encore publics.
 
-BTCPay Server reste sur la version préliminaire 2.4.3-rc4 publiée précédemment.
+NBXplorer et PostgreSQL restent inchangés.
 
-Changements complets : https://github.com/btcpayserver/NBXplorer/compare/v2.6.10...v2.6.11`,
+Les notes de version complètes paraîtront sur https://github.com/btcpayserver/btcpayserver/releases dès la publication de 2.4.3.`,
   },
   migrations: {},
 })
