@@ -21,7 +21,7 @@ export const manifest = setupManifest({
   images: {
     btcpay: {
       source: {
-        dockerTag: 'btcpayserver/btcpayserver-internal:2.4.3-rc4',
+        dockerTag: 'btcpayserver/btcpayserver-internal:2.4.3-rc5',
       },
       arch: ['x86_64', 'aarch64'],
     },
