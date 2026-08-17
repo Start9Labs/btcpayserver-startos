@@ -20,6 +20,9 @@ const shape = z.object({
   postgres: z.literal(btcpayPostgres).catch(btcpayPostgres),
   debuglog: z.literal('btcpay.log').catch('btcpay.log'),
   dockerdeployment: z.literal('false').catch('false'),
+  // empty disables the GitHub release check, hides its Policies toggle, and
+  // stops first-admin registration from enabling it — StartOS handles updates
+  updateurl: z.literal('').catch(''),
   XMR_daemon_uri: z.string().optional().catch(undefined),
   XMR_wallet_daemon_uri: z
     .literal(xmrWalletDaemonUri)
