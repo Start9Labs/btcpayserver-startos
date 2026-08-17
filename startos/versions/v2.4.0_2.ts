@@ -73,11 +73,13 @@ async function migrateVolumes(effects: T.Effects) {
           'sh',
           '-c',
           `set -e
-          cd /mnt/main/btcpayserver
-          find . -mindepth 1 -maxdepth 1 ! -name altcoins -exec cp -a {} /mnt/btcpay/ \\;
-          if [ -d altcoins ]; then
-            mkdir -p /mnt/btcpay/altcoins
-            find altcoins -mindepth 1 -maxdepth 1 ! -name monero -exec cp -a {} /mnt/btcpay/altcoins/ \\;
+          if [ -d /mnt/main/btcpayserver ]; then
+            cd /mnt/main/btcpayserver
+            find . -mindepth 1 -maxdepth 1 ! -name altcoins -exec cp -a -t /mnt/btcpay/ {} +
+            if [ -d altcoins ]; then
+              mkdir -p /mnt/btcpay/altcoins
+              find altcoins -mindepth 1 -maxdepth 1 ! -name monero -exec cp -a -t /mnt/btcpay/altcoins/ {} +
+            fi
           fi`,
         ],
         { user: 'root' },
@@ -86,11 +88,25 @@ async function migrateVolumes(effects: T.Effects) {
         user: 'root',
       })
       await sub.execFail(
-        ['sh', '-c', 'cp -a /mnt/main/plugins/. /mnt/btcpay/Plugins/'],
+        [
+          'sh',
+          '-c',
+          `set -e
+          if [ -d /mnt/main/plugins ]; then
+            cp -a /mnt/main/plugins/. /mnt/btcpay/Plugins/
+          fi`,
+        ],
         { user: 'root' },
       )
       await sub.execFail(
-        ['sh', '-c', 'cp -a /mnt/main/nbxplorer/. /mnt/nbx/'],
+        [
+          'sh',
+          '-c',
+          `set -e
+          if [ -d /mnt/main/nbxplorer ]; then
+            cp -a /mnt/main/nbxplorer/. /mnt/nbx/
+          fi`,
+        ],
         { user: 'root' },
       )
 
@@ -99,9 +115,17 @@ async function migrateVolumes(effects: T.Effects) {
       // not in a data/ subdirectory. It detects PG 13, runs pg_upgrade, and places
       // the upgraded data at PGDATA (/var/lib/postgresql/data).
 
-      await sub.execFail(['sh', '-c', `cp -a ${OLD_PGDATA}/. ${PG_MOUNT}/`], {
-        user: 'root',
-      })
+      await sub.execFail(
+        [
+          'sh',
+          '-c',
+          `set -e
+          if [ -d ${OLD_PGDATA} ]; then
+            cp -a ${OLD_PGDATA}/. ${PG_MOUNT}/
+          fi`,
+        ],
+        { user: 'root' },
+      )
       await sub.execFail(['chown', '-R', 'postgres:postgres', PG_MOUNT], {
         user: 'root',
       })

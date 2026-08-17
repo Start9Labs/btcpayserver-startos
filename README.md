@@ -88,7 +88,9 @@ Three models. Two are the applications' own INI configuration, and in both the p
 
 ### btcpayserver settings.config
 
-**Enforced** — rewritten to a fixed value whenever the package writes the file: `network`, `bind`, `btcexplorercookiefile`, `explorerpostgres`, `postgres`, `debuglog`, `dockerdeployment`, and the two Monero wallet-daemon paths. `BTC.explorer.cookiefile` is modelled as "must be absent" and is deleted if present — the correctly-cased key above replaces it.
+**Enforced** — rewritten to a fixed value whenever the package writes the file: `network`, `bind`, `btcexplorercookiefile`, `explorerpostgres`, `postgres`, `debuglog`, `dockerdeployment`, `updateurl`, and the two Monero wallet-daemon paths. `BTC.explorer.cookiefile` is modelled as "must be absent" and is deleted if present — the correctly-cased key above replaces it.
+
+Two of those keep BTCPay from advertising updates it cannot perform here, since StartOS does the updating: `dockerdeployment=false` hides the Maintenance page and its update button, and an empty `updateurl` disables the daily GitHub release check — which also removes the "check releases on GitHub" toggle from Server Settings → Policies and stops first-admin registration from switching it on. Plugin updates are a separate mechanism and still work normally from BTCPay's UI.
 
 **Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and the `server=` half of `btclightning` when the backend is LND. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
 
