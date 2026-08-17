@@ -4,13 +4,15 @@
 
 # BTCPay Server on StartOS
 
-> **Upstream docs:** <https://docs.btcpayserver.org/>
->
 > Everything not listed in this document should behave the same as upstream
-> BTCPay Server. If a feature, setting, or behavior is not mentioned
-> here, the upstream documentation is accurate and fully applicable.
+> BTCPay Server. If a feature, setting, or behavior is not mentioned here, the
+> upstream documentation is accurate and fully applicable — see the
+> Documentation section of `instructions.md` for links.
 
-[BTCPay Server](https://github.com/btcpayserver/btcpayserver) is a free and open-source cryptocurrency payment processor which allows you to receive payments in Bitcoin (on-chain and via the Lightning Network) directly, with no fees, transaction cost or a middleman.
+[BTCPay Server](https://github.com/btcpayserver/btcpayserver) is a self-hosted Bitcoin payment processor. This package bundles the pieces upstream's Docker deployment expects you to run yourself — PostgreSQL and the NBXplorer UTXO tracker — as private sidecars, and wires them, your Bitcoin node, and an optional Lightning or Monero node together without any addresses being typed in.
+
+- **Upstream repo:** <https://github.com/btcpayserver/btcpayserver>
+- **Wrapper repo:** <https://github.com/Start9Labs/btcpayserver-startos>
 
 ---
 
@@ -18,324 +20,224 @@
 
 - [Image and Container Runtime](#image-and-container-runtime)
 - [Volume and Data Layout](#volume-and-data-layout)
-- [Installation and First-Run Flow](#installation-and-first-run-flow)
-- [Configuration Management](#configuration-management)
-- [Network Access and Interfaces](#network-access-and-interfaces)
-- [Actions (StartOS UI)](#actions-startos-ui)
+- [File Models](#file-models)
 - [Dependencies](#dependencies)
-- [Backups and Restore](#backups-and-restore)
+- [Network Access and Interfaces](#network-access-and-interfaces)
+- [Installation and First-Run Flow](#installation-and-first-run-flow)
+- [Actions](#actions)
+- [Tasks](#tasks)
 - [Health Checks](#health-checks)
+- [Backups and Restore](#backups-and-restore)
 - [Limitations and Differences](#limitations-and-differences)
-- [What Is Unchanged from Upstream](#what-is-unchanged-from-upstream)
-- [Contributing](#contributing)
 - [Quick Reference for AI Consumers](#quick-reference-for-ai-consumers)
 
 ---
 
 ## Image and Container Runtime
 
-| Property       | Value                                |
-| -------------- | ------------------------------------ |
-| BTCPay Server  | `btcpayserver/btcpayserver-internal` |
-| NBXplorer      | `nicolasdorier/nbxplorer`            |
-| PostgreSQL     | `btcpayserver/postgres`              |
-| Shopify Plugin | `btcpayserver/shopify-app-deployer`  |
-| Architectures  | x86_64, aarch64                      |
+Four upstream images, unmodified. Three run always; the fourth only when the Shopify plugin is switched on.
 
-All images are upstream unmodified. The service runs four containers: BTCPay Server, NBXplorer (UTXO tracker), PostgreSQL, and optionally the Shopify plugin deployer.
+| Property      | Value                                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Images        | `btcpayserver/btcpayserver-internal`, `nicolasdorier/nbxplorer`, `btcpayserver/postgres`, `btcpayserver/shopify-app-deployer` |
+| Architectures | x86_64, aarch64                                                                                                               |
+| Entrypoint    | Each image's own                                                                                                              |
 
-BTCPay Server is pinned to a **release candidate** from upstream's internal image channel (`btcpayserver/btcpayserver-internal`) rather than the public `btcpayserver/btcpayserver` repo — see [UPDATING.md](./UPDATING.md). Move the pin back to the public repo when the final 2.4.3 release is published.
+| Subcontainer | Purpose                                                                        |
+| ------------ | ------------------------------------------------------------------------------ |
+| `btcpay`     | The `btcpay` daemon — the server and its web UI, and the one to `attach` to    |
+| `nbx`        | NBXplorer, the UTXO tracker that watches the chain on BTCPay's behalf          |
+| `postgres`   | The private database, shared by BTCPay and NBXplorer as two separate databases |
+| `shopify`    | The Shopify app deployer; present only while that plugin is enabled            |
 
----
+Startup is ordered: `postgres` first, then `nbxplorer`, then `btcpay`, and `shopify` after that. One oneshot, `reset-start-height`, runs once NBXplorer is up — see [Actions](#actions).
+
+Postgres listens on loopback only and runs with trust authentication, which is safe because that loopback is inside this service's own network namespace: nothing outside the service can reach it, and the two databases are never exposed.
 
 ## Volume and Data Layout
 
-| Volume         | Mount Point                   | Purpose             |
-| -------------- | ----------------------------- | ------------------- |
-| `btcpayserver` | `/datadir`                    | BTCPay Server data  |
-| `btcpayserver` | `/root/.btcpayserver/Plugins` | BTCPay plugins      |
-| `nbxplorer`    | `/datadir`                    | NBXplorer data      |
-| `db`           | `/var/lib/postgresql`         | PostgreSQL database |
+Four volumes, and one of them never enters a container. The same volume can appear at different paths in different subcontainers.
 
-**StartOS-specific files on `main` volume:**
+| Volume         | Mounted at                                                                                    | Purpose                                                                                                      |
+| -------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                        |
+| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it |
+| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                |
+| `main`         | — (host side)                                                                                 | `store.json`; never mounted into a container                                                                 |
 
-- `store.json` — persists plugin state
-- `btcpay.env` — BTCPay Server environment variables
-- `nbxplorer.env` — NBXplorer environment variables
+Dependency volumes are mounted in as needed:
 
----
+| Mount                       | Source                         | Access     | Used for                               |
+| --------------------------- | ------------------------------ | ---------- | -------------------------------------- |
+| `/root/.bitcoin` (in `nbx`) | Bitcoin's `main` volume        | read-write | NBXplorer reads the node's RPC cookie  |
+| `/mnt/lnd`                  | LND's `main` volume            | read-only  | The admin macaroon and TLS certificate |
+| `/mnt/cln`                  | Core Lightning's `main` volume | read-only  | The `lightning-rpc` unix socket        |
+| `/mnt/monero`               | Monero's `main` volume         | read-write | Monero wallet files                    |
 
-## Installation and First-Run Flow
+## File Models
 
-| Step         | Upstream                                  | StartOS                        |
-| ------------ | ----------------------------------------- | ------------------------------ |
-| Installation | Docker Compose with multiple config files | Install from marketplace       |
-| Database     | Manual PostgreSQL setup                   | Automatic                      |
-| Bitcoin      | Manual RPC configuration                  | Auto-configured via dependency |
-| NBXplorer    | Separate manual setup                     | Bundled and auto-configured    |
-| Lightning    | Manual configuration                      | Select via action              |
+Three models. Two are the applications' own INI configuration, and in both the package owns the wiring while you own the handful of settings the actions expose.
 
-**First-run steps:**
+| File                                 | Format | Modelled                | Written by                                                  |
+| ------------------------------------ | ------ | ----------------------- | ----------------------------------------------------------- |
+| `btcpayserver:/Main/settings.config` | INI    | Yes — `FileHelper.ini`  | Every init, every start, and the Lightning, Altcoin actions |
+| `nbxplorer:/Main/settings.config`    | INI    | Yes — `FileHelper.ini`  | Every init, every start, the Resync action, and its oneshot |
+| `main:store.json`                    | JSON   | Yes — `FileHelper.json` | Every init, and the Plugins action                          |
 
-1. Ensure Bitcoin is installed (will be auto-configured)
-2. Install BTCPay Server from the StartOS marketplace
-3. Wait for UTXO Tracker to sync (check health status)
-4. Optionally run "Choose Lightning Node" to enable Lightning invoicing
-5. Create your admin account through the web UI
+**Both files are wiring, not tuning.** They carry the addresses and credentials linking BTCPay, NBXplorer, Postgres, and your nodes — values that must be correct rather than chosen — plus the few settings the actions expose. Everything else about BTCPay is configured inside BTCPay's own UI and stored in its database, not in a file this package can rewrite.
 
----
+### btcpayserver settings.config
 
-## Configuration Management
+**Enforced** — rewritten to a fixed value whenever the package writes the file: `network`, `bind`, `btcexplorercookiefile`, `explorerpostgres`, `postgres`, `debuglog`, `dockerdeployment`, and the two Monero wallet-daemon paths. `BTC.explorer.cookiefile` is modelled as "must be absent" and is deleted if present — the correctly-cased key above replaces it.
 
-### Auto-Configured by StartOS
+**Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and the `server=` half of `btclightning` when the backend is LND. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
 
-| Setting                        | Value                                                       | Purpose         |
-| ------------------------------ | ----------------------------------------------------------- | --------------- |
-| `BTCPAY_NETWORK`               | `mainnet`                                                   | Bitcoin network |
-| `BTCPAY_BIND`                  | `0.0.0.0:23000`                                             | Web UI binding  |
-| `BTCPAY_SOCKSENDPOINT`         | Tor SOCKS over the LXC bridge                               | Tor proxy       |
-| `BTCPAY_BTCEXPLORERCOOKIEFILE` | `/root/.nbxplorer/Main/.cookie`                             | NBXplorer auth  |
-| `NBXPLORER_BTCNODEENDPOINT`    | bitcoind whitelisted P2P (`peer-local`) over the LXC bridge | Bitcoin P2P     |
-| `NBXPLORER_BTCRPCURL`          | bitcoind RPC over the LXC bridge                            | Bitcoin RPC     |
-| `POSTGRES_HOST_AUTH_METHOD`    | `trust`                                                     | Database auth   |
+**Yours, through an action:** `btclightning` selects the Lightning backend, and `chains` enables Monero. `XMR_daemon_username` and `XMR_daemon_password` default to empty and are not exposed.
 
-> Cross-container addresses (bitcoind, LND, Monero, Tor, and the Web UI callback
-> monerod uses) are resolved over the LXC bridge at startup and merged into the
-> config files — the old `<pkg>.startos` DNS names are no longer used. See
-> `startos/utils.ts` for the bridge resolvers.
+### nbxplorer settings.config
 
-### Configurable via Actions
+**Enforced:** `port`, `bind` (loopback), `mainnet`, `btc.rpc.cookiefile`, and `postgres`. `btc.rpc.user` and `btc.rpc.password` are modelled as "must be absent" — NBXplorer authenticates to Bitcoin with the cookie it reads through the mount, never with a stored password.
 
-| Setting           | Action                | Purpose                             |
-| ----------------- | --------------------- | ----------------------------------- |
-| Lightning node    | Choose Lightning Node | LND, CLN, or none                   |
-| Altcoins (Monero) | Enable Altcoins       | Enable XMR support                  |
-| Shopify plugin    | Enable Plugins        | Shopify store integration           |
-| NBXplorer resync  | Resync NBXplorer      | Resync from a specific block height |
+**Written on every start:** `btc.rpc.url` and `btc.node.endpoint`, both resolved from Bitcoin's own bindings.
 
----
+**Transient:** `btc.rescan` and `btc.startheight` are set by [Resync NBXplorer](#actions) and reset to their defaults by the `reset-start-height` oneshot as soon as NBXplorer comes back up, so a rescan happens once rather than on every subsequent start.
 
-## Network Access and Interfaces
+### store.json
 
-| Interface | Port  | Protocol | Purpose                     |
-| --------- | ----- | -------- | --------------------------- |
-| Web UI    | 23000 | HTTP     | BTCPay Server web interface |
-
-**Access methods (StartOS 0.4.0):**
-
-- LAN IP with unique port
-- `<hostname>.local` with unique port
-- Tor `.onion` address
-- Custom domains (if configured)
-
-### Mapping Custom Domains to Apps
-
-You can map custom domains (e.g., `donate.example.com`, `shop.example.com`) directly to specific BTCPay apps such as crowdfund pages or point-of-sale terminals. This lets customers visit a clean URL without needing to navigate your BTCPay dashboard.
-
-**Steps:**
-
-1. **Add domains to your BTCPay "Web UI" interface:**
-   Go to your BTCPay service in the StartOS UI, open the interface settings for the Web UI, and add custom domains. Be sure to use Let's Encrypt and create the require port forwarding rules as instructed by StartOS.
-
-2. **Map each domain to an app in BTCPay:**
-   In the BTCPay web UI, go to **Server Settings** and find the **"Map specific domains to specific apps"** option. Enter the domain name, select the app (crowdfund, POS, etc.) from the dropdown, and save.
-
-Once configured, visitors to that domain will be served the selected app directly.
-
----
-
-## Actions (StartOS UI)
-
-### Choose Lightning Node
-
-| Property     | Value                                        |
-| ------------ | -------------------------------------------- |
-| ID           | `lightning-node`                             |
-| Visibility   | Enabled                                      |
-| Availability | Any status                                   |
-| Purpose      | Select internal Lightning node for invoicing |
-
-**Options:**
-
-- **LND** — connects via REST over the LXC bridge
-- **Core Lightning** — connects via Unix socket
-- **None/External** — disable internal Lightning
-
-**Note:** After selecting a lightning node for the first time, you must also go into BTCPay Server settings, click "Lightning", choose "Internal Node", and save.
-
-### Resync NBXplorer
-
-| Property     | Value                                            |
-| ------------ | ------------------------------------------------ |
-| ID           | `resync-nbx`                                     |
-| Visibility   | Enabled                                          |
-| Availability | Any status                                       |
-| Purpose      | Resync UTXO tracker from a specific block height |
-
-**Input:** Block height (integer, minimum 0)
-
-### Reset Server Admin Password
-
-| Property     | Value                           |
-| ------------ | ------------------------------- |
-| ID           | `reset-admin-password`          |
-| Visibility   | Enabled                         |
-| Availability | Running only                    |
-| Purpose      | Reset the admin user's password |
-
-Generates a random temporary password. Only works for servers with a single admin user.
-
-### Enable Altcoins
-
-| Property     | Value                     |
-| ------------ | ------------------------- |
-| ID           | `enable-altcoins`         |
-| Visibility   | Enabled                   |
-| Availability | Any status                |
-| Purpose      | Enable Monero integration |
-
-Requires `monerod` service to be installed when enabled.
-
-### Enable Plugins
-
-| Property     | Value                            |
-| ------------ | -------------------------------- |
-| ID           | `enable-plugins`                 |
-| Visibility   | Enabled                          |
-| Availability | Any status                       |
-| Purpose      | Enable Shopify store integration |
-
----
+`plugins.shopify` only — whether the Shopify sidecar runs. It lives on the `main` volume, apart from either application's data.
 
 ## Dependencies
 
-Dependencies are dynamically resolved based on which features are enabled via actions.
+One is required; the rest appear according to what you have enabled.
 
-### Bitcoin (required)
+| Dependency     | Required?                    | Kind      | Health check | Why                                             |
+| -------------- | ---------------------------- | --------- | ------------ | ----------------------------------------------- |
+| Bitcoin        | always                       | `running` | `bitcoind`   | Chain data for NBXplorer, over both RPC and P2P |
+| LND            | when selected as the backend | `running` | `lnd`        | Lightning invoices                              |
+| Core Lightning | when selected as the backend | `running` | `lightningd` | Lightning invoices                              |
+| Monero         | when Monero is enabled       | `running` | `monerod`    | Monero payments                                 |
 
-| Property           | Value                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| Version constraint | Declared in `startos/dependencies.ts`                                                  |
-| Required state     | Running                                                                                |
-| Health checks      | `bitcoind`                                                                             |
-| Mounted volume     | `main` → `/root/.bitcoin` (read-write, used by NBXplorer)                              |
-| Purpose            | Blockchain data via RPC and whitelisted P2P (`peer-local`) for NBXplorer UTXO tracking |
+**NBXplorer connects to Bitcoin's whitelisted P2P binding, not its public one.** It pulls blocks over that connection, and Bitcoin's ordinary `peer` binding grants no permissions — a connection there shares the pool with anonymous inbound peers, so it can be evicted to seat another peer or cut off by the upload target. The `peer-local` host is whitelisted, and neither applies.
 
-### LND (optional)
+Enabling Monero also raises a task on Monero itself — see [Tasks](#tasks).
 
-| Property           | Value                                                                  |
-| ------------------ | ---------------------------------------------------------------------- |
-| Version constraint | Declared in `startos/dependencies.ts`                                  |
-| Required state     | Running                                                                |
-| Health checks      | `lnd`                                                                  |
-| Mounted volume     | `main` → `/mnt/lnd` (read-only)                                        |
-| Purpose            | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+## Network Access and Interfaces
 
-The connection string points at LND's `admin.macaroon` on the mount, so the credential is read at connect time rather than copied — recreating LND's macaroons re-provisions BTCPay with no reconfiguration. See [Credential rotation migration](#credential-rotation-migration).
+One interface. NBXplorer, Postgres, and the Shopify deployer are all internal and never published.
 
-### Core Lightning (optional)
+| Interface | Id     | Type | Port  | Description                     |
+| --------- | ------ | ---- | ----- | ------------------------------- |
+| Web UI    | `main` | ui   | 23000 | The BTCPay Server web interface |
 
-| Property           | Value                                                                  |
-| ------------------ | ---------------------------------------------------------------------- |
-| Version constraint | Declared in `startos/dependencies.ts`                                  |
-| Required state     | Running                                                                |
-| Health checks      | `lightningd`                                                           |
-| Mounted volume     | `main` → `/mnt/cln` (read-only)                                        |
-| Purpose            | Lightning invoicing (when selected via "Choose Lightning Node" action) |
+The port is bound on the `main` MultiHost and is not masked.
 
-CLN is reached over its `lightning-rpc` Unix socket on the mount, which is unrestricted — there is no bearer token in the connection string, so nothing to rotate, but a compromised BTCPay could mint itself a rune through that socket. See [Credential rotation migration](#credential-rotation-migration).
+## Installation and First-Run Flow
 
-### Credential rotation migration
+Install seeds the three models with their defaults and nothing else — no credentials are generated and no task is raised. Account creation is BTCPay's own: the first visit to the web UI registers the server admin.
 
-`2.4.2:1`'s `up` migration raises a critical task against whichever Lightning backend `btclightning` names, so credentials BTCPay could reach before the 2.4.2 security fix get rotated:
+Two ordering points matter, and both come from dependencies rather than from setup:
 
-| `btclightning` | Task target                    | Rotates                                        |
-| -------------- | ------------------------------ | ---------------------------------------------- |
-| LND            | `lnd` → `revoke-macaroons`     | The admin macaroon BTCPay reads off the mount  |
-| CLN            | `c-lightning` → `revoke-runes` | Any rune mintable through the admin RPC socket |
+1. **Bitcoin must be installed and running**, and NBXplorer cannot report itself synced until Bitcoin is. On a fresh node that is the length of an initial block download, followed by NBXplorer's own scan — both are reported as progress rather than as failures. See [Health Checks](#health-checks).
+2. **Choosing a Lightning node is a two-step operation.** The [Choose Lightning Node](#actions) action grants BTCPay access to the node; BTCPay then has to be told to use it, inside its own Lightning settings.
 
-Two guards are load-bearing. The task is raised only when the backend is the configured one **and** that package is installed: a critical task stops this service and is cleared only by the _target_ service running the action, so raising one for an absent package would leave BTCPay unstartable short of a force-start.
+## Actions
 
-Neither action existed in usable form before this release — LND's was called `recreate-macaroons` and left the macaroon root key in place until `0.21.1-beta:11`, and `revoke-runes` was added in cln-startos `26.6.6:9`. `dependencies.ts` therefore floors both at those versions, so a user cannot end up with a task pointing at an action that does nothing.
+Five actions, all user-facing.
 
-A user who pointed BTCPay at a node and later switched away is not detectable from `btclightning` alone, and a hot on-chain wallet's keys cannot be rotated at all; both are covered in the release notes and `instructions.md` instead.
+### Choose Lightning Node
 
-### Monerod (optional)
+Selects which Lightning node BTCPay may use — LND, Core Lightning, or neither. Run it after installing the node.
 
-| Property           | Value                                                       |
-| ------------------ | ----------------------------------------------------------- |
-| Version constraint | Declared in `startos/dependencies.ts`                       |
-| Required state     | Running                                                     |
-| Health checks      | `monerod`                                                   |
-| Mounted volume     | (mounted at `/mnt/monero`, read-write)                      |
-| Purpose            | Monero payments (when enabled via "Enable Altcoins" action) |
+- **What it changes:** `btclightning` in BTCPay's config, and through it the package's dependency set and its mounts. LND is recorded as a REST address resolved at that moment; Core Lightning as a path to the RPC socket it will mount.
+- **Cost:** seconds, then a restart, since the node's data volume can only be mounted when the container is recreated.
+- **Repeat safety:** safe to re-run and safe to reverse; selecting "None/External" removes the mount and the dependency.
+- **Guard:** selecting LND fails with a message if LND is not yet reachable, rather than recording an address that does not work.
+- **What happens next:** BTCPay does not start using the node on its own. Open its Lightning settings, choose the internal node, and save.
 
----
+### Enable Altcoins
 
-## Backups and Restore
+Turns Monero support on or off.
 
-**Included in backup:**
+- **What it changes:** `chains` in BTCPay's config, and through it the Monero dependency, the Monero wallet mount, and the block-notify task described under [Tasks](#tasks).
+- **Cost:** seconds, then a restart.
+- **Repeat safety:** safe both ways; disabling removes the dependency and the mount.
 
-- `db` volume — PostgreSQL `btcpayserver` database via `pg_dump` (users, stores, invoices)
-- `btcpayserver` volume — BTCPay app data and plugins
-- `main` volume — configuration files (store.json, env files)
+### Enable Plugins
 
-**Not backed up (regenerable):**
+Turns the Shopify integration on or off.
 
-- `nbxplorer` volume — resyncs from Bitcoin on restore
-- `nbxplorer` database — recreated and resynced on restore
+- **What it changes:** `plugins.shopify` in `store.json`, which decides whether the Shopify sidecar runs at all.
+- **Cost:** seconds, then a restart.
+- **Repeat safety:** safe both ways.
 
-**Restore behavior:**
+### Resync NBXplorer
 
-- BTCPay data and database fully restored
-- NBXplorer will need time to resync from Bitcoin
+Rescans the chain from a chosen block height. Run it when BTCPay is missing transactions it should have seen — typically after importing an existing wallet with history.
 
----
+- **What it changes:** NBXplorer's `btc.startheight` and `btc.rescan`, then restarts the service. The oneshot clears both once NBXplorer is running again, so the rescan is not repeated on later starts.
+- **Cost:** the rescan itself, which is proportional to how far back you start; the service is restarted immediately.
+- **Repeat safety:** safe to re-run. It does not destroy anything — a rescan re-reads the chain into NBXplorer's database.
+
+### Reset Server Admin Password
+
+Sets a temporary password on the first server-admin account. Run it when locked out.
+
+- **What it changes:** that account's password hash in the BTCPay database, written directly over Postgres.
+- **Availability:** only while the service is running, because it goes through the running database.
+- **Repeat safety:** safe to re-run; each run generates a fresh password.
+- **Outputs:** the new password, masked and copyable, shown once. Change it after logging in.
+- **Guards:** it refuses when no server admin exists, and refuses when more than one does — with more than one, the right recovery is for another admin to reset the account from inside BTCPay.
+
+## Tasks
+
+The package raises no task on itself. It raises them on _other_ services, which is why they appear on a page that does not explain where they came from.
+
+| Task                          | Raised on      | Severity    | Raised when                                                                   | Cleared when                                         |
+| ----------------------------- | -------------- | ----------- | ----------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Auto-Configure (block notify) | Monero         | `important` | Monero is enabled here and its `block-notify` is not the command BTCPay needs | Monero's config matches; it returns if changed again |
+| Revoke Macaroons              | LND            | `critical`  | Upgrading to `2.4.2:1` with LND selected and installed                        | LND's action runs                                    |
+| Revoke Runes                  | Core Lightning | `critical`  | Upgrading to `2.4.2:1` with Core Lightning selected and installed             | Core Lightning's action runs                         |
+
+The Monero task is a standing condition rather than a one-off: it re-raises whenever Monero's block-notify setting stops matching, because without that callback BTCPay is not told about new blocks.
+
+The two credential-rotation tasks were raised once, by the upgrade that shipped a security fix, on the reasoning that this server could read those credentials and so they should be rotated. They are `critical` on the _Lightning node_, not on BTCPay, and only for a node that is actually installed — a critical task can only be cleared by the service that owns it, so raising one against an absent package would leave it permanently unclearable.
 
 ## Health Checks
 
-| Check      | Display Name      | Method                             | Messages                                      |
-| ---------- | ----------------- | ---------------------------------- | --------------------------------------------- |
-| PostgreSQL | (internal)        | `pg_isready` on port 5432          | Ready / Waiting                               |
-| NBXplorer  | UTXO Tracker      | Port 24444 listening               | Reachable / Unreachable                       |
-| UTXO Sync  | UTXO Tracker Sync | NBXplorer `/v1/cryptos/BTC/status` | Synced / Bitcoin syncing X% / UTXO syncing X% |
-| Web UI     | Web Interface     | `/api/v1/health` on port 23000     | Reachable / Unreachable                       |
-| Shopify    | Shopify Plugin    | Port 5000 listening (when enabled) | Running / Not running                         |
+Four checks at most, and the two that matter to a user are both about sync.
 
----
+| Check       | Displayed           | Method                                                | Grace | Present                     |
+| ----------- | ------------------- | ----------------------------------------------------- | ----- | --------------------------- |
+| `btcpay`    | "Web Interface"     | HTTP `GET /api/v1/health`                             | 60s   | always                      |
+| `nbxplorer` | "UTXO Tracker"      | NBXplorer's port is listening                         | 30s   | always                      |
+| `utxo-sync` | "UTXO Tracker Sync" | NBXplorer's status API, authenticated with its cookie | —     | always                      |
+| `postgres`  | — internal          | `pg_isready`                                          | —     | always                      |
+| `shopify`   | "Shopify Plugin"    | The deployer's port is listening                      | —     | while the plugin is enabled |
+
+**`utxo-sync` is the one to read**, because it distinguishes the two things that can be behind. While Bitcoin is still syncing it reports Bitcoin's own progress and says so explicitly — nothing is wrong, and NBXplorer cannot get ahead of its node. Once Bitcoin is synced it reports NBXplorer's own scan progress instead. It fails only when it cannot reach the node at all.
+
+**`postgres` has `display: null`** — it exists so that a failed database restarts the service, not to be read. A service restarting with no failing check on screen is usually this one; the service logs name it.
+
+**`btcpay` failing** after a long grace period means the server did not come up. Because it starts only after Postgres and NBXplorer are ready, that points at BTCPay itself rather than at its sidecars.
+
+## Backups and Restore
+
+The strategy is mixed, and the distinction decides what a restore actually gives you.
+
+- **`db` is dumped, not copied.** `Backups.withPgDump` runs a logical dump of the **`btcpayserver` database only**. The volume's files are never captured, and the dump is replayed into a fresh database on restore — which is what lets a future Postgres image read it.
+- **`btcpayserver` and `main` are copied wholesale** — BTCPay's data directory, its `settings.config`, installed plugins, and `store.json`.
+- **`nbxplorer` is not backed up at all**, and neither is the `nbxplorer` database inside Postgres. Both are derived from the chain.
+
+**So a restored instance has your stores, invoices, users, and settings, but no UTXO tracker state.** NBXplorer rebuilds it by scanning the chain, which takes time proportional to how much history your wallets have; [Resync NBXplorer](#actions) is there for when that scan needs to start further back than it did on its own. The Bitcoin node must be present and synced before any of it can begin.
 
 ## Limitations and Differences
 
-1. **Mainnet only** — testnet and other networks not available
-2. **No Docker Compose** — containers are orchestrated by StartOS, not Docker Compose
-3. **Single Lightning node** — cannot use both LND and CLN simultaneously
-4. **No Redis** — Redis caching not available
-5. **Monero integration** — partially implemented (TODO: automatic credential retrieval from monerod)
-6. **Admin password reset** — only works for single-admin servers
-
----
-
-## What Is Unchanged from Upstream
-
-- Full payment processing functionality
-- Store creation and management
-- Invoice generation (on-chain and Lightning)
-- Payment requests and pull payments
-- Point of sale app
-- Crowdfunding app
-- Pay button generation
-- Wallet management
-- Shopify integration (when enabled)
-- REST API (Greenfield API)
-- All web UI features and plugins
-- Multi-user support
-- Two-factor authentication
-
----
-
-## Contributing
-
-Build and development workflow follow the StartOS packaging guide: <https://docs.start9.com/packaging>. Keep `README.md`, `instructions.md`, and `AGENTS.md` in sync with any change to user-visible behavior or package structure.
+1. **PostgreSQL and NBXplorer are private sidecars.** They belong to this service, cannot be shared with another, and cannot be substituted for an external instance.
+2. **Only a Lightning node on this server can be selected through the action.** An external node is still possible, but it is configured inside BTCPay as "custom", not here.
+3. **Monero requires a matching setting on the Monero service**, which is why enabling it raises a task there rather than just working.
+4. **NBXplorer state is not in backups.** A restore is followed by a rescan.
+5. **The Shopify integration runs as a separate sidecar** and only when explicitly enabled.
+6. **No riscv64 build.** x86_64 and aarch64 only.
 
 ---
 
@@ -343,53 +245,51 @@ Build and development workflow follow the StartOS packaging guide: <https://docs
 
 ```yaml
 package_id: btcpayserver
-images:
-  btcpay: btcpayserver/btcpayserver-internal
-  nbx: nicolasdorier/nbxplorer
-  postgres: btcpayserver/postgres
-  shopify: btcpayserver/shopify-app-deployer
-architectures: [x86_64, aarch64]
+image: btcpayserver/btcpayserver-internal # plus nbxplorer, postgres, shopify-app-deployer
+architectures:
+  - x86_64
+  - aarch64
+subcontainers:
+  - btcpay # the server; the one to attach to
+  - nbx # NBXplorer
+  - postgres # private database
+  - shopify # only while the Shopify plugin is enabled
 volumes:
+  btcpayserver: /datadir
+  nbxplorer: /datadir (in nbx), /root/.nbxplorer (in btcpay)
   db: /var/lib/postgresql
-  btcpayserver: /datadir + /root/.btcpayserver/Plugins
-  nbxplorer: /datadir
-  main: store.json, btcpay.env, nbxplorer.env
-ports:
-  ui: 23000
-  nbxplorer: 24444 (internal)
-  postgres: 5432 (internal)
-  shopify: 5000 (internal, optional)
+  main: host side (store.json)
+file_models:
+  - btcpayserver:/Main/settings.config
+  - nbxplorer:/Main/settings.config
+  - main:store.json
+startos_managed_env_vars:
+  - BTCPAY_DATADIR
+  - BTCPAY_SHOPIFY_PLUGIN_DEPLOYER
+  - LC_ALL
+  - NBXPLORER_DATADIR
+  - POSTGRES_HOST_AUTH_METHOD
 dependencies:
-  bitcoind: required
-  lnd: optional
-  c-lightning: optional
-  monerod: optional
+  - bitcoind # required
+  - lnd # when selected as the Lightning backend
+  - c-lightning # when selected as the Lightning backend
+  - monerod # when Monero is enabled
+interfaces:
+  main: { type: ui, port: 23000 }
 actions:
-  - lightning-node (enabled, any)
-  - resync-nbx (enabled, any)
-  - reset-admin-password (enabled, running)
-  - enable-altcoins (enabled, any)
-  - enable-plugins (enabled, any)
+  - lightning-node
+  - enable-altcoins
+  - enable-plugins
+  - resync-nbx
+  - reset-admin-password # only-running
+tasks: # all raised on other services, not on this one
+  - { action: autoconfig, severity: important } # on monerod
+  - { action: revoke-macaroons, severity: critical } # on lnd, at the 2.4.2:1 upgrade
+  - { action: revoke-runes, severity: critical } # on c-lightning, at the 2.4.2:1 upgrade
 health_checks:
-  - postgres: pg_isready 5432
-  - nbxplorer: port_listening 24444
-  - utxo-sync: /v1/cryptos/BTC/status
-  - webui: /api/v1/health 23000
-  - shopify: port_listening 5000 (optional)
-backup:
-  pg_dump: btcpayserver (db volume)
-  volumes: [btcpayserver, main]
-  not_backed_up: [nbxplorer (regenerable)]
-startos_managed_config:
-  BTCPAY_NETWORK: mainnet
-  BTCPAY_BIND: 0.0.0.0:23000
-  BTCPAY_SOCKSENDPOINT: tor SOCKS over LXC bridge (resolved at startup)
-  POSTGRES_HOST_AUTH_METHOD: trust
-  NBXPLORER_BTCNODEENDPOINT: bitcoind whitelisted P2P (peer-local) over LXC bridge (resolved at startup)
-  NBXPLORER_BTCRPCURL: bitcoind RPC over LXC bridge (resolved at startup)
-not_available:
-  - Testnet/Signet networks
-  - Redis caching
-  - Docker Compose deployment
-  - Multiple simultaneous Lightning nodes
+  - btcpay # displayed "Web Interface"
+  - nbxplorer # displayed "UTXO Tracker"
+  - utxo-sync # displayed "UTXO Tracker Sync"
+  - postgres # internal
+  - shopify # displayed "Shopify Plugin"; only while enabled
 ```
