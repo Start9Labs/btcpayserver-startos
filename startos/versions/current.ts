@@ -1,7 +1,7 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.3:0',
+  version: '2.4.3:1',
   releaseNotes: {
     en_US: `Security update — BTCPay Server 2.4.3 — and a fix for a failed update from StartOS 0.3.x.
 
