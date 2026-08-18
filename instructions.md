@@ -45,16 +45,6 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 
 StartOS backups include the BTCPay app data, the PostgreSQL `btcpayserver` database (users, stores, invoices), and the package configuration. The NBXplorer index is **not** backed up — on restore, NBXplorer resyncs from Bitcoin, which can take time before the Web UI becomes fully usable again.
 
-### If BTCPay is empty after updating from StartOS 0.3.x
-
-Updating from StartOS 0.3.x moves your BTCPay data — stores, invoices, wallets and settings — onto the storage this version uses. On servers running BTCPay `2.4.2` or later under StartOS 0.3.x, that move was skipped, so BTCPay started with nothing in it: no stores, no accounts, every password rejected, and **Reset Server Admin Password** reporting that no server admins exist.
-
-**Nothing was deleted.** Updating to `2.4.3:2` or later finds your data and moves it across on the next start. That start takes noticeably longer than usual, because it is moving a database, and your original login works again once it finishes. NBXplorer then spends a while catching up before balances and invoices look right.
-
-If you already hit this and created a new account in the empty BTCPay, that account and everything created with it is moved aside rather than deleted, and your original data takes its place. The set-aside copy stays on your server and is included in backups; contact support before removing it if you might need it.
-
-These servers also never received the Lightning credential prompt covered in the next section, because it was tied to the same version boundary. If BTCPay is connected to a Lightning node, updating now raises that task and stops BTCPay until you clear it.
-
 ### Rotating Lightning credentials after the 2.4.2 update
 
 The vulnerability patched in BTCPay Server 2.4.2 was being actively exploited upstream. On any server that ran an earlier version, treat everything BTCPay could reach as exposed — **updating does not by itself undo access an attacker already took.**
