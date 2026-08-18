@@ -58,12 +58,12 @@ Postgres listens on loopback only and runs with trust authentication, which is s
 
 Four volumes, and one of them never enters a container. The same volume can appear at different paths in different subcontainers.
 
-| Volume         | Mounted at                                                                                    | Purpose                                                                                                      |
-| -------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                        |
-| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it |
-| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                |
-| `main`         | — (host side)                                                                                 | `store.json`; never mounted into a container                                                                 |
+| Volume         | Mounted at                                                                                    | Purpose                                                                                                            |
+| -------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                              |
+| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it       |
+| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                      |
+| `main`         | — (host side)                                                                                 | `store.json`, and any `superseded-*` directory set aside by the legacy-layout move; never mounted into a container |
 
 Dependency volumes are mounted in as needed:
 
@@ -141,6 +141,8 @@ Two ordering points matter, and both come from dependencies rather than from set
 
 1. **Bitcoin must be installed and running**, and NBXplorer cannot report itself synced until Bitcoin is. On a fresh node that is the length of an initial block download, followed by NBXplorer's own scan — both are reported as progress rather than as failures. See [Health Checks](#health-checks).
 2. **Choosing a Lightning node is a two-step operation.** The [Choose Lightning Node](#actions) action grants BTCPay access to the node; BTCPay then has to be told to use it, inside its own Lightning settings.
+
+An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten.
 
 ## Actions
 
@@ -227,7 +229,7 @@ Four checks at most, and the two that matter to a user are both about sync.
 The strategy is mixed, and the distinction decides what a restore actually gives you.
 
 - **`db` is dumped, not copied.** `Backups.withPgDump` runs a logical dump of the **`btcpayserver` database only**. The volume's files are never captured, and the dump is replayed into a fresh database on restore — which is what lets a future Postgres image read it.
-- **`btcpayserver` and `main` are copied wholesale** — BTCPay's data directory, its `settings.config`, installed plugins, and `store.json`.
+- **`btcpayserver` and `main` are copied wholesale** — BTCPay's data directory, its `settings.config`, installed plugins, `store.json`, and any `superseded-*` directory.
 - **`nbxplorer` is not backed up at all**, and neither is the `nbxplorer` database inside Postgres. Both are derived from the chain.
 
 **So a restored instance has your stores, invoices, users, and settings, but no UTXO tracker state.** NBXplorer rebuilds it by scanning the chain, which takes time proportional to how much history your wallets have; [Resync NBXplorer](#actions) is there for when that scan needs to start further back than it did on its own. The Bitcoin node must be present and synced before any of it can begin.
@@ -239,7 +241,8 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 3. **Monero requires a matching setting on the Monero service**, which is why enabling it raises a task there rather than just working.
 4. **NBXplorer state is not in backups.** A restore is followed by a rescan.
 5. **The Shopify integration runs as a separate sidecar** and only when explicitly enabled.
-6. **No riscv64 build.** x86_64 and aarch64 only.
+6. **A `superseded-*` directory is never reaped.** Nothing removes it and it is copied into every backup; deleting it is the operator's call, once they have confirmed the data it displaced is back.
+7. **No riscv64 build.** x86_64 and aarch64 only.
 
 ---
 
