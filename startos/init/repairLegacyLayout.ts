@@ -2,6 +2,7 @@ import { T, YAML } from '@start9labs/start-sdk'
 import { readFile, stat } from 'fs/promises'
 import { btcpayConfig } from '../fileModels/btcpay.config'
 import { storeJson } from '../fileModels/store.json'
+import { raiseLightningCredentialTask } from '../lightningCredentialTask'
 import { sdk } from '../sdk'
 import {
   clnConnectionString,
@@ -14,16 +15,14 @@ import {
  * Move an install still on the 0.3.x single-`main` layout onto the dedicated
  * volumes, and translate its `config.yaml` into the file models.
  *
- * This used to live on the 2.4.0:2 version vertex, which was the bug: a version
- * migration only runs for installs that sit *below* the vertex, and a 0.3.x
- * install arrives at whatever exver the emver converter produces. Every 0.3.x
- * release from 2.4.0.3 to the final 2.4.3 lands above 2.4.0:2, so the move was
- * skipped and BTCPay came up against empty volumes — a clean-looking install
- * with no invoices, stores or users, and every password rejected.
+ * Keyed on the layout, not a version vertex, and it has to stay that way: a
+ * migration on `X` runs only for installs sorting below `X`, and a 0.3.x
+ * install arrives as whatever the emver converter makes of its old version —
+ * 0.3.x `2.4.2.1` becomes `2.4.2:1`. Every 0.3.x release from 2.4.2 onward
+ * sorts above `2.4.0:2`, where this used to sit, and skipped it entirely.
  *
- * Layout is not a function of version, so the trigger is the layout itself. A
- * PostgreSQL 13 cluster under `main` means the move has not run here; the move
- * deletes it on success, so this is self-limiting and safe to run every init.
+ * A PostgreSQL 13 cluster under `main` means the move has not run here; the
+ * move deletes it on success, so this is self-limiting.
  *
  * Transitional. Delete once no 0.3.x installs remain in the wild.
  */
@@ -53,36 +52,22 @@ const exists = (path: string) =>
   )
 
 /**
- * Snapshot anything already sitting in the destination volumes.
+ * Move anything already in the destination volumes aside, into `main`.
  *
- * Installs that took the broken update ran a fresh BTCPay against empty
- * volumes, so the destinations hold a newly initialised database rather than
- * nothing. Overwriting a live PostgreSQL 18 cluster with PostgreSQL 13 files
- * produces a cluster that will not start, and anyone who gave up and created a
- * new admin has real data in there. So move it aside rather than delete it.
+ * The destinations are not necessarily empty: an install that took the broken
+ * update ran a fresh BTCPay against them, so they can hold a live PostgreSQL 18
+ * cluster and a new admin's real data. Hence moved aside, not deleted.
  *
- * It goes in `main` — which this function empties anyway — rather than into a
- * subdirectory of the volume it came from, and for the db volume that is not a
- * matter of taste. The postgres image's entrypoint sweeps *everything* at the
- * mount root into the old cluster's directory before upgrading it:
- *
- *     for d in "$PGMOUNT"/*; do
- *       [[ "$d" == "$PGMOUNT/$CURRENT_PGVERSION" ]] && continue
- *       [[ "$d" == "$PGDATANEW" ]] && continue
- *       mv "$d" "$PGDATAOLD/"
- *     done
- *
- * A snapshot left at the db volume root would be swept into the PostgreSQL 13
- * data directory and handed to pg_upgrade. Putting it in `main` leaves each
- * destination exactly as a never-updated install would.
+ * The snapshot has to land in `main` rather than under the volume it came from:
+ * the postgres entrypoint sweeps every entry at the db mount root into the old
+ * cluster's directory before running pg_upgrade, so a snapshot left there would
+ * be handed to pg_upgrade as PostgreSQL 13 data.
  */
 function snapshotScript(stamp: string) {
   const dest = `${MAIN}/superseded-${stamp}`
   return `set -e
-    # Self-guard, independent of the caller's marker check. Moving the
-    # destinations aside is only safe if there is a legacy layout to put in
-    # their place — a spurious run would otherwise snapshot data this step had
-    # already restored and copy nothing back, emptying the volumes it repaired.
+    # Independent of the caller's marker check: moving the destinations aside
+    # is only safe if there is a legacy layout to put in their place.
     [ -f ${LEGACY_MARKER_IN_SUB} ] || exit 0
     for pair in "db:${PG_MOUNT}" "btcpayserver:${BTCPAY}" "nbxplorer:${NBX}"; do
       name=\${pair%%:*}
@@ -101,11 +86,10 @@ function snapshotScript(stamp: string) {
  *   main/nbxplorer     →  nbxplorer volume
  *   main/postgresql    →  db volume
  *
- * The PostgreSQL 13 → 18 upgrade is the postgres image entrypoint's job on
- * first daemon start; all this has to do is leave the 13 data files where the
- * entrypoint looks for them, which is the volume root — it reads
- * `/var/lib/postgresql/PG_VERSION` to discover the old version, and hard-errors
- * if a `data` directory exists there. `PGDATA` is `/var/lib/postgresql/18/docker`.
+ * The PostgreSQL 13 → 18 upgrade is the postgres entrypoint's job on first
+ * daemon start. It reads `PG_VERSION` at the volume root, so the 13 data files
+ * go there and not in a `data/` subdirectory, which it hard-errors on. `PGDATA`
+ * is `/var/lib/postgresql/18/docker`.
  */
 async function moveVolumes(effects: T.Effects, stamp: string) {
   const mounts = sdk.Mounts.of()
@@ -239,10 +223,9 @@ export const repairLegacyLayout = sdk.setupOnInit(
     const stamp = new Date().toISOString().replace(/[:.]/g, '-')
     await moveVolumes(effects, stamp)
 
-    // After the move, not before: the copy brings the 0.3.x settings.config
-    // with it, so merging first would be overwritten by it. Merging now also
-    // repairs the stale 0.3.x paths it carries, since those fields are
-    // `z.literal().catch()` and merge restores them to the values 0.4 uses.
+    // After the move: the copy brings the 0.3.x settings.config with it, so
+    // merging first would be overwritten by it. Merging after also repairs the
+    // stale 0.3.x paths it carries, which are `z.literal().catch()` fields.
     if (legacy) {
       await storeJson.merge(effects, {
         plugins: { shopify: legacy.plugins?.shopify?.status === 'enabled' },
@@ -260,6 +243,8 @@ export const repairLegacyLayout = sdk.setupOnInit(
           legacy.altcoins?.monero?.status === 'enabled' ? 'btc,xmr' : 'btc',
       })
     }
+
+    await raiseLightningCredentialTask(effects)
 
     phase.complete()
   },

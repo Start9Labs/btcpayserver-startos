@@ -147,7 +147,7 @@ Two ordering points matter, and both come from dependencies rather than from set
 
 `startos/init/repairLegacyLayout.ts`, run from `init` **before** the version graph.
 
-The 0.3.x package kept everything in one `main` volume. This package splits it across `btcpayserver`, `nbxplorer` and `db`, so a 0.3.x install has to be moved before it can run. That move used to sit on the `2.4.0:2` version vertex, which was wrong: a version migration only runs for installs sorting _below_ the vertex, and a 0.3.x install arrives at whatever exver the emver converter produces from its old version. Every 0.3.x release from `2.4.0.3` to the final `2.4.3` sorts above `2.4.0:2` and skipped the move entirely — BTCPay started against empty volumes, which presents as a clean install with no stores or accounts, every password rejected, and `No server admins exist` from **Reset Server Admin Password**.
+The 0.3.x package kept everything in one `main` volume. This package splits it across `btcpayserver`, `nbxplorer` and `db`, so a 0.3.x install has to be moved before it can run. That move used to sit on the `2.4.0:2` version vertex, which was wrong: a version migration only runs for installs sorting _below_ the vertex, and a 0.3.x install arrives as whatever the emver converter makes of its old version (`major.minor.patch.revision` → `major.minor.patch:revision`, so 0.3.x `2.4.2.1` becomes `2.4.2:1`). The 0.3.x package went 2.3.4 → 2.4.2 → 2.4.2.1 in August 2026, and every one of those from `2.4.2` on converts at or above `2.4.0:2` — so the move was skipped and BTCPay started against empty volumes, which presents as a clean install with no stores or accounts, every password rejected, and `No server admins exist` from **Reset Server Admin Password**.
 
 Layout is not a function of version, so the trigger is the layout. The marker is a PostgreSQL 13 cluster under `main` (`main/postgresql/data/PG_VERSION`); the move deletes the old layout on success, so the step is self-limiting and a no-op on every subsequent init.
 
@@ -158,8 +158,9 @@ Order of operations:
 3. Copy `main/{btcpayserver,plugins,nbxplorer,postgresql/data}` to their volumes, skipping `altcoins/monero` (chowned by the 0.3.x s6 unit to a UID outside the 0.4 idmap window, so unreadable here).
 4. `rm -rf` the old layout — this is what makes the step self-limiting.
 5. Merge the `config.yaml` values into the file models. **After** the copy, not before: the copy brings the 0.3.x `settings.config` with it, so merging first would be overwritten, and merging after also repairs the stale 0.3.x paths that file carries, since those fields are `z.literal().catch()`.
+6. Raise the Lightning credential-rotation task, via the same `raiseLightningCredentialTask` the `2.4.2:1` migration calls. That vertex has the identical reachability problem — a 0.3.x install at `2.4.2.1` converts to exactly `2.4.2:1` and one at `2.4.3` sorts above it, so neither crosses the edge — and those are precisely the installs this repair exists for. The task is keyed on the default replayId (`<package>:<action>`), so the two callers cannot stack.
 
-It runs before the version graph because `2.4.2:1` decides whether to raise the Lightning credential-rotation task by reading `btclightning`, which nothing has written on a 0.3.x install until step 5.
+It runs before the version graph because `2.4.2:1` reads `btclightning` to decide whether to raise that task, and nothing has written the field on a 0.3.x install until step 5. Ordering covers the installs that _do_ cross the vertex (0.3.x `2.4.2` → `2.4.2:0`); step 6 covers the ones that don't.
 
 The `superseded-*` snapshot is never cleaned up automatically and is included in backups. It is safe to delete once the operator has confirmed their data is back.
 

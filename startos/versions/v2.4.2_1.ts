@@ -1,12 +1,5 @@
 import { VersionInfo } from '@start9labs/start-sdk'
-import { revokeRunes } from 'cln-startos/startos/actions/revokeRunes'
-import { manifest as clnManifest } from 'cln-startos/startos/manifest'
-import { revokeMacaroons } from 'lnd-startos/startos/actions/revoke-macaroons'
-import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
-import { btcpayConfig } from '../fileModels/btcpay.config'
-import { i18n } from '../i18n'
-import { sdk } from '../sdk'
-import { isCln, isLnd } from '../utils'
+import { raiseLightningCredentialTask } from '../lightningCredentialTask'
 
 export const v_2_4_2_1 = VersionInfo.of({
   version: '2.4.2:1',
@@ -78,39 +71,8 @@ Deux choses que cette mise à jour ne peut pas faire à votre place :
 - **Si vous avez généré un portefeuille chaud on-chain dans BTCPay Server, déplacez ces fonds** vers un portefeuille dont BTCPay Server n'a jamais détenu les clés. Les clés d'un portefeuille chaud ne peuvent pas être renouvelées.`,
   },
   migrations: {
-    up: async ({ effects }) => {
-      const backend = await btcpayConfig.read((s) => s.btclightning).once()
-
-      // A critical task stops this service until the target action is run, and
-      // only the target service running it clears the task — so raising one for
-      // a package that is not installed would leave BTCPay Server unstartable.
-      const installed = await sdk.getInstalledPackages(effects)
-
-      if (isLnd(backend) && installed.includes(lndManifest.id))
-        await sdk.action.createTask(
-          effects,
-          lndManifest.id,
-          revokeMacaroons,
-          'critical',
-          {
-            reason: i18n(
-              "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Recreate LND's macaroons to revoke the old ones.",
-            ),
-          },
-        )
-
-      if (isCln(backend) && installed.includes(clnManifest.id))
-        await sdk.action.createTask(
-          effects,
-          clnManifest.id,
-          revokeRunes,
-          'critical',
-          {
-            reason: i18n(
-              "BTCPay Server reaches Core Lightning over its admin RPC socket, so a server compromised through the vulnerability patched in 2.4.2 could have issued itself a rune. Revoke this node's runes to invalidate any that were.",
-            ),
-          },
-        )
-    },
+    // Also raised by the legacy layout repair, which reaches the 0.3.x installs
+    // this vertex does not.
+    up: async ({ effects }) => raiseLightningCredentialTask(effects),
   },
 })
