@@ -1,53 +1,53 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.3:1',
+  version: '2.4.3:2',
   releaseNotes: {
-    en_US: `Security update — BTCPay Server 2.4.3 — and a fix for a failed update from StartOS 0.3.x.
+    en_US: `Restores BTCPay Server data left behind by an update from StartOS 0.3.x.
 
-**About this version:** it ships BTCPay Server's 2.4.3 pre-release build (rc5) from BTCPay Server's internal image channel; upstream has not yet published a 2.4.3 release, git tag, or changelog. The security changes below were identified by comparing the published rc4 and rc5 images. This package will move to the final 2.4.3 build as soon as it is published.
+Updating from StartOS 0.3.x moves your BTCPay Server data — stores, invoices, wallets and settings — onto the storage this package uses. On servers running BTCPay Server 2.4.0.3 or later under StartOS 0.3.x, that move was skipped, and BTCPay Server started against empty storage: no stores, no accounts, every password rejected, and "No server admins exist" from the **Reset Server Admin Password** action.
 
-- **Crowdfund** — an app's description is no longer rendered as raw HTML, closing a cross-site scripting vector.
-- **Shopify plugin** — BTCPay Server now refuses to load outdated versions of the Shopify plugin and keeps them disabled until they are updated. If you use the Shopify integration, update the Shopify plugin under **Server Settings → Plugins** after this update; the newer plugin fixes a refund webhook vulnerability.
-- **Updating from StartOS 0.3.x** — the migration copied a plugins folder that only exists if you had installed a plugin. On a server that never did, the copy failed and took the whole update down with it, with no way past it on retry. The migration now skips what isn't there, and no longer reports success when a file copy fails partway, which could previously finish an update with data left behind.
+**Nothing was deleted.** Your data stayed where the previous package kept it. This release moves it across on the first start after updating, so that start takes longer than usual — it is moving a database — and your original login works again once it finishes.
 
-Upstream's full release notes will appear at https://github.com/btcpayserver/btcpayserver/releases once 2.4.3 is published.`,
-    es_ES: `Actualización de seguridad — BTCPay Server 2.4.3 — y corrección de una actualización fallida desde StartOS 0.3.x.
+If you already hit this and created a new account in the empty BTCPay Server, that account and anything created with it is moved aside rather than deleted, and your original data takes its place. Contact support before removing what was set aside if you might need it.
 
-**Acerca de esta versión:** incluye la versión preliminar 2.4.3 (rc5) de BTCPay Server, tomada de su canal de imágenes interno; upstream aún no ha publicado una versión 2.4.3, ni etiqueta de git ni registro de cambios. Los cambios de seguridad siguientes se identificaron comparando las imágenes publicadas de rc4 y rc5. Este paquete pasará a la compilación final de 2.4.3 en cuanto se publique.
+**Shopify plugin** — if you use the Shopify integration and have not already done so since 2.4.3, update the Shopify plugin under **Server Settings → Plugins**. The newer plugin fixes a refund webhook vulnerability.`,
+    es_ES: `Restaura los datos de BTCPay Server que quedaron atrás en una actualización desde StartOS 0.3.x.
 
-- **Crowdfund** — la descripción de una aplicación ya no se representa como HTML sin procesar, lo que cierra un vector de scripting entre sitios.
-- **Complemento de Shopify** — BTCPay Server ahora se niega a cargar versiones desactualizadas del complemento de Shopify y las mantiene desactivadas hasta que se actualicen. Si utiliza la integración con Shopify, actualice el complemento de Shopify en **Configuración del servidor → Complementos** después de esta actualización; el complemento más reciente corrige una vulnerabilidad en el webhook de reembolsos.
-- **Actualizar desde StartOS 0.3.x** — la migración copiaba una carpeta de complementos que solo existe si había instalado alguno. En un servidor que nunca lo hizo, la copia fallaba y se llevaba consigo toda la actualización, sin forma de superarlo al reintentar. La migración ahora omite lo que no existe y ya no informa de éxito cuando una copia de archivos falla a medias, lo que antes podía terminar una actualización dejando datos atrás.
+Al actualizar desde StartOS 0.3.x, tus datos de BTCPay Server —tiendas, facturas, monederos y ajustes— se trasladan al almacenamiento que usa este paquete. En servidores con BTCPay Server 2.4.0.3 o posterior bajo StartOS 0.3.x, ese traslado se omitió y BTCPay Server arrancó con el almacenamiento vacío: sin tiendas, sin cuentas, rechazando todas las contraseñas y respondiendo «No server admins exist» en la acción **Restablecer la contraseña del administrador del servidor**.
 
-Las notas de versión completas aparecerán en https://github.com/btcpayserver/btcpayserver/releases cuando se publique 2.4.3.`,
-    de_DE: `Sicherheitsupdate — BTCPay Server 2.4.3 — und Behebung eines fehlgeschlagenen Updates von StartOS 0.3.x.
+**No se ha borrado nada.** Tus datos siguen donde los dejó el paquete anterior. Esta versión los traslada en el primer arranque tras la actualización, así que ese arranque tarda más de lo habitual —está moviendo una base de datos— y después tu inicio de sesión original vuelve a funcionar.
 
-**Zu dieser Version:** Sie enthält den Vorabversions-Build 2.4.3 (rc5) von BTCPay Server aus dem internen Image-Kanal; upstream hat bislang weder eine 2.4.3-Veröffentlichung noch einen Git-Tag oder ein Changelog publiziert. Die folgenden Sicherheitsänderungen wurden durch einen Vergleich der veröffentlichten rc4- und rc5-Images ermittelt. Dieses Paket wechselt auf den finalen 2.4.3-Build, sobald dieser veröffentlicht ist.
+Si ya te encontraste con esto y creaste una cuenta nueva en el BTCPay Server vacío, esa cuenta y todo lo creado con ella se aparta en lugar de borrarse, y tus datos originales ocupan su lugar. Contacta con soporte antes de eliminar lo que se apartó si crees que puedes necesitarlo.
 
-- **Crowdfund** — die Beschreibung einer App wird nicht mehr als rohes HTML gerendert, wodurch ein Cross-Site-Scripting-Vektor geschlossen wird.
-- **Shopify-Plugin** — BTCPay Server lädt veraltete Versionen des Shopify-Plugins nicht mehr und hält sie deaktiviert, bis sie aktualisiert werden. Wenn Sie die Shopify-Integration nutzen, aktualisieren Sie das Shopify-Plugin nach diesem Update unter **Servereinstellungen → Plugins**; das neuere Plugin behebt eine Schwachstelle im Rückerstattungs-Webhook.
-- **Update von StartOS 0.3.x** — die Migration kopierte einen Plugin-Ordner, den es nur gibt, wenn Sie ein Plugin installiert hatten. Auf einem Server ohne Plugin schlug das Kopieren fehl und riss das ganze Update mit sich, ohne dass ein erneuter Versuch daran vorbeikam. Die Migration überspringt jetzt, was nicht vorhanden ist, und meldet keinen Erfolg mehr, wenn ein Dateikopiervorgang mittendrin fehlschlägt — zuvor konnte ein Update so abschließen und Daten zurücklassen.
+**Complemento de Shopify** — si usas la integración con Shopify y no lo has hecho ya desde la 2.4.3, actualiza el complemento de Shopify en **Configuración del servidor → Complementos**. El complemento más reciente corrige una vulnerabilidad en el webhook de reembolsos.`,
+    de_DE: `Stellt BTCPay-Server-Daten wieder her, die bei einem Update von StartOS 0.3.x zurückgeblieben sind.
 
-Die vollständigen Release Notes erscheinen unter https://github.com/btcpayserver/btcpayserver/releases, sobald 2.4.3 veröffentlicht ist.`,
-    pl_PL: `Aktualizacja bezpieczeństwa — BTCPay Server 2.4.3 — oraz poprawka nieudanej aktualizacji ze StartOS 0.3.x.
+Beim Update von StartOS 0.3.x werden Ihre BTCPay-Server-Daten – Shops, Rechnungen, Wallets und Einstellungen – auf den Speicher dieses Pakets verschoben. Auf Servern mit BTCPay Server 2.4.0.3 oder neuer unter StartOS 0.3.x wurde dieser Schritt übersprungen, und BTCPay Server startete mit leerem Speicher: keine Shops, keine Konten, jedes Passwort abgelehnt und „No server admins exist" als Antwort der Aktion **Server-Admin-Passwort zurücksetzen**.
 
-**O tej wersji:** zawiera przedpremierowy build 2.4.3 (rc5) BTCPay Server z wewnętrznego kanału obrazów; upstream nie opublikował jeszcze wydania 2.4.3, tagu git ani listy zmian. Poniższe zmiany bezpieczeństwa ustalono, porównując opublikowane obrazy rc4 i rc5. Pakiet przejdzie na finalny build 2.4.3, gdy tylko zostanie opublikowany.
+**Es wurde nichts gelöscht.** Ihre Daten liegen weiterhin dort, wo das vorherige Paket sie abgelegt hat. Diese Version verschiebt sie beim ersten Start nach dem Update. Dieser Start dauert daher länger als gewohnt – es wird eine Datenbank verschoben – und danach funktioniert Ihre ursprüngliche Anmeldung wieder.
 
-- **Crowdfund** — opis aplikacji nie jest już renderowany jako surowy HTML, co zamyka wektor ataku cross-site scripting.
-- **Wtyczka Shopify** — BTCPay Server odmawia teraz ładowania nieaktualnych wersji wtyczki Shopify i pozostawia je wyłączone do czasu aktualizacji. Jeśli korzystasz z integracji z Shopify, po tej aktualizacji zaktualizuj wtyczkę Shopify w **Ustawienia serwera → Wtyczki**; nowsza wtyczka naprawia lukę w webhooku zwrotów.
-- **Aktualizacja ze StartOS 0.3.x** — migracja kopiowała folder wtyczek, który istnieje tylko wtedy, gdy jakąś wtyczkę zainstalowano. Na serwerze bez wtyczek kopiowanie kończyło się błędem i przerywało całą aktualizację, a ponowna próba nic nie dawała. Migracja pomija teraz to, czego nie ma, i nie zgłasza już powodzenia, gdy kopiowanie plików zawiedzie w połowie — wcześniej aktualizacja mogła się zakończyć, zostawiając dane.
+Wenn Sie bereits betroffen waren und im leeren BTCPay Server ein neues Konto angelegt haben, wird dieses Konto samt allem damit Erstellten beiseitegelegt statt gelöscht, und Ihre ursprünglichen Daten treten an seine Stelle. Wenden Sie sich an den Support, bevor Sie das Beiseitegelegte entfernen, falls Sie es noch benötigen könnten.
 
-Pełne informacje o wydaniu pojawią się na https://github.com/btcpayserver/btcpayserver/releases po opublikowaniu wersji 2.4.3.`,
-    fr_FR: `Mise à jour de sécurité — BTCPay Server 2.4.3 — et correction d'une mise à jour échouée depuis StartOS 0.3.x.
+**Shopify-Plugin** — wenn Sie die Shopify-Integration nutzen und dies seit 2.4.3 noch nicht getan haben, aktualisieren Sie das Shopify-Plugin unter **Servereinstellungen → Plugins**. Das neuere Plugin behebt eine Schwachstelle im Rückerstattungs-Webhook.`,
+    pl_PL: `Przywraca dane BTCPay Server pozostawione przez aktualizację ze StartOS 0.3.x.
 
-**À propos de cette version :** elle embarque la version préliminaire 2.4.3 (rc5) de BTCPay Server, issue de son canal d'images interne ; en amont, 2.4.3 n'a encore ni version publiée, ni étiquette git, ni journal des modifications. Les changements de sécurité ci-dessous ont été identifiés en comparant les images rc4 et rc5 publiées. Ce paquet basculera sur la version finale de 2.4.3 dès sa publication.
+Aktualizacja ze StartOS 0.3.x przenosi dane BTCPay Server — sklepy, faktury, portfele i ustawienia — do pamięci używanej przez ten pakiet. Na serwerach z BTCPay Server 2.4.0.3 lub nowszym pod StartOS 0.3.x to przeniesienie zostało pominięte i BTCPay Server uruchomił się z pustą pamięcią: bez sklepów, bez kont, odrzucając każde hasło i zwracając „No server admins exist" w akcji **Zresetuj hasło administratora serwera**.
 
-- **Crowdfund** — la description d'une application n'est plus rendue en HTML brut, ce qui ferme un vecteur de script intersites.
-- **Extension Shopify** — BTCPay Server refuse désormais de charger les versions obsolètes de l'extension Shopify et les maintient désactivées jusqu'à leur mise à jour. Si vous utilisez l'intégration Shopify, mettez à jour l'extension Shopify dans **Paramètres du serveur → Extensions** après cette mise à jour ; la nouvelle extension corrige une vulnérabilité du webhook de remboursement.
-- **Mise à jour depuis StartOS 0.3.x** — la migration copiait un dossier d'extensions qui n'existe que si vous en aviez installé une. Sur un serveur qui n'en a jamais eu, la copie échouait et emportait toute la mise à jour, sans moyen de passer outre en réessayant. La migration ignore désormais ce qui est absent et ne signale plus un succès lorsqu'une copie de fichiers échoue en cours de route, ce qui pouvait auparavant terminer une mise à jour en laissant des données de côté.
+**Nic nie zostało usunięte.** Twoje dane pozostały tam, gdzie zostawił je poprzedni pakiet. Ta wersja przenosi je przy pierwszym uruchomieniu po aktualizacji, więc to uruchomienie trwa dłużej niż zwykle — przenoszona jest baza danych — a potem twoje pierwotne logowanie znów działa.
 
-Les notes de version complètes apparaîtront sur https://github.com/btcpayserver/btcpayserver/releases une fois 2.4.3 publiée.`,
+Jeśli już to napotkałeś i utworzyłeś nowe konto w pustym BTCPay Server, to konto i wszystko, co za jego pomocą utworzono, zostaje odłożone na bok, a nie usunięte, a twoje pierwotne dane zajmują jego miejsce. Skontaktuj się ze wsparciem przed usunięciem tego, co odłożono, jeśli może ci to być potrzebne.
+
+**Wtyczka Shopify** — jeśli korzystasz z integracji z Shopify i nie zrobiłeś tego od wersji 2.4.3, zaktualizuj wtyczkę Shopify w **Ustawienia serwera → Wtyczki**. Nowsza wtyczka naprawia lukę w webhooku zwrotów.`,
+    fr_FR: `Restaure les données de BTCPay Server laissées de côté par une mise à jour depuis StartOS 0.3.x.
+
+La mise à jour depuis StartOS 0.3.x déplace vos données BTCPay Server — boutiques, factures, portefeuilles et paramètres — vers le stockage utilisé par ce paquet. Sur les serveurs exécutant BTCPay Server 2.4.0.3 ou plus récent sous StartOS 0.3.x, ce déplacement a été ignoré et BTCPay Server a démarré sur un stockage vide : aucune boutique, aucun compte, tous les mots de passe refusés, et « No server admins exist » en réponse à l'action **Réinitialiser le mot de passe administrateur du serveur**.
+
+**Rien n'a été supprimé.** Vos données sont restées là où le paquet précédent les avait placées. Cette version les déplace au premier démarrage après la mise à jour ; ce démarrage est donc plus long que d'habitude — une base de données est en cours de déplacement — et votre identifiant d'origine fonctionne de nouveau ensuite.
+
+Si vous avez déjà rencontré ce problème et créé un nouveau compte dans le BTCPay Server vide, ce compte et tout ce qui a été créé avec lui est mis de côté plutôt que supprimé, et vos données d'origine reprennent leur place. Contactez l'assistance avant de supprimer ce qui a été mis de côté si vous pourriez en avoir besoin.
+
+**Extension Shopify** — si vous utilisez l'intégration Shopify et ne l'avez pas déjà fait depuis la 2.4.3, mettez à jour l'extension Shopify dans **Paramètres du serveur → Extensions**. La nouvelle extension corrige une vulnérabilité du webhook de remboursement.`,
   },
   migrations: {},
 })

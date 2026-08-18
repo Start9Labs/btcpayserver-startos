@@ -24,6 +24,7 @@
 - [Dependencies](#dependencies)
 - [Network Access and Interfaces](#network-access-and-interfaces)
 - [Installation and First-Run Flow](#installation-and-first-run-flow)
+- [Legacy Layout Repair](#legacy-layout-repair)
 - [Actions](#actions)
 - [Tasks](#tasks)
 - [Health Checks](#health-checks)
@@ -58,12 +59,12 @@ Postgres listens on loopback only and runs with trust authentication, which is s
 
 Four volumes, and one of them never enters a container. The same volume can appear at different paths in different subcontainers.
 
-| Volume         | Mounted at                                                                                    | Purpose                                                                                                      |
-| -------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                        |
-| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it |
-| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                |
-| `main`         | — (host side)                                                                                 | `store.json`; never mounted into a container                                                                 |
+| Volume         | Mounted at                                                                                    | Purpose                                                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                                                   |
+| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it                            |
+| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                                           |
+| `main`         | — (host side)                                                                                 | `store.json`, and any `superseded-*` snapshot left by the [legacy layout repair](#legacy-layout-repair); never mounted into a container |
 
 Dependency volumes are mounted in as needed:
 
@@ -141,6 +142,30 @@ Two ordering points matter, and both come from dependencies rather than from set
 
 1. **Bitcoin must be installed and running**, and NBXplorer cannot report itself synced until Bitcoin is. On a fresh node that is the length of an initial block download, followed by NBXplorer's own scan — both are reported as progress rather than as failures. See [Health Checks](#health-checks).
 2. **Choosing a Lightning node is a two-step operation.** The [Choose Lightning Node](#actions) action grants BTCPay access to the node; BTCPay then has to be told to use it, inside its own Lightning settings.
+
+## Legacy Layout Repair
+
+`startos/init/repairLegacyLayout.ts`, run from `init` **before** the version graph.
+
+The 0.3.x package kept everything in one `main` volume. This package splits it across `btcpayserver`, `nbxplorer` and `db`, so a 0.3.x install has to be moved before it can run. That move used to sit on the `2.4.0:2` version vertex, which was wrong: a version migration only runs for installs sorting _below_ the vertex, and a 0.3.x install arrives at whatever exver the emver converter produces from its old version. Every 0.3.x release from `2.4.0.3` to the final `2.4.3` sorts above `2.4.0:2` and skipped the move entirely — BTCPay started against empty volumes, which presents as a clean install with no stores or accounts, every password rejected, and `No server admins exist` from **Reset Server Admin Password**.
+
+Layout is not a function of version, so the trigger is the layout. The marker is a PostgreSQL 13 cluster under `main` (`main/postgresql/data/PG_VERSION`); the move deletes the old layout on success, so the step is self-limiting and a no-op on every subsequent init.
+
+Order of operations:
+
+1. Read `main/start9/config.yaml` into memory — the move deletes it.
+2. Snapshot anything already in `db`, `btcpayserver` and `nbxplorer` into `main/superseded-<timestamp>/`. It goes in `main` rather than inside the volume it came from because the postgres image's entrypoint sweeps every entry at the mount root into the old cluster's directory before upgrading it — a snapshot left at the db root would be swept into the PostgreSQL 13 data directory and handed to `pg_upgrade`. Installs that took the broken update ran a fresh BTCPay against empty volumes, so those destinations hold a newly initialised PostgreSQL 18 cluster rather than nothing. Overwriting it with PostgreSQL 13 files yields a cluster that will not start, and anyone who created a new admin has real data in it — so it is moved aside, not deleted. Putting the snapshot in `main` leaves the destinations exactly as a never-updated install would.
+3. Copy `main/{btcpayserver,plugins,nbxplorer,postgresql/data}` to their volumes, skipping `altcoins/monero` (chowned by the 0.3.x s6 unit to a UID outside the 0.4 idmap window, so unreadable here).
+4. `rm -rf` the old layout — this is what makes the step self-limiting.
+5. Merge the `config.yaml` values into the file models. **After** the copy, not before: the copy brings the 0.3.x `settings.config` with it, so merging first would be overwritten, and merging after also repairs the stale 0.3.x paths that file carries, since those fields are `z.literal().catch()`.
+
+It runs before the version graph because `2.4.2:1` decides whether to raise the Lightning credential-rotation task by reading `btclightning`, which nothing has written on a 0.3.x install until step 5.
+
+The `superseded-*` snapshot is never cleaned up automatically and is included in backups. It is safe to delete once the operator has confirmed their data is back.
+
+This is transitional and should be deleted once no 0.3.x installs remain in the wild.
+
+---
 
 ## Actions
 
