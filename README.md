@@ -39,7 +39,7 @@ Four upstream images, unmodified. Three run always; the fourth only when the Sho
 
 | Property      | Value                                                                                                                         |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Images        | `btcpayserver/btcpayserver-internal`, `nicolasdorier/nbxplorer`, `btcpayserver/postgres`, `btcpayserver/shopify-app-deployer` |
+| Images        | `btcpayserver/btcpayserver`, `nicolasdorier/nbxplorer`, `btcpayserver/postgres`, `btcpayserver/shopify-app-deployer` |
 | Architectures | x86_64, aarch64                                                                                                               |
 | Entrypoint    | Each image's own                                                                                                              |
 
@@ -250,7 +250,7 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 
 ```yaml
 package_id: btcpayserver
-image: btcpayserver/btcpayserver-internal # plus nbxplorer, postgres, shopify-app-deployer
+image: btcpayserver/btcpayserver # plus nbxplorer, postgres, shopify-app-deployer
 architectures:
   - x86_64
   - aarch64
