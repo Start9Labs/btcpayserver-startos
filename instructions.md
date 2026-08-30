@@ -2,6 +2,7 @@
 
 ## Documentation
 
+- [Start9 Bitcoin Guides](https://docs.start9.com/bitcoin-guides/) — connecting wallets to a Bitcoin or Lightning node on StartOS, Electrum servers, and archival versus pruned nodes.
 - [BTCPay Server documentation](https://docs.btcpayserver.org/) — the upstream operator and merchant guide covering stores, invoices, wallets, plugins, and the Greenfield API.
 
 ## What you get on StartOS
