@@ -3,7 +3,10 @@ import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import {
   clnConnectionString,
+  eclairApiBridge,
+  eclairConnectionString,
   isCln,
+  isEclair,
   isLnd,
   lndConnectionString,
   lndRestBridge,
@@ -21,6 +24,7 @@ export const inputSpec = InputSpec.of({
     values: {
       lnd: i18n('LND'),
       cln: i18n('Core Lightning'),
+      eclair: i18n('Eclair'),
       none: i18n('None/External'),
     },
   }),
@@ -46,11 +50,13 @@ export const lightningNode = sdk.Action.withInput(
 
   async ({ effects }) => {
     const ln = await btcpayConfig.read((s) => s.btclightning).once()
-    const lightning: 'lnd' | 'cln' | 'none' = isLnd(ln)
+    const lightning: 'lnd' | 'cln' | 'eclair' | 'none' = isLnd(ln)
       ? 'lnd'
       : isCln(ln)
         ? 'cln'
-        : 'none'
+        : isEclair(ln)
+          ? 'eclair'
+          : 'none'
     return { lightning }
   },
 
@@ -65,6 +71,15 @@ export const lightningNode = sdk.Action.withInput(
       btclightning = lndConnectionString(restUrl)
     } else if (input.lightning === 'cln') {
       btclightning = clnConnectionString
+    } else if (input.lightning === 'eclair') {
+      const apiUrl = await eclairApiBridge(effects).once()
+      if (!apiUrl)
+        throw new Error(
+          'Eclair is not yet reachable on the internal network. Ensure it is installed and running, then try again.',
+        )
+      // The password lives on Eclair's volume, which only main mounts, so it is
+      // written there on the next start.
+      btclightning = eclairConnectionString(apiUrl)
     }
 
     await btcpayConfig.merge(effects, { btclightning })

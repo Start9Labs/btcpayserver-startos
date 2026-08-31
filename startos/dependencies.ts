@@ -3,7 +3,13 @@ import { autoconfig } from 'monerod-startos/startos/actions/config/autoconfig'
 import { btcpayConfig } from './fileModels/btcpay.config'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
-import { getEnabledAltcoin, isCln, isLnd, selfUiBridge } from './utils'
+import {
+  getEnabledAltcoin,
+  isCln,
+  isEclair,
+  isLnd,
+  selfUiBridge,
+} from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
   const deps: T.CurrentDependenciesResult<any> = {}
@@ -30,6 +36,14 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
       kind: 'running',
       versionRange: '>=26.6.6:9',
       healthChecks: ['lightningd'],
+    }
+  }
+
+  if (isEclair(config.btclightning)) {
+    deps['eclair'] = {
+      kind: 'running',
+      versionRange: '>=0.14.2:0',
+      healthChecks: ['eclair'],
     }
   }
 

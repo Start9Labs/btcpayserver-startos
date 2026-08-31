@@ -13,12 +13,17 @@ import {
   rpcRestrictedHostId as xmrRpcHostId,
   rpcRestrictedPort as xmrRpcPort,
 } from 'monerod-startos/startos/utils'
+import {
+  apiHostId as eclairApiHostId,
+  apiPort as eclairApiPort,
+} from 'eclair-startos/startos/utils'
 import { socksHostId, socksPort } from 'tor-startos/startos/utils'
 import { sdk } from './sdk'
 
 // Container mountpoints
 export const lndMountpoint = '/mnt/lnd'
 export const clnMountpoint = '/mnt/cln'
+export const eclairMountpoint = '/mnt/eclair'
 export const nbxMountpoint = '/root/.nbxplorer'
 export const bitcoindMountpoint = '/root/.bitcoin'
 export const dataDir = '/datadir'
@@ -66,8 +71,18 @@ const LND_CONN_PREFIX = 'type=lnd-rest'
 export function lndConnectionString(restUrl: string) {
   return `${LND_CONN_PREFIX};server=${restUrl}/;macaroonfilepath=${lndMountpoint}/data/chain/bitcoin/mainnet/admin.macaroon;allowinsecure=true`
 }
+// Eclair authenticates with an empty username and a password, so only `password`
+// is set. `bitcoin-host`/`bitcoin-auth` are accepted by BTCPay's parser but never
+// reach EclairLightningClient, so passing them would buy nothing.
+const ECLAIR_CONN_PREFIX = 'type=eclair'
+export function eclairConnectionString(apiUrl: string, password?: string) {
+  const base = `${ECLAIR_CONN_PREFIX};server=${apiUrl}/`
+  return password ? `${base};password=${password}` : base
+}
 export const isLnd = (s?: string | null) => !!s?.startsWith(LND_CONN_PREFIX)
 export const isCln = (s?: string | null) => s === clnConnectionString
+export const isEclair = (s?: string | null) =>
+  !!s?.startsWith(ECLAIR_CONN_PREFIX)
 
 export function getEnabledAltcoin(altcoin: string, list: string) {
   return list.split(',').includes(altcoin)
@@ -103,6 +118,21 @@ export const lndRestBridge = (effects: T.Effects) => {
     internalPort: lndRestPort,
   })
   const url = (h: string | null) => h && `https://${h}`
+  return {
+    const: async () => url(await addr.const()),
+    once: async () => url(await addr.once()),
+  }
+}
+
+/** Eclair's API base URL over the bridge; `null` when Eclair isn't installed. */
+export const eclairApiBridge = (effects: T.Effects) => {
+  const addr = sdk.host.getBridgeAddress(effects, {
+    packageId: 'eclair',
+    hostId: eclairApiHostId,
+    internalPort: eclairApiPort,
+    ssl: false,
+  })
+  const url = (h: string | null) => h && `http://${h}`
   return {
     const: async () => url(await addr.const()),
     once: async () => url(await addr.once()),

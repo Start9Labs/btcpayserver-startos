@@ -12,14 +12,20 @@ import {
 import { storeJson } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
+import { eclairConf } from 'eclair-startos/startos/fileModels/eclair.conf'
+import { manifest as eclairManifest } from 'eclair-startos/startos/manifest'
 import {
   bitcoindMountpoint,
   bitcoindPeerBridge,
   bitcoindRpcBridge,
   clnMountpoint,
   dataDir,
+  eclairApiBridge,
+  eclairConnectionString,
+  eclairMountpoint,
   getEnabledAltcoin,
   isCln,
+  isEclair,
   isLnd,
   lndConnectionString,
   lndMountpoint,
@@ -145,6 +151,14 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: clnMountpoint,
       readonly: true,
     })
+  } else if (isEclair(config.btclightning)) {
+    mounts = mounts.mountDependency<typeof eclairManifest>({
+      dependencyId: 'eclair',
+      volumeId: 'main',
+      subpath: null,
+      mountpoint: eclairMountpoint,
+      readonly: true,
+    })
   }
 
   // ========================
@@ -157,6 +171,26 @@ export const main = sdk.setupMain(async ({ effects }) => {
     mounts,
     'btcpay',
   )
+
+  // Eclair's connection string carries its API password, which lives on Eclair's
+  // volume — so unlike LND's it can only be assembled once the mount exists.
+  // Re-read on every start, so rotating the password there reaches BTCPay
+  // Server without the user re-selecting the node.
+  if (isEclair(config.btclightning)) {
+    const apiUrl = await eclairApiBridge(effects).const()
+    const password = apiUrl
+      ? await eclairConf
+          .withPath(`${await btcpaySub.rootfs}${eclairMountpoint}/eclair.conf`)
+          .read((c) => c['api.password'])
+          .const(effects)
+      : null
+    if (apiUrl && password)
+      await btcpayConfig.merge(
+        effects,
+        { btclightning: eclairConnectionString(apiUrl, password) },
+        { allowWriteAfterConst: true },
+      )
+  }
 
   const nbxSub = sdk.SubContainer.of(
     effects,
