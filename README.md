@@ -37,11 +37,11 @@
 
 Four upstream images, unmodified. Three run always; the fourth only when the Shopify plugin is switched on.
 
-| Property      | Value                                                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Property      | Value                                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Images        | `btcpayserver/btcpayserver`, `nicolasdorier/nbxplorer`, `btcpayserver/postgres`, `btcpayserver/shopify-app-deployer` |
-| Architectures | x86_64, aarch64                                                                                                               |
-| Entrypoint    | Each image's own                                                                                                              |
+| Architectures | x86_64, aarch64                                                                                                      |
+| Entrypoint    | Each image's own                                                                                                     |
 
 | Subcontainer | Purpose                                                                        |
 | ------------ | ------------------------------------------------------------------------------ |
@@ -72,6 +72,7 @@ Dependency volumes are mounted in as needed:
 | `/root/.bitcoin` (in `nbx`) | Bitcoin's `main` volume        | read-write | NBXplorer reads the node's RPC cookie  |
 | `/mnt/lnd`                  | LND's `main` volume            | read-only  | The admin macaroon and TLS certificate |
 | `/mnt/cln`                  | Core Lightning's `main` volume | read-only  | The `lightning-rpc` unix socket        |
+| `/mnt/eclair`               | Eclair's `main` volume         | read-only  | `eclair.conf`, for its API password    |
 | `/mnt/monero`               | Monero's `main` volume         | read-write | Monero wallet files                    |
 
 ## File Models
@@ -92,7 +93,7 @@ Three models. Two are the applications' own INI configuration, and in both the p
 
 Two of those keep BTCPay from advertising updates it cannot perform here, since StartOS does the updating: `dockerdeployment=false` hides the Maintenance page and its update button, and an empty `updateurl` disables the daily GitHub release check — which also removes the "check releases on GitHub" toggle from Server Settings → Policies and stops first-admin registration from switching it on. Plugin updates are a separate mechanism and still work normally from BTCPay's UI.
 
-**Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and the `server=` half of `btclightning` when the backend is LND. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
+**Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and the `server=` half of `btclightning` when the backend is LND, or the whole of it when the backend is Eclair. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
 
 **Yours, through an action:** `btclightning` selects the Lightning backend, and `chains` enables Monero. `XMR_daemon_username` and `XMR_daemon_password` default to empty and are not exposed.
 
@@ -117,6 +118,7 @@ One is required; the rest appear according to what you have enabled.
 | Bitcoin        | always                       | `running` | `bitcoind`   | Chain data for NBXplorer, over both RPC and P2P |
 | LND            | when selected as the backend | `running` | `lnd`        | Lightning invoices                              |
 | Core Lightning | when selected as the backend | `running` | `lightningd` | Lightning invoices                              |
+| Eclair         | when selected as the backend | `running` | `eclair`     | Lightning invoices                              |
 | Monero         | when Monero is enabled       | `running` | `monerod`    | Monero payments                                 |
 
 **NBXplorer connects to Bitcoin's whitelisted P2P binding, not its public one.** It pulls blocks over that connection, and Bitcoin's ordinary `peer` binding grants no permissions — a connection there shares the pool with anonymous inbound peers, so it can be evicted to seat another peer or cut off by the upload target. The `peer-local` host is whitelisted, and neither applies.
@@ -150,9 +152,9 @@ Five actions, all user-facing.
 
 ### Choose Lightning Node
 
-Selects which Lightning node BTCPay may use — LND, Core Lightning, or neither. Run it after installing the node.
+Selects which Lightning node BTCPay may use — LND, Core Lightning, Eclair, or neither. Run it after installing the node.
 
-- **What it changes:** `btclightning` in BTCPay's config, and through it the package's dependency set and its mounts. LND is recorded as a REST address resolved at that moment; Core Lightning as a path to the RPC socket it will mount.
+- **What it changes:** `btclightning` in BTCPay's config, and through it the package's dependency set and its mounts. LND is recorded as a REST address resolved at that moment; Core Lightning as a path to the RPC socket it will mount. Eclair is recorded as its API address alone — the password that completes the connection string lives on Eclair's volume, which only `main` mounts, so it is filled in on the next start.
 - **Cost:** seconds, then a restart, since the node's data volume can only be mounted when the container is recreated.
 - **Repeat safety:** safe to re-run and safe to reverse; selecting "None/External" removes the mount and the dependency.
 - **Guard:** selecting LND fails with a message if LND is not yet reachable, rather than recording an address that does not work.
@@ -278,6 +280,7 @@ dependencies:
   - bitcoind # required
   - lnd # when selected as the Lightning backend
   - c-lightning # when selected as the Lightning backend
+  - eclair # when selected as the Lightning backend
   - monerod # when Monero is enabled
 interfaces:
   main: { type: ui, port: 23000 }

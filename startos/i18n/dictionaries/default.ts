@@ -61,6 +61,7 @@ const dict = {
   // versions/current.ts
   "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Recreate LND's macaroons to revoke the old ones.": 41,
   "BTCPay Server reaches Core Lightning over its admin RPC socket, so a server compromised through the vulnerability patched in 2.4.2 could have issued itself a rune. Revoke this node's runes to invalidate any that were.": 42,
+  Eclair: 43,
 } as const
 
 export type I18nKey = keyof typeof dict

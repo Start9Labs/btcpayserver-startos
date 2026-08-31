@@ -17,7 +17,7 @@
 1. Install **Bitcoin** first and let it finish its initial block download — BTCPay Server depends on it and NBXplorer cannot index until Bitcoin is synced.
 2. Start BTCPay Server. NBXplorer will then sync the UTXO set from Bitcoin; the **UTXO Tracker Sync** health check shows progress, and the Web UI will not be fully usable until it reads "Synced".
 3. Open the **Web UI** interface and create your first server admin account. The first account registered through the UI becomes the server administrator.
-4. (Optional) Run **Choose Lightning Node** to wire BTCPay to an internal Lightning node — pick **LND**, **Core Lightning**, or **None/External**. The matching service must be installed; LND or CLN becomes a hard dependency once selected. After your first selection, open BTCPay's **Lightning** settings in the Web UI, choose **Internal Node**, and save — BTCPay requires this one-time confirmation before it will use the wired node for invoices.
+4. (Optional) Run **Choose Lightning Node** to wire BTCPay to an internal Lightning node — pick **LND**, **Core Lightning**, **Eclair**, or **None/External**. The matching service must be installed and becomes a hard dependency once selected. With Eclair, run its **Set API Password** action first — BTCPay authenticates with that password. After your first selection, open BTCPay's **Lightning** settings in the Web UI, choose **Internal Node**, and save — BTCPay requires this one-time confirmation before it will use the wired node for invoices.
 5. (Optional) Run **Enable Altcoins** to turn on Monero. Monerod becomes a required dependency, and BTCPay sets the Monero `block-notify` command on it automatically.
 6. (Optional) Run **Enable Plugins** to turn on the **Shopify** integration if you want to connect a Shopify store.
 
@@ -36,7 +36,7 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 
 ### Actions
 
-- **Choose Lightning Node** — pick LND, Core Lightning, or None/External. The selected service becomes a required dependency. After the first selection you must also confirm **Internal Node** under BTCPay's own **Lightning** settings.
+- **Choose Lightning Node** — pick LND, Core Lightning, Eclair, or None/External. The selected service becomes a required dependency. After the first selection you must also confirm **Internal Node** under BTCPay's own **Lightning** settings.
 - **Enable Altcoins** — toggle Monero on or off. Turning Monero on makes Monerod a required dependency.
 - **Enable Plugins** — toggle the bundled Shopify integration on or off.
 - **Resync NBXplorer** — re-scan the UTXO set from a chosen block height. Provide the height as an integer; BTCPay restarts and NBXplorer rescans from there.
@@ -63,5 +63,5 @@ Two things the update cannot do for you:
 ## Limitations
 
 - **Mainnet only.** Testnet and signet are not exposed by this package.
-- **One internal Lightning node at a time.** You can wire BTCPay to LND _or_ CLN, not both simultaneously.
+- **One internal Lightning node at a time.** You can wire BTCPay to LND, Core Lightning _or_ Eclair, not several simultaneously.
 - **Reset Server Admin Password requires exactly one server admin.** If multiple admin accounts exist, use another admin account to reset the password through the Web UI instead.
