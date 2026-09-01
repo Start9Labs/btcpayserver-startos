@@ -2,6 +2,7 @@ import { setupManifest } from '@start9labs/start-sdk'
 import {
   bitcoindDescription,
   clnDescription,
+  eclairDescription,
   lndDescription,
   long,
   monerodDescription,
@@ -67,6 +68,14 @@ export const manifest = setupManifest({
       metadata: {
         title: 'CLN',
         icon: 'https://raw.githubusercontent.com/Start9Labs/cln-startos/71b2d1eb78e2d31cc4d62a410512422d39e856e9/icon.svg',
+      },
+    },
+    eclair: {
+      description: eclairDescription,
+      optional: true,
+      metadata: {
+        title: 'Eclair',
+        icon: 'https://raw.githubusercontent.com/Start9Labs/eclair-startos/0f6f6e1dd6faa890422c899d775fb433c7115d3a/icon.png',
       },
     },
     monerod: {

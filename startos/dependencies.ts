@@ -2,6 +2,7 @@ import { T } from '@start9labs/start-sdk'
 import { autoconfig } from 'monerod-startos/startos/actions/config/autoconfig'
 import { btcpayConfig } from './fileModels/btcpay.config'
 import { i18n } from './i18n'
+import { manifest } from './manifest'
 import { sdk } from './sdk'
 import {
   getEnabledAltcoin,
@@ -12,7 +13,7 @@ import {
 } from './utils'
 
 export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
-  const deps: T.CurrentDependenciesResult<any> = {}
+  const deps = {} as T.CurrentDependenciesResult<typeof manifest>
 
   const config = await btcpayConfig
     .read((c) => ({ btclightning: c.btclightning, chains: c.chains }))

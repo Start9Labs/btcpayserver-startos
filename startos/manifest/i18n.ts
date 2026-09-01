@@ -32,6 +32,14 @@ export const clnDescription = {
   fr_FR: 'Utilisé pour communiquer avec le réseau Lightning.',
 }
 
+export const eclairDescription = {
+  en_US: 'Used to communicate with the Lightning Network.',
+  es_ES: 'Se utiliza para comunicarse con la red Lightning.',
+  de_DE: 'Wird verwendet, um mit dem Lightning-Netzwerk zu kommunizieren.',
+  pl_PL: 'Używany do komunikacji z siecią Lightning.',
+  fr_FR: 'Utilisé pour communiquer avec le réseau Lightning.',
+}
+
 export const monerodDescription = {
   en_US: 'Used to connect to the Monero network.',
   es_ES: 'Se utiliza para conectarse a la red Monero.',
