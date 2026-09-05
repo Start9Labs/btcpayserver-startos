@@ -28,13 +28,13 @@ export const manifest = setupManifest({
     },
     nbx: {
       source: {
-        dockerTag: 'nicolasdorier/nbxplorer:2.6.11',
+        dockerTag: 'nicolasdorier/nbxplorer:2.6.12',
       },
       arch: ['x86_64', 'aarch64'],
     },
     postgres: {
       source: {
-        dockerTag: 'btcpayserver/postgres:18.4',
+        dockerTag: 'btcpayserver/postgres:18.6',
       },
       arch: ['x86_64', 'aarch64'],
     },
