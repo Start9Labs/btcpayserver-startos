@@ -1,23 +1,43 @@
 import { VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.3:5',
+  version: '2.4.4:0',
   releaseNotes: {
-    en_US: `Updated NBXplorer to 2.6.12 and the bundled PostgreSQL image to 18.6. NBXplorer hardens Basic authentication and improves shutdown reliability; PostgreSQL includes security and bug fixes.
+    en_US: `Updated BTCPay Server to 2.4.4.
 
-See https://github.com/btcpayserver/NBXplorer/compare/v2.6.11...v2.6.12 and https://www.postgresql.org/docs/release/18.6/`,
-    es_ES: `Se actualizaron NBXplorer a 2.6.12 y la imagen de PostgreSQL incluida a 18.6. NBXplorer refuerza la autenticación básica y mejora la fiabilidad del apagado; PostgreSQL incluye correcciones de seguridad y errores.
+- NFC payments are disabled by default; enable them under Store Settings > Checkout Experience if needed.
+- Store users now accept invitations before joining, and zero-amount invoices are blocked by default.
+- Adds store-user invitations and email triggers, plus security fixes for API keys, support links, authorization redirects, and account changes.
 
-Consulta https://github.com/btcpayserver/NBXplorer/compare/v2.6.11...v2.6.12 y https://www.postgresql.org/docs/release/18.6/`,
-    de_DE: `NBXplorer wurde auf 2.6.12 und das mitgelieferte PostgreSQL-Image auf 18.6 aktualisiert. NBXplorer stärkt die Basic-Authentifizierung und verbessert die Zuverlässigkeit beim Herunterfahren; PostgreSQL enthält Sicherheits- und Fehlerkorrekturen.
+Full release notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.4`,
+    es_ES: `Se actualizó BTCPay Server a la versión 2.4.4.
 
-Siehe https://github.com/btcpayserver/NBXplorer/compare/v2.6.11...v2.6.12 und https://www.postgresql.org/docs/release/18.6/`,
-    pl_PL: `Zaktualizowano NBXplorer do wersji 2.6.12 oraz dołączony obraz PostgreSQL do wersji 18.6. NBXplorer wzmacnia uwierzytelnianie podstawowe i poprawia niezawodność zamykania; PostgreSQL zawiera poprawki zabezpieczeń i błędów.
+- Los pagos NFC están desactivados por defecto; actívalos en Configuración de la tienda > Experiencia de pago si los necesitas.
+- Los usuarios de la tienda ahora deben aceptar una invitación antes de unirse, y las facturas de importe cero están bloqueadas por defecto.
+- Añade invitaciones para usuarios de la tienda y activadores de correo electrónico, además de correcciones de seguridad para claves API, enlaces de soporte, redirecciones de autorización y cambios en las cuentas.
 
-Zobacz https://github.com/btcpayserver/NBXplorer/compare/v2.6.11...v2.6.12 oraz https://www.postgresql.org/docs/release/18.6/`,
-    fr_FR: `Mise à jour de NBXplorer vers 2.6.12 et de l'image PostgreSQL fournie vers 18.6. NBXplorer renforce l'authentification Basic et améliore la fiabilité de l'arrêt ; PostgreSQL inclut des correctifs de sécurité et de bogues.
+Notas completas de la versión: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.4`,
+    de_DE: `BTCPay Server wurde auf Version 2.4.4 aktualisiert.
 
-Voir https://github.com/btcpayserver/NBXplorer/compare/v2.6.11...v2.6.12 et https://www.postgresql.org/docs/release/18.6/`,
+- NFC-Zahlungen sind standardmäßig deaktiviert; aktivieren Sie sie bei Bedarf unter Shop-Einstellungen > Checkout-Erlebnis.
+- Shop-Benutzer müssen nun eine Einladung annehmen, bevor sie beitreten können, und Rechnungen mit einem Betrag von null sind standardmäßig gesperrt.
+- Fügt Einladungen für Shop-Benutzer und E-Mail-Auslöser sowie Sicherheitskorrekturen für API-Schlüssel, Support-Links, Autorisierungsweiterleitungen und Kontoänderungen hinzu.
+
+Vollständige Versionshinweise: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.4`,
+    pl_PL: `Zaktualizowano BTCPay Server do wersji 2.4.4.
+
+- Płatności NFC są domyślnie wyłączone; w razie potrzeby włącz je w Ustawieniach sklepu > Obsługa płatności.
+- Użytkownicy sklepu muszą teraz zaakceptować zaproszenie przed dołączeniem, a faktury z kwotą zerową są domyślnie blokowane.
+- Dodaje zaproszenia dla użytkowników sklepu i wyzwalacze wiadomości e-mail oraz poprawki bezpieczeństwa dotyczące kluczy API, odnośników pomocy, przekierowań autoryzacyjnych i zmian konta.
+
+Pełne informacje o wydaniu: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.4`,
+    fr_FR: `Mise à jour de BTCPay Server vers la version 2.4.4.
+
+- Les paiements NFC sont désactivés par défaut ; activez-les dans Paramètres de la boutique > Expérience de paiement si nécessaire.
+- Les utilisateurs de la boutique doivent désormais accepter une invitation avant de la rejoindre, et les factures d'un montant nul sont bloquées par défaut.
+- Ajoute les invitations pour les utilisateurs de la boutique et des déclencheurs d'e-mail, ainsi que des correctifs de sécurité pour les clés d'API, les liens d'assistance, les redirections d'autorisation et les modifications de compte.
+
+Notes de version complètes : https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.4`,
   },
   migrations: {},
 })
