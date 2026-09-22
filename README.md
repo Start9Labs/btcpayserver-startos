@@ -58,12 +58,12 @@ Postgres listens on loopback only and runs with trust authentication, which is s
 
 Four volumes, and one of them never enters a container. The same volume can appear at different paths in different subcontainers.
 
-| Volume         | Mounted at                                                                                    | Purpose                                                                                                            |
-| -------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                              |
-| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it       |
-| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                      |
-| `main`         | — (host side)                                                                                 | `store.json`, and any `superseded-*` directory set aside by the legacy-layout move; never mounted into a container |
+| Volume         | Mounted at                                                                                    | Purpose                                                                                                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                                                                                                   |
+| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it                                                                            |
+| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                                                                                           |
+| `main`         | — (host side)                                                                                 | `store.json`, any `superseded-*` directory set aside by the legacy-layout move, and the old `btcpayserver/altcoins/monero` directory it leaves in place; never mounted into a container |
 
 Dependency volumes are mounted in as needed:
 
@@ -144,7 +144,7 @@ Two ordering points matter, and both come from dependencies rather than from set
 1. **Bitcoin must be installed and running**, and NBXplorer cannot report itself synced until Bitcoin is. On a fresh node that is the length of an initial block download, followed by NBXplorer's own scan — both are reported as progress rather than as failures. See [Health Checks](#health-checks).
 2. **Choosing a Lightning node is a two-step operation.** The [Choose Lightning Node](#actions) action grants BTCPay access to the node; BTCPay then has to be told to use it, inside its own Lightning settings.
 
-An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten.
+An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten. The Monero wallet directory of the old layout, `main/btcpayserver/altcoins/monero`, is owned outside the range the container can map, so the move can neither read nor delete it and leaves it where it is.
 
 ## Actions
 

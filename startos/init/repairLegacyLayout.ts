@@ -187,16 +187,21 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
       })
 
       // Last, and only on success: removing the old layout is what stops this
-      // running again.
+      // running again. altcoins/monero cannot be deleted from here any more
+      // than it can be read, so it stays; postgresql, the marker, goes last.
       await sub.execFail(
         [
-          'rm',
-          '-rf',
-          `${MAIN}/postgresql`,
-          `${MAIN}/btcpayserver`,
-          `${MAIN}/plugins`,
-          `${MAIN}/nbxplorer`,
-          `${MAIN}/start9`,
+          'sh',
+          '-c',
+          `set -e
+          rm -rf ${MAIN}/plugins ${MAIN}/nbxplorer ${MAIN}/start9
+          if [ -d ${MAIN}/btcpayserver/altcoins/monero ]; then
+            find ${MAIN}/btcpayserver -mindepth 1 -maxdepth 1 ! -name altcoins -exec rm -rf {} +
+            find ${MAIN}/btcpayserver/altcoins -mindepth 1 -maxdepth 1 ! -name monero -exec rm -rf {} +
+          else
+            rm -rf ${MAIN}/btcpayserver
+          fi
+          rm -rf ${MAIN}/postgresql`,
         ],
         { user: 'root' },
       )
