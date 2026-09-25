@@ -124,7 +124,11 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
     mounts,
     'repair-legacy-layout',
     async (sub) => {
-      await sub.execFail(['sh', '-c', snapshotScript(stamp)], { user: 'root' })
+      await sub.execFail(
+        ['sh', '-c', snapshotScript(stamp)],
+        { user: 'root' },
+        null,
+      )
 
       // Skip altcoins/monero — its contents were chowned by the legacy
       // 0.3.x s6 monero-wallet-rpc unit to UID 30236:GID 302340 (outside
@@ -147,6 +151,7 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
           fi`,
         ],
         { user: 'root' },
+        null,
       )
       await sub.execFail(['mkdir', '-p', `${BTCPAY}/Plugins`], { user: 'root' })
       await sub.execFail(
@@ -159,6 +164,7 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
           fi`,
         ],
         { user: 'root' },
+        null,
       )
       await sub.execFail(
         [
@@ -170,6 +176,7 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
           fi`,
         ],
         { user: 'root' },
+        null,
       )
       await sub.execFail(
         [
@@ -181,10 +188,13 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
           fi`,
         ],
         { user: 'root' },
+        null,
       )
-      await sub.execFail(['chown', '-R', 'postgres:postgres', PG_MOUNT], {
-        user: 'root',
-      })
+      await sub.execFail(
+        ['chown', '-R', 'postgres:postgres', PG_MOUNT],
+        { user: 'root' },
+        null,
+      )
 
       // Last, and only on success: removing the old layout is what stops this
       // running again. altcoins/monero cannot be deleted from here any more
@@ -204,6 +214,7 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
           rm -rf ${MAIN}/postgresql`,
         ],
         { user: 'root' },
+        null,
       )
     },
   )
