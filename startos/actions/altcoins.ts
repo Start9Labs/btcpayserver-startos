@@ -7,7 +7,9 @@ const { InputSpec, Value } = sdk
 const input = InputSpec.of({
   monero: Value.toggle({
     name: i18n('Monero'),
-    description: i18n('Enable Monero integration'),
+    description: i18n(
+      'Accept Monero payments. Monero must be installed on this server and becomes a dependency; a task on Monero then sets the block-notify command BTCPay Server needs.',
+    ),
     default: false,
   }),
 })

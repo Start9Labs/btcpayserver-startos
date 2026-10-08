@@ -19,31 +19,31 @@ const dict = {
   // actions/resetAdminPassword.ts
   'Reset Server Admin Password': 13,
   'Resets the first server admin user with a temporary password. You should only need to perform this action if a single admin user exists. Otherwise, another admin can reset their password.': 14,
-  'Are you sure you want to reset the server admin password?': 15,
+  "Replaces the first server admin's password with a new temporary one. The current password stops working.": 15,
   'Password reset successful': 16,
   "This password will be unavailable for retrieval after you leave the screen, so don't forget to change your password after logging in.": 17,
 
   // actions/resyncNbx.ts
   Rescan: 18,
-  'The block height at which to begin resync': 19,
+  "NBXplorer rescans the chain from this block height. Pick one at or before your wallet's first transaction; the further back, the longer the rescan takes.": 19,
   'Resync NBXplorer': 20,
   'Syncs NBXplorer from the inputted block height.': 21,
 
   // actions/plugins.ts
   Shopify: 22,
-  'Enables you to connect your instance with your Shopify store. Please see the "Instructions" tab for more details.': 23,
+  'Runs the Shopify app alongside BTCPay Server, which you need to connect a Shopify store.': 23,
   'Enable Plugins': 24,
   'Choose which system plugins to enable.': 25,
 
   // actions/altcoins.ts
   Monero: 26,
-  'Enable Monero integration': 27,
+  'Accept Monero payments. Monero must be installed on this server and becomes a dependency; a task on Monero then sets the block-notify command BTCPay Server needs.': 27,
   'Enable Altcoins': 28,
   'Choose which altcoins to enable.': 29,
 
   // actions/lightningNode.ts
   'Lightning Node': 30,
-  'Use this setting to grant access to the selected internal Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, select "None/External". Please see the "Instructions" page for more details.': 31,
+  "The Lightning node on this server that BTCPay Server may use for invoices. Install it first; it becomes a dependency.\n- LND: use this server's LND\n- Core Lightning: use this server's Core Lightning\n- Eclair: use this server's Eclair\n- None/External: use no node on this server; choose this if you do not use Lightning, or to connect an external node inside BTCPay Server": 31,
   LND: 32,
   'Core Lightning': 33,
   'None/External': 34,
@@ -59,9 +59,11 @@ const dict = {
   'BTCPay Server requires a particular block-notify command': 40,
 
   // versions/current.ts
-  "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Recreate LND's macaroons to revoke the old ones.": 41,
+  "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Run Revoke Macaroons to invalidate the old ones.": 41,
   "BTCPay Server reaches Core Lightning over its admin RPC socket, so a server compromised through the vulnerability patched in 2.4.2 could have issued itself a rune. Revoke this node's runes to invalidate any that were.": 42,
   Eclair: 43,
+  'The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%': 44,
+  'The UTXO tracker is syncing. Sync progress: ${progress}%': 45,
 } as const
 
 export type I18nKey = keyof typeof dict

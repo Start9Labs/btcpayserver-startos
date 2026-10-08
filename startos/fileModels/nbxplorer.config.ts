@@ -2,7 +2,7 @@ import { FileHelper, z } from '@start9labs/start-sdk'
 import { sdk } from '../sdk'
 import { bitcoindCookiePath, nbxPort, nbxPostgres } from '../utils'
 
-const shape = z.object({
+const shape = z.looseObject({
   // Enforced
   port: z.literal(`${nbxPort}`).catch(`${nbxPort}`),
   bind: z.literal('127.0.0.1').catch('127.0.0.1'),

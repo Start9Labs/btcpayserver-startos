@@ -11,7 +11,9 @@ export const resetAdminPassword = sdk.Action.withoutInput(
     description: i18n(
       'Resets the first server admin user with a temporary password. You should only need to perform this action if a single admin user exists. Otherwise, another admin can reset their password.',
     ),
-    warning: i18n('Are you sure you want to reset the server admin password?'),
+    warning: i18n(
+      "Replaces the first server admin's password with a new temporary one. The current password stops working.",
+    ),
     allowedStatuses: 'only-running',
     group: null,
     visibility: 'enabled',

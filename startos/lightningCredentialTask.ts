@@ -34,7 +34,7 @@ export async function raiseLightningCredentialTask(effects: T.Effects) {
       'critical',
       {
         reason: i18n(
-          "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Recreate LND's macaroons to revoke the old ones.",
+          "BTCPay Server can read LND's admin macaroon, which may have been exposed by the vulnerability patched in 2.4.2. Run Revoke Macaroons to invalidate the old ones.",
         ),
       },
     )
