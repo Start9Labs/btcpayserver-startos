@@ -11,7 +11,7 @@ import {
 
 const btcpayBind = `0.0.0.0:${uiPort}` as const
 
-const shape = z.object({
+const shape = z.looseObject({
   // Enforced
   network: z.literal('mainnet').catch('mainnet'),
   bind: z.literal(btcpayBind).catch(btcpayBind),

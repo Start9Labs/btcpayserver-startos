@@ -7,7 +7,7 @@ const input = InputSpec.of({
   shopify: Value.toggle({
     name: i18n('Shopify'),
     description: i18n(
-      'Enables you to connect your instance with your Shopify store. Please see the "Instructions" tab for more details.',
+      'Runs the Shopify app alongside BTCPay Server, which you need to connect a Shopify store.',
     ),
     default: false,
   }),

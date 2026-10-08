@@ -18,7 +18,7 @@ export const inputSpec = InputSpec.of({
   lightning: Value.select({
     name: i18n('Lightning Node'),
     description: i18n(
-      'Use this setting to grant access to the selected internal Lightning node. If you prefer to use an external Lightning node, or you do not intend to use Lightning, select "None/External". Please see the "Instructions" page for more details.',
+      "The Lightning node on this server that BTCPay Server may use for invoices. Install it first; it becomes a dependency.\n- LND: use this server's LND\n- Core Lightning: use this server's Core Lightning\n- Eclair: use this server's Eclair\n- None/External: use no node on this server; choose this if you do not use Lightning, or to connect an external node inside BTCPay Server",
     ),
     default: 'none',
     values: {

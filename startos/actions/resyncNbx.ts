@@ -6,7 +6,9 @@ const { InputSpec, Value } = sdk
 const input = InputSpec.of({
   startHeight: Value.number({
     name: i18n('Rescan'),
-    description: i18n('The block height at which to begin resync'),
+    description: i18n(
+      "NBXplorer rescans the chain from this block height. Pick one at or before your wallet's first transaction; the further back, the longer the rescan takes.",
+    ),
     required: true,
     default: null,
     integer: true,

@@ -18,7 +18,7 @@
 2. Start BTCPay Server. NBXplorer will then sync the UTXO set from Bitcoin; the **UTXO Tracker Sync** health check shows progress, and the Web UI will not be fully usable until it reads "Synced".
 3. Open the **Web UI** interface and create your first server admin account. The first account registered through the UI becomes the server administrator.
 4. (Optional) Run **Choose Lightning Node** to wire BTCPay to an internal Lightning node — pick **LND**, **Core Lightning**, **Eclair**, or **None/External**. The matching service must be installed and becomes a hard dependency once selected. With Eclair, run its **Set API Password** action first — BTCPay authenticates with that password. After your first selection, open BTCPay's **Lightning** settings in the Web UI, choose **Internal Node**, and save — BTCPay requires this one-time confirmation before it will use the wired node for invoices.
-5. (Optional) Run **Enable Altcoins** to turn on Monero. Monerod becomes a required dependency, and BTCPay sets the Monero `block-notify` command on it automatically.
+5. (Optional) Run **Enable Altcoins** to turn on Monero. Monerod becomes a required dependency, and Monero gets a task that sets the `block-notify` command BTCPay needs; run it.
 6. (Optional) Run **Enable Plugins** to turn on the **Shopify** integration if you want to connect a Shopify store.
 
 ## Using BTCPay Server

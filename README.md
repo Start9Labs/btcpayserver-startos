@@ -73,7 +73,6 @@ Dependency volumes are mounted in as needed:
 | `/mnt/lnd`                  | LND's `main` volume            | read-only  | The admin macaroon and TLS certificate |
 | `/mnt/cln`                  | Core Lightning's `main` volume | read-only  | The `lightning-rpc` unix socket        |
 | `/mnt/eclair`               | Eclair's `main` volume         | read-only  | `eclair.conf`, for its API password    |
-| `/mnt/monero`               | Monero's `main` volume         | read-write | Monero wallet files                    |
 
 ## File Models
 
@@ -123,6 +122,8 @@ One is required; the rest appear according to what you have enabled.
 
 **NBXplorer connects to Bitcoin's whitelisted P2P binding, not its public one.** It pulls blocks over that connection, and Bitcoin's ordinary `peer` binding grants no permissions — a connection there shares the pool with anonymous inbound peers, so it can be evicted to seat another peer or cut off by the upload target. The `peer-local` host is whitelisted, and neither applies.
 
+Bitcoin Knots (pre-RDTS) satisfies the Bitcoin dependency as well as Bitcoin Core.
+
 Enabling Monero also raises a task on Monero itself — see [Tasks](#tasks).
 
 ## Network Access and Interfaces
@@ -133,7 +134,7 @@ One interface. NBXplorer, Postgres, and the Shopify deployer are all internal an
 | --------- | ------ | ---- | ----- | ------------------------------- |
 | Web UI    | `main` | ui   | 23000 | The BTCPay Server web interface |
 
-The port is bound on the `main` MultiHost and is not masked.
+The port is bound on the `main` MultiHost and is not masked. Updating an install carried over from StartOS 0.3.5 retires that package's port 80 binding on the same host, which nothing listens on any more.
 
 ## Installation and First-Run Flow
 
@@ -164,9 +165,9 @@ Selects which Lightning node BTCPay may use — LND, Core Lightning, Eclair, or 
 
 Turns Monero support on or off.
 
-- **What it changes:** `chains` in BTCPay's config, and through it the Monero dependency, the Monero wallet mount, and the block-notify task described under [Tasks](#tasks).
+- **What it changes:** `chains` in BTCPay's config, and through it the Monero dependency and the block-notify task described under [Tasks](#tasks).
 - **Cost:** seconds, then a restart.
-- **Repeat safety:** safe both ways; disabling removes the dependency and the mount.
+- **Repeat safety:** safe both ways; disabling removes the dependency.
 
 ### Enable Plugins
 
@@ -190,6 +191,7 @@ Sets a temporary password on the first server-admin account. Run it when locked 
 
 - **What it changes:** that account's password hash in the BTCPay database, written directly over Postgres.
 - **Availability:** only while the service is running, because it goes through the running database.
+- **Confirmation:** asks before running, since the account's current password stops working.
 - **Repeat safety:** safe to re-run; each run generates a fresh password.
 - **Outputs:** the new password, masked and copyable, shown once. Change it after logging in.
 - **Guards:** it refuses when no server admin exists, and refuses when more than one does — with more than one, the right recovery is for another admin to reset the account from inside BTCPay.

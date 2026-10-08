@@ -2,7 +2,6 @@ import { HealthCheckResult } from '@start9labs/start-sdk/lib/health/checkFns'
 import { manifest as bitcoinManifest } from 'bitcoin-core-startos/startos/manifest'
 import { manifest as clnManifest } from 'cln-startos/startos/manifest'
 import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
-import { manifest as monerodManifest } from 'monerod-startos/startos/manifest'
 import { readFile } from 'fs/promises'
 import { btcpayConfig } from './fileModels/btcpay.config'
 import {
@@ -124,16 +123,6 @@ export const main = sdk.setupMain(async ({ effects }) => {
       mountpoint: nbxMountpoint,
       readonly: false,
     })
-
-  if (getEnabledAltcoin('xmr', config.chains)) {
-    mounts = mounts.mountDependency<typeof monerodManifest>({
-      dependencyId: 'monerod',
-      volumeId: 'main',
-      subpath: null,
-      mountpoint: '/mnt/monero',
-      readonly: false,
-    })
-  }
 
   if (isLnd(config.btclightning)) {
     mounts = mounts.mountDependency<typeof lndManifest>({
@@ -419,14 +408,22 @@ const nbxHealthCheck = (res: NbxStatusRes): HealthCheckResult => {
     const percentage = (bitcoinStatus.verificationProgress * 100).toFixed(2)
     return {
       result: 'loading',
-      message: `The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%`,
+      message: i18n(
+        'The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%',
+        { percentage },
+      ),
     }
   } else if (!isFullySynched && bitcoinStatus && bitcoinStatus.isSynched) {
     const progress =
       chainHeight > 0 ? ((syncHeight / chainHeight) * 100).toFixed(2) : '0.00'
     return {
       result: 'loading',
-      message: `The UTXO tracker is syncing. Sync progress: ${progress}%`,
+      message: i18n(
+        'The UTXO tracker is syncing. Sync progress: ${progress}%',
+        {
+          progress,
+        },
+      ),
     }
   } else {
     return {
