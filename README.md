@@ -203,12 +203,12 @@ The package raises no task on itself. It raises them on _other_ services, which 
 | Task                          | Raised on      | Severity    | Raised when                                                                   | Cleared when                                         |
 | ----------------------------- | -------------- | ----------- | ----------------------------------------------------------------------------- | ---------------------------------------------------- |
 | Auto-Configure (block notify) | Monero         | `important` | Monero is enabled here and its `block-notify` is not the command BTCPay needs | Monero's config matches; it returns if changed again |
-| Revoke Macaroons              | LND            | `critical`  | Upgrading to `2.4.2:1` with LND selected and installed                        | LND's action runs                                    |
-| Revoke Runes                  | Core Lightning | `critical`  | Upgrading to `2.4.2:1` with Core Lightning selected and installed             | Core Lightning's action runs                         |
+| Revoke Macaroons              | LND            | `critical`  | Upgrading to `2.4.2:1` with LND selected                                      | LND's action runs                                    |
+| Revoke Runes                  | Core Lightning | `critical`  | Upgrading to `2.4.2:1` with Core Lightning selected                           | Core Lightning's action runs                         |
 
 The Monero task is a standing condition rather than a one-off: it re-raises whenever Monero's block-notify setting stops matching, because without that callback BTCPay is not told about new blocks.
 
-The two credential-rotation tasks were raised once, by the upgrade that shipped a security fix, on the reasoning that this server could read those credentials and so they should be rotated. They are `critical` on the _Lightning node_, not on BTCPay, and only for a node that is actually installed — a critical task can only be cleared by the service that owns it, so raising one against an absent package would leave it permanently unclearable.
+The two credential-rotation tasks were raised once, by the upgrade that shipped a security fix, on the reasoning that this server could read those credentials and so they should be rotated. They are `critical`, so BTCPay will not start until the node's action has run — including when the selected node is not installed yet, as after restoring BTCPay before it.
 
 ## Health Checks
 

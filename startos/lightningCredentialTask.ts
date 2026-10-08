@@ -21,12 +21,7 @@ import { isCln, isLnd } from './utils'
 export async function raiseLightningCredentialTask(effects: T.Effects) {
   const backend = await btcpayConfig.read((s) => s.btclightning).once()
 
-  // A critical task stops this service until the target action is run, and
-  // only the target service running it clears the task — so raising one for
-  // a package that is not installed would leave BTCPay Server unstartable.
-  const installed = await sdk.getInstalledPackages(effects)
-
-  if (isLnd(backend) && installed.includes(lndManifest.id))
+  if (isLnd(backend))
     await sdk.action.createTask(
       effects,
       lndManifest.id,
@@ -39,7 +34,7 @@ export async function raiseLightningCredentialTask(effects: T.Effects) {
       },
     )
 
-  if (isCln(backend) && installed.includes(clnManifest.id))
+  if (isCln(backend))
     await sdk.action.createTask(
       effects,
       clnManifest.id,
