@@ -46,10 +46,18 @@ export const privateDestinations = sdk.Action.withInput(
         ? !host.includes('%') && isIP(host.slice(1, -1)) === 6
         : isIP(host) !== 0 ||
           (host.length <= 253 &&
-            /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.?$/i.test(host))
-      if (!match || !validHost || (port !== null && (port < 1 || port > 65535))) {
+            /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.?$/i.test(
+              host,
+            ))
+      if (
+        !match ||
+        !validHost ||
+        (port !== null && (port < 1 || port > 65535))
+      ) {
         throw new Error(
-          i18n('Use exact hostnames or IP addresses with an optional port from 1 to 65535. Bracket IPv6 addresses; URLs and network ranges are not accepted.'),
+          i18n(
+            'Use exact hostnames or IP addresses with an optional port from 1 to 65535. Bracket IPv6 addresses; URLs and network ranges are not accepted.',
+          ),
         )
       }
     }
