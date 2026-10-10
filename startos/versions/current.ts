@@ -1,51 +1,61 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
-import { sdk } from '../sdk'
-import { mainHostId } from '../utils'
 
 export const current = VersionInfo.of({
-  version: '2.4.4:3',
+  version: '2.4.5:0',
   releaseNotes: {
-    en_US: `- Reset Server Admin Password's confirmation says that the current password stops working.
-- The descriptions in Choose Lightning Node, Enable Altcoins, Enable Plugins and Resync NBXplorer explain each choice.
-- Spanish, German, Polish and French text shows its accented letters.
-- UTXO Tracker Sync's progress messages are translated.
-- The task raised on LND names its Revoke Macaroons action.
-- A network port left reserved by the StartOS 0.3.5 version of this package is freed.
-- Bitcoin must be at least 28.4:29, 29.4:16, 30.3:16 or 31.1:16, depending on its major version. Bitcoin Knots (pre-RDTS) 29.3:29 or later also works.`,
-    es_ES: `- La confirmación de Restablecer contraseña de administrador del servidor indica que la contraseña actual deja de funcionar.
-- Las descripciones de Elegir nodo Lightning, Habilitar altcoins, Habilitar plugins y Resincronizar NBXplorer explican cada opción.
-- Los textos en español, alemán, polaco y francés muestran sus letras acentuadas.
-- Los mensajes de progreso de Sincronización del rastreador UTXO están traducidos.
-- La tarea creada en LND nombra su acción Revocar macaroons.
-- Se libera un puerto de red que la versión de este paquete para StartOS 0.3.5 dejó reservado.
-- Bitcoin debe ser al menos la versión 28.4:29, 29.4:16, 30.3:16 o 31.1:16, según su versión principal. También funciona Bitcoin Knots (pre-RDTS) 29.3:29 o posterior.`,
-    de_DE: `- Die Bestätigung von „Server-Admin-Passwort zurücksetzen“ weist darauf hin, dass das aktuelle Passwort danach nicht mehr funktioniert.
-- Die Beschreibungen in „Lightning-Knoten wählen“, „Altcoins aktivieren“, „Plugins aktivieren“ und „NBXplorer neu synchronisieren“ erklären jede Wahl.
-- Spanische, deutsche, polnische und französische Texte zeigen ihre Umlaute und Akzente.
-- Die Fortschrittsmeldungen von „UTXO-Tracker-Synchronisation“ sind übersetzt.
-- Die in LND erzeugte Aufgabe nennt dessen Aktion „Macaroons widerrufen“.
-- Ein Netzwerkport, den die StartOS-0.3.5-Version dieses Pakets belegt gelassen hatte, wird freigegeben.
-- Bitcoin muss je nach Hauptversion mindestens 28.4:29, 29.4:16, 30.3:16 oder 31.1:16 sein. Bitcoin Knots (pre-RDTS) ab 29.3:29 funktioniert ebenfalls.`,
-    pl_PL: `- Potwierdzenie akcji „Zresetuj hasło administratora serwera” informuje, że obecne hasło przestaje działać.
-- Opisy w akcjach „Wybierz węzeł Lightning”, „Włącz altcoiny”, „Włącz wtyczki” i „Ponowna synchronizacja NBXplorer” wyjaśniają każdy wybór.
-- Teksty po hiszpańsku, niemiecku, polsku i francusku wyświetlają litery ze znakami diakrytycznymi.
-- Komunikaty postępu „Synchronizacja śledzenia UTXO” są przetłumaczone.
-- Zadanie tworzone w LND wskazuje jego akcję „Unieważnij macaroons”.
-- Zwolniono port sieciowy, który wersja tego pakietu dla StartOS 0.3.5 pozostawiła zajęty.
-- Bitcoin musi być co najmniej w wersji 28.4:29, 29.4:16, 30.3:16 lub 31.1:16, zależnie od wersji głównej. Działa też Bitcoin Knots (pre-RDTS) 29.3:29 lub nowszy.`,
-    fr_FR: `- La confirmation de « Réinitialiser le mot de passe de l'administrateur du serveur » indique que le mot de passe actuel cesse de fonctionner.
-- Les descriptions de « Choisir le nœud Lightning », « Activer les altcoins », « Activer les plugins » et « Resynchroniser NBXplorer » expliquent chaque choix.
-- Les textes en espagnol, allemand, polonais et français affichent leurs lettres accentuées.
-- Les messages de progression de « Synchronisation du suivi UTXO » sont traduits.
-- La tâche créée dans LND nomme son action « Révoquer les macaroons ».
-- Un port réseau laissé réservé par la version de ce paquet pour StartOS 0.3.5 est libéré.
-- Bitcoin doit être au moins en version 28.4:29, 29.4:16, 30.3:16 ou 31.1:16, selon sa version majeure. Bitcoin Knots (pre-RDTS) 29.3:29 ou plus récent fonctionne aussi.`,
+    en_US: `Updated BTCPay Server to 2.4.5.
+
+- Security: outbound HTTP requests to private networks are blocked by default. Use Configure Private Destinations for trusted private webhooks, LNURL services or custom Lightning connections. Nodes selected with Choose Lightning Node need no exception.
+- Refund auto-approval and invoice status changes require the appropriate permissions. Public invoice pages expire one month after monitoring ends; authorized users retain access.
+- Faster invoice creation, Greenfield report APIs, and fixes for store-scoped searches, refunds and RBF payouts.
+- Web Interface readiness now requires a valid health response instead of accepting HTTP errors.
+- The UTXO tracker now enforces mainnet with the supported configuration setting.
+- Updated the StartOS SDK to 3.0.4.
+
+[Full upstream release notes](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.5)`,
+    es_ES: `BTCPay Server actualizado a 2.4.5.
+
+- Seguridad: las solicitudes HTTP salientes a redes privadas se bloquean de forma predeterminada. Use Configurar destinos privados para webhooks privados, servicios LNURL o conexiones Lightning personalizadas de confianza. Los nodos elegidos con Elegir nodo Lightning no necesitan una excepción.
+- La aprobación automática de reembolsos y los cambios de estado de facturas requieren los permisos adecuados. Las páginas públicas de facturas caducan un mes después de terminar la supervisión; los usuarios autorizados conservan el acceso.
+- Creación de facturas más rápida, API de informes Greenfield y correcciones de búsquedas limitadas a la tienda, reembolsos y pagos RBF.
+- La comprobación de la interfaz web ahora requiere una respuesta de estado válida en lugar de aceptar errores HTTP.
+- El rastreador UTXO ahora exige mainnet mediante la opción de configuración admitida.
+- SDK de StartOS actualizado a 3.0.4.
+
+[Notas completas de la versión original](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.5)`,
+    de_DE: `BTCPay Server auf 2.4.5 aktualisiert.
+
+- Sicherheit: Ausgehende HTTP-Anfragen an private Netzwerke werden standardmäßig blockiert. „Private Ziele konfigurieren“ erlaubt vertrauenswürdige private Webhooks, LNURL-Dienste oder benutzerdefinierte Lightning-Verbindungen. Mit „Lightning-Knoten wählen“ ausgewählte Knoten benötigen keine Ausnahme.
+- Automatische Rückerstattungsfreigaben und Änderungen des Rechnungsstatus erfordern passende Berechtigungen. Öffentliche Rechnungsseiten laufen einen Monat nach Ende der Überwachung ab; berechtigte Benutzer behalten Zugriff.
+- Schnellere Rechnungserstellung, Greenfield-Berichts-APIs sowie Korrekturen für storebezogene Suchen, Rückerstattungen und RBF-Auszahlungen.
+- Die Bereitschaftsprüfung der Weboberfläche verlangt eine gültige Statusantwort, statt HTTP-Fehler zu akzeptieren.
+- Der UTXO-Tracker erzwingt Mainnet jetzt mit der unterstützten Konfigurationseinstellung.
+- StartOS-SDK auf 3.0.4 aktualisiert.
+
+[Vollständige Upstream-Versionshinweise](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.5)`,
+    pl_PL: `Zaktualizowano BTCPay Server do 2.4.5.
+
+- Bezpieczeństwo: wychodzące żądania HTTP do sieci prywatnych są domyślnie blokowane. Użyj „Konfiguruj prywatne adresy docelowe” dla zaufanych prywatnych webhooków, usług LNURL lub niestandardowych połączeń Lightning. Węzły wybrane przez „Wybierz węzeł Lightning” nie wymagają wyjątku.
+- Automatyczne zatwierdzanie zwrotów i zmiany statusu faktur wymagają odpowiednich uprawnień. Publiczne strony faktur wygasają miesiąc po zakończeniu monitorowania; uprawnieni użytkownicy zachowują dostęp.
+- Szybsze tworzenie faktur, API raportów Greenfield oraz poprawki wyszukiwania w obrębie sklepu, zwrotów i wypłat RBF.
+- Sprawdzanie gotowości interfejsu webowego wymaga teraz prawidłowej odpowiedzi stanu zamiast akceptowania błędów HTTP.
+- Śledzenie UTXO wymusza teraz mainnet za pomocą obsługiwanego ustawienia konfiguracji.
+- Zaktualizowano SDK StartOS do 3.0.4.
+
+[Pełne informacje o wydaniu projektu źródłowego](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.5)`,
+    fr_FR: `BTCPay Server mis à jour vers 2.4.5.
+
+- Sécurité : les requêtes HTTP sortantes vers les réseaux privés sont bloquées par défaut. Utilisez « Configurer les destinations privées » pour les webhooks privés, services LNURL ou connexions Lightning personnalisées de confiance. Les nœuds sélectionnés avec « Choisir le nœud Lightning » ne nécessitent aucune exception.
+- L’approbation automatique des remboursements et les changements d’état des factures exigent les permissions appropriées. Les pages publiques des factures expirent un mois après la fin du suivi ; les utilisateurs autorisés conservent leur accès.
+- Création de factures plus rapide, API de rapports Greenfield et corrections des recherches limitées à la boutique, des remboursements et des paiements RBF.
+- Le contrôle de disponibilité de l’interface web exige désormais une réponse d’état valide au lieu d’accepter les erreurs HTTP.
+- Le suivi UTXO impose désormais le réseau principal avec le paramètre de configuration pris en charge.
+- SDK StartOS mis à jour vers 3.0.4.
+
+[Notes de version complètes du projet amont](https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.5)`,
   },
   migrations: {
-    // The 0.3.x package's LAN binding on 80; the Web UI is on 23000.
-    up: async ({ effects }) => {
-      await sdk.MultiHost.of(effects, mainHostId).retirePort(80)
-    },
+    up: async () => {},
     down: IMPOSSIBLE,
   },
 })

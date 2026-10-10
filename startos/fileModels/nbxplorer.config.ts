@@ -6,7 +6,8 @@ const shape = z.looseObject({
   // Enforced
   port: z.literal(`${nbxPort}`).catch(`${nbxPort}`),
   bind: z.literal('127.0.0.1').catch('127.0.0.1'),
-  mainnet: z.literal('1').catch('1'),
+  network: z.literal('mainnet').catch('mainnet'),
+  mainnet: z.undefined().optional().catch(undefined),
   'btc.rpc.url': z.string().optional().catch(undefined),
   'btc.rpc.user': z.undefined().optional().catch(undefined),
   'btc.rpc.password': z.undefined().optional().catch(undefined),

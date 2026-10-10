@@ -94,11 +94,11 @@ Two of those keep BTCPay from advertising updates it cannot perform here, since 
 
 **Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and the `server=` half of `btclightning` when the backend is LND, or the whole of it when the backend is Eclair. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
 
-**Yours, through an action:** `btclightning` selects the Lightning backend, and `chains` enables Monero. `XMR_daemon_username` and `XMR_daemon_password` default to empty and are not exposed.
+**Yours, through an action:** `btclightning` selects the Lightning backend, `chains` enables Monero, and `ssrfexceptions` stores trusted private destinations. `ssrfexceptions` defaults to empty and survives restarts and backups; it is not generated from dependency addresses. The configured internal Lightning node uses upstream's trusted client and needs no exception. `XMR_daemon_username` and `XMR_daemon_password` default to empty and are not exposed.
 
 ### nbxplorer settings.config
 
-**Enforced:** `port`, `bind` (loopback), `mainnet`, `btc.rpc.cookiefile`, and `postgres`. `btc.rpc.user` and `btc.rpc.password` are modelled as "must be absent" — NBXplorer authenticates to Bitcoin with the cookie it reads through the mount, never with a stored password.
+**Enforced:** `port`, `bind` (loopback), `network=mainnet`, `btc.rpc.cookiefile`, and `postgres`. The obsolete `mainnet` key is removed when the file is written. `btc.rpc.user` and `btc.rpc.password` are modelled as "must be absent" — NBXplorer authenticates to Bitcoin with the cookie it reads through the mount, never with a stored password.
 
 **Written on every start:** `btc.rpc.url` and `btc.node.endpoint`, both resolved from Bitcoin's own bindings.
 
@@ -149,7 +149,7 @@ An install carried over from the older single-`main` layout has its data moved o
 
 ## Actions
 
-Five actions, all user-facing.
+Six actions, all user-facing.
 
 ### Choose Lightning Node
 
@@ -176,6 +176,15 @@ Turns the Shopify integration on or off.
 - **What it changes:** `plugins.shopify` in `store.json`, which decides whether the Shopify sidecar runs at all.
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** safe both ways.
+
+### Configure Private Destinations
+
+Run when a private webhook, LNURL endpoint or custom Lightning connection is rejected by outbound-request protection.
+
+- **What it changes:** `ssrfexceptions` in BTCPay's config; it replaces the complete allowlist without disabling SSRF protection.
+- **Cost:** seconds, followed by a BTCPay restart.
+- **Repeat safety:** safe to repeat; clearing the field revokes all configured exceptions. Trust applies to the whole destination, not a URL path.
+- **Scope:** the action accepts exact ASCII hostnames and IP addresses, optionally port-restricted, not CIDR ranges. An allowed hostname trusts every address it resolves to. It grants no access through StartOS's network controls.
 
 ### Resync NBXplorer
 
@@ -226,7 +235,7 @@ Four checks at most, and the two that matter to a user are both about sync.
 
 **`postgres` has `display: null`** — it exists so that a failed database restarts the service, not to be read. A service restarting with no failing check on screen is usually this one; the service logs name it.
 
-**`btcpay` failing** after a long grace period means the server did not come up. Because it starts only after Postgres and NBXplorer are ready, that points at BTCPay itself rather than at its sidecars.
+**`btcpay` failing** after a long grace period means its health endpoint is unreachable, returns an HTTP error, or does not return the expected JSON boolean `synchronized`. The request times out after five seconds and rejects redirects. A valid response with `synchronized: false` still establishes readiness; `utxo-sync` reports chain progress separately. Because BTCPay starts only after Postgres and NBXplorer are ready, a failing readiness check points at BTCPay itself rather than at its sidecars.
 
 ## Backups and Restore
 
@@ -247,6 +256,7 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 5. **The Shopify integration runs as a separate sidecar** and only when explicitly enabled.
 6. **A `superseded-*` directory is never reaped.** Nothing removes it and it is copied into every backup; deleting it is the operator's call, once they have confirmed the data it displaced is back.
 7. **No riscv64 build.** x86_64 and aarch64 only.
+8. **Monero setup is incomplete.** The application image does not include the upstream Monero plugin or run a wallet-RPC daemon at the configured loopback address. Enable Altcoins wires Monerod and its callback but does not provision those remaining components.
 
 ---
 
@@ -290,6 +300,7 @@ actions:
   - lightning-node
   - enable-altcoins
   - enable-plugins
+  - configure-private-destinations
   - resync-nbx
   - reset-admin-password # only-running
 tasks: # all raised on other services, not on this one
