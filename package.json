@@ -1,8 +1,5 @@
 {
   "name": "btcpayserver-startos",
-  "scripts": {
-    "check": "tsc --noEmit"
-  },
   "dependencies": {
     "@start9labs/start-sdk": "3.0.4",
     "bitcoin-core-startos": "github:Start9Labs/bitcoin-core-startos#next/28.x",
