@@ -32,6 +32,7 @@ const shape = z.looseObject({
 
   // Configuration
   socksendpoint: z.string().optional().catch(undefined),
+  ssrfexceptions: z.string().catch(''),
   XMR_daemon_username: z.string().catch(''),
   XMR_daemon_password: z.string().catch(''),
   chains: z.enum(['btc', 'btc,xmr']).catch('btc'),

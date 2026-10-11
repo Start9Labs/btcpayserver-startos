@@ -1,16 +1,24 @@
 # Updating the upstream version
 
-The package pulls **four** upstream images, each pinned as a `dockerTag` under `images` in `startos/manifest/index.ts`. They version independently and can be bumped on their own.
+The wrapped application is **BTCPay Server**. Its complete release version supplies the upstream part of the StartOS version. The package pulls four images, each pinned as a `dockerTag` under `images` in `startos/manifest/index.ts`; NBXplorer, Postgres and the Shopify deployer are supporting components, not independent upstream-release triggers.
 
 ## Determining the upstream version
 
 - **BTCPay Server** ([btcpayserver/btcpayserver](https://github.com/btcpayserver/btcpayserver)) — uses GitHub Releases. Strip the leading `v` for the `dockerTag`.
 
   ```sh
-  gh release view -R btcpayserver/btcpayserver --json tagName -q .tagName
+  gh api repos/btcpayserver/btcpayserver/tags --paginate --jq '.[].name'
+  gh api repos/btcpayserver/btcpayserver/releases --paginate --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name'
   ```
 
-  Pin lives in `startos/manifest/index.ts` → `images.btcpay.source.dockerTag` (`btcpayserver/btcpayserver:<version>`).
+  Compare the complete stable application version against `images.btcpay.source.dockerTag` (`btcpayserver/btcpayserver:<version>`), not the wrapper revision. Confirm the exact Docker Hub tag is published for amd64 and arm64 before targeting it:
+
+  ```sh
+  curl -fsSL "https://hub.docker.com/v2/repositories/btcpayserver/btcpayserver/tags/<version>" \
+    | jq '{name, tag_status, images: [.images[] | {architecture, os, status}]}'
+  ```
+
+  Read the release's impact before assigning the scrutiny tier: even a final-component bump can introduce breaking changes.
 
 - **NBXplorer** ([btcpayserver/NBXplorer](https://github.com/btcpayserver/NBXplorer)) — tagged on GitHub but no Releases are published. Strip the leading `v` for the `dockerTag`. The Docker image is published as `nicolasdorier/nbxplorer`. (The older `dgarage/NBXplorer` URL still works but 301-redirects to `btcpayserver/NBXplorer`, which is the canonical home today.)
 
@@ -39,7 +47,9 @@ The package pulls **four** upstream images, each pinned as a `dockerTag` under `
 
 ## Applying the bump
 
-For each upstream, edit the matching `dockerTag` in `startos/manifest/index.ts` to the new tag:
+Edit `images.btcpay.source.dockerTag` in `startos/manifest/index.ts` to the eligible BTCPay Server tag. Use the full version in `startos/versions/current.ts` with downstream revision `:0`.
+
+Supporting image pins, when a BTCPay release or approved wrapper change requires them:
 
 - BTCPay Server → `images.btcpay.source.dockerTag`
 - NBXplorer → `images.nbx.source.dockerTag`

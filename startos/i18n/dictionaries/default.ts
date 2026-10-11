@@ -64,6 +64,11 @@ const dict = {
   Eclair: 43,
   'The Bitcoin node is syncing. This must complete before the UTXO tracker can sync. Sync progress: ${percentage}%': 44,
   'The UTXO tracker is syncing. Sync progress: ${progress}%': 45,
+  'Configure Private Destinations': 46,
+  'Allow outbound HTTP requests to trusted private services without disabling SSRF protection.': 47,
+  'Allowed Destinations': 48,
+  'Comma-separated exact hostnames or IP addresses, optionally followed by a port. Use brackets for IPv6. Example: nas.home.arpa:8080,[fd00::1]:443. No URLs, wildcards or network ranges. A hostname trusts all its resolved addresses; omitting the port allows every port. Leave empty to block private destinations. Changes restart BTCPay Server.': 49,
+  'Use exact hostnames or IP addresses with an optional port from 1 to 65535. Bracket IPv6 addresses; URLs and network ranges are not accepted.': 50,
 } as const
 
 export type I18nKey = keyof typeof dict

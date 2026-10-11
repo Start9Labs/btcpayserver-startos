@@ -4,6 +4,7 @@ import { lightningNode } from './lightningNode'
 import { resetAdminPassword } from './resetAdminPassword'
 import { enableAltcoins } from './altcoins'
 import { enablePlugins } from './plugins'
+import { privateDestinations } from './privateDestinations'
 
 export const actions = sdk.Actions.of()
   .addAction(resyncNbx)
@@ -11,3 +12,4 @@ export const actions = sdk.Actions.of()
   .addAction(resetAdminPassword)
   .addAction(enableAltcoins)
   .addAction(enablePlugins)
+  .addAction(privateDestinations)

@@ -344,15 +344,27 @@ export const main = sdk.setupMain(async ({ effects }) => {
       ready: {
         display: i18n('Web Interface'),
         gracePeriod: 60_000,
-        fn: () =>
-          sdk.healthCheck.checkWebUrl(
-            effects,
-            `http://127.0.0.1:${uiPort}/api/v1/health`,
-            {
-              successMessage: i18n('The web interface is reachable'),
-              errorMessage: i18n('The web interface is unreachable'),
-            },
-          ),
+        fn: async () => {
+          try {
+            const response = await fetch(
+              `http://127.0.0.1:${uiPort}/api/v1/health`,
+              { signal: AbortSignal.timeout(5_000), redirect: 'error' },
+            )
+            if (response.status === 200) {
+              const health = await response.json()
+              if (typeof health?.synchronized === 'boolean') {
+                return {
+                  result: 'success',
+                  message: i18n('The web interface is reachable'),
+                }
+              }
+            }
+          } catch {}
+          return {
+            result: 'failure',
+            message: i18n('The web interface is unreachable'),
+          }
+        },
       },
       requires: ['nbxplorer', 'postgres'],
     })

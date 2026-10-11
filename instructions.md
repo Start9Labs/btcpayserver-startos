@@ -18,7 +18,7 @@
 2. Start BTCPay Server. NBXplorer will then sync the UTXO set from Bitcoin; the **UTXO Tracker Sync** health check shows progress, and the Web UI will not be fully usable until it reads "Synced".
 3. Open the **Web UI** interface and create your first server admin account. The first account registered through the UI becomes the server administrator.
 4. (Optional) Run **Choose Lightning Node** to wire BTCPay to an internal Lightning node — pick **LND**, **Core Lightning**, **Eclair**, or **None/External**. The matching service must be installed and becomes a hard dependency once selected. With Eclair, run its **Set API Password** action first — BTCPay authenticates with that password. After your first selection, open BTCPay's **Lightning** settings in the Web UI, choose **Internal Node**, and save — BTCPay requires this one-time confirmation before it will use the wired node for invoices.
-5. (Optional) Run **Enable Altcoins** to turn on Monero. Monerod becomes a required dependency, and Monero gets a task that sets the `block-notify` command BTCPay needs; run it.
+5. Monero setup is incomplete: **Enable Altcoins** connects Monerod, but the upstream Monero plugin and a wallet-RPC service are not provisioned. Do not rely on this action alone to accept Monero payments.
 6. (Optional) Run **Enable Plugins** to turn on the **Shopify** integration if you want to connect a Shopify store.
 
 ## Using BTCPay Server
@@ -39,6 +39,7 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 - **Choose Lightning Node** — pick LND, Core Lightning, Eclair, or None/External. The selected service becomes a required dependency. After the first selection you must also confirm **Internal Node** under BTCPay's own **Lightning** settings.
 - **Enable Altcoins** — toggle Monero on or off. Turning Monero on makes Monerod a required dependency.
 - **Enable Plugins** — toggle the bundled Shopify integration on or off.
+- **Configure Private Destinations** — allow requests to a trusted private webhook, LNURL service or custom Lightning node. Enter exact hostnames or IP addresses separated by commas, optionally with ports: `nas.home.arpa:8080,[fd00::1]:443`. Do not enter URLs, wildcards or network ranges. A hostname trusts all addresses it resolves to; specify a port to limit access. Leave empty to remove every exception. Saving restarts BTCPay. Nodes chosen with **Choose Lightning Node** need no exception.
 - **Resync NBXplorer** — re-scan the UTXO set from a chosen block height. Provide the height as an integer; BTCPay restarts and NBXplorer rescans from there.
 - **Reset Server Admin Password** — generate a new random password for the server admin account. Only works when exactly one server admin user exists; copy the password from the result screen before dismissing, it is not retrievable afterwards.
 
@@ -46,22 +47,9 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 
 StartOS backups include the BTCPay app data, the PostgreSQL `btcpayserver` database (users, stores, invoices), and the package configuration. The NBXplorer index is **not** backed up — on restore, NBXplorer resyncs from Bitcoin, which can take time before the Web UI becomes fully usable again.
 
-### Rotating Lightning credentials after the 2.4.2 update
-
-The vulnerability patched in BTCPay Server 2.4.2 was being actively exploited upstream. On any server that ran an earlier version, treat everything BTCPay could reach as exposed — **updating does not by itself undo access an attacker already took.**
-
-If BTCPay is wired to a Lightning node, updating to 2.4.2:1 raises a **critical task** and stops BTCPay until you clear it. Running the action clears the task and BTCPay starts normally again.
-
-- **LND** — run LND's **Revoke Macaroons**. BTCPay reads LND's admin macaroon, which grants full control of the node. This needs LND `0.21.1-beta:11` or later, which BTCPay now requires: earlier releases called the action **Recreate Macaroons** and deleted the macaroon files while leaving the root key that signs them in place, so LND regenerated them from the same key and any copied macaroon kept working. BTCPay picks up the new macaroon from the same path automatically; other services connected to LND may need restarting.
-- **Core Lightning** — run Core Lightning's **Revoke All Runes** (added in `26.6.6:9`). BTCPay reaches CLN over its admin RPC socket, which is unrestricted, so a compromised server could have issued itself a rune that outlives the patch. CLN restarts afterwards to issue its web UI a fresh rune; re-issue any other integration's rune with **Create Rune**.
-
-Two things the update cannot do for you:
-
-- **If you have ever pointed BTCPay at a Lightning node** — even if you have since switched away — rotate that node's credentials anyway. The task is only raised for the node BTCPay is wired to right now.
-- **If you generated a hot on-chain wallet inside BTCPay, move those funds** to a wallet whose keys BTCPay has never held. A hot wallet's keys cannot be rotated.
-
 ## Limitations
 
 - **Mainnet only.** Testnet and signet are not exposed by this package.
+- **Monero setup is incomplete.** Enabling it does not install the Monero plugin or start its required wallet-RPC service.
 - **One internal Lightning node at a time.** You can wire BTCPay to LND, Core Lightning _or_ Eclair, not several simultaneously.
 - **Reset Server Admin Password requires exactly one server admin.** If multiple admin accounts exist, use another admin account to reset the password through the Web UI instead.
