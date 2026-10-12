@@ -37,6 +37,7 @@ export const resetAdminPassword = sdk.Action.withoutInput(
         value: password,
         copyable: true,
         qr: false,
+        launchable: false,
         masked: true,
       },
     }
