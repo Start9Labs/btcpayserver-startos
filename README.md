@@ -233,6 +233,8 @@ Four checks at most, and the two that matter to a user are both about sync.
 
 **`utxo-sync` is the one to read**, because it distinguishes the two things that can be behind. While Bitcoin is still syncing it reports Bitcoin's own progress and says so explicitly — nothing is wrong, and NBXplorer cannot get ahead of its node. Once Bitcoin is synced it reports NBXplorer's own scan progress instead. It fails only when it cannot reach the node at all.
 
+**`utxo-sync` also restarts NBXplorer's sync when it stalls.** If Bitcoin is synced but NBXplorer sits behind it without moving for 15 minutes, the check drops NBXplorer's P2P connection to Bitcoin, and NBXplorer reconnects and catches up. Each time, it logs `UTXO tracker stuck at block N while Bitcoin is synced; reconnecting it to Bitcoin`. NBXplorer can stall this way after Bitcoin catches up from an outage, and it never leaves that state on its own.
+
 **`postgres` has `display: null`** — it exists so that a failed database restarts the service, not to be read. A service restarting with no failing check on screen is usually this one; the service logs name it.
 
 **`btcpay` failing** after a long grace period means its health endpoint is unreachable, returns an HTTP error, or does not return the expected JSON boolean `synchronized`. The request times out after five seconds and rejects redirects. A valid response with `synchronized: false` still establishes readiness; `utxo-sync` reports chain progress separately. Because BTCPay starts only after Postgres and NBXplorer are ready, a failing readiness check points at BTCPay itself rather than at its sidecars.

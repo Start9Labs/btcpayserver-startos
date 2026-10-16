@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.5:1',
+  version: '2.4.5:2',
   releaseNotes: {
     en_US:
-      'Restarting BTCPay Server while it is still starting stops every process of the previous run.',
+      'BTCPay Server keeps tracking new blocks after Bitcoin catches up from an outage.',
     es_ES:
-      'Reiniciar BTCPay Server mientras aún se está iniciando detiene todos los procesos de la ejecución anterior.',
+      'BTCPay Server sigue registrando los nuevos bloques después de que Bitcoin se ponga al día tras un corte.',
     de_DE:
-      'Ein Neustart von BTCPay Server, während es noch startet, beendet alle Prozesse des vorherigen Laufs.',
+      'BTCPay Server verfolgt neue Blöcke weiter, nachdem Bitcoin nach einem Ausfall aufgeholt hat.',
     pl_PL:
-      'Ponowne uruchomienie BTCPay Server w trakcie uruchamiania zatrzymuje wszystkie procesy poprzedniego uruchomienia.',
+      'BTCPay Server nadal śledzi nowe bloki po tym, jak Bitcoin nadrobi zaległości po awarii.',
     fr_FR:
-      "Redémarrer BTCPay Server pendant son démarrage arrête tous les processus de l'exécution précédente.",
+      'BTCPay Server continue de suivre les nouveaux blocs une fois que Bitcoin a rattrapé son retard après une coupure.',
   },
   migrations: {
     up: async () => {},

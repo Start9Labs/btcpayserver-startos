@@ -1,4 +1,5 @@
 import { T } from '@start9labs/start-sdk'
+import { readFile } from 'fs/promises'
 import {
   peerLocalHostId as btcPeerLocalHostId,
   peerPortLocal as btcPeerPortLocal,
@@ -185,5 +186,60 @@ export const monerodRpcBridge = (effects: T.Effects) => {
       const h = await addr.const()
       return h && `http://${h}`
     },
+  }
+}
+
+// Outlasts NBXplorer's own stall watchdog (7–12 min), which never runs in CoreSynching.
+const nbxStallMs = 15 * 60_000
+
+const disconnectNbx = async (rpcUrl: string, cookiePath: string) => {
+  const auth = Buffer.from(
+    (await readFile(cookiePath, 'utf8')).trim(),
+  ).toString('base64')
+  const rpc = async (method: string, params: unknown[] = []) => {
+    const body = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { Authorization: `Basic ${auth}` },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 0, method, params }),
+      signal: AbortSignal.timeout(10_000),
+    }).then((res) => res.json())
+    if (body.error) throw new Error(`${method}: ${body.error.message}`)
+    return body.result
+  }
+  const peers: { id: number; subver: string }[] = await rpc('getpeerinfo')
+  for (const { id } of peers.filter((p) => p.subver.startsWith('NBXplorer-')))
+    await rpc('disconnectnode', ['', id])
+}
+
+/** NBXplorer ignores block `inv`s, so a catch-up bitcoind announces that way strands it in CoreSynching; a dropped P2P link restarts its sync. */
+export const nbxStallWatchdog = (rpcUrl: string | null) => {
+  let progress = { height: NaN, at: Date.now() }
+  let reconnectedAt = 0
+  return async (
+    status: {
+      isFullySynched: boolean
+      syncHeight: number
+      bitcoinStatus?: { isSynched: boolean }
+    },
+    cookiePath: string,
+  ) => {
+    if (
+      !status.bitcoinStatus?.isSynched ||
+      status.isFullySynched ||
+      status.syncHeight !== progress.height
+    ) {
+      progress = { height: status.syncHeight, at: Date.now() }
+      return
+    }
+    if (
+      !rpcUrl ||
+      Date.now() - Math.max(progress.at, reconnectedAt) < nbxStallMs
+    )
+      return
+    reconnectedAt = Date.now()
+    console.warn(
+      `UTXO tracker stuck at block ${status.syncHeight} while Bitcoin is synced; reconnecting it to Bitcoin`,
+    )
+    await disconnectNbx(rpcUrl, cookiePath).catch(console.error)
   }
 }

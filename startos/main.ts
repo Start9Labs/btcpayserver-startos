@@ -14,6 +14,7 @@ import { sdk } from './sdk'
 import { eclairConf } from 'eclair-startos/startos/fileModels/eclair.conf'
 import { manifest as eclairManifest } from 'eclair-startos/startos/manifest'
 import {
+  bitcoindCookiePath,
   bitcoindMountpoint,
   bitcoindPeerBridge,
   bitcoindRpcBridge,
@@ -32,6 +33,7 @@ import {
   monerodRpcBridge,
   nbxMountpoint,
   nbxPort,
+  nbxStallWatchdog,
   PG_MOUNT,
   shopifyPort,
   torSocksBridge,
@@ -79,6 +81,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
     },
     { allowWriteAfterConst: true },
   )
+  const watchNbx = nbxStallWatchdog(btcRpc)
 
   // Tor SOCKS over the bridge. The allocator-guaranteed 9050 fallback keeps this
   // constant across tor install/update/uninstall, so it never restarts BTCPay; a
@@ -319,6 +322,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
               res = await fetchStatus()
             }
 
+            await watchNbx(res, `${nbxRootfs}${bitcoindCookiePath}`)
             return nbxHealthCheck(res)
           } catch (e) {
             return {
