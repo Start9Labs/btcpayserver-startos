@@ -245,7 +245,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
           ])
           if (result.exitCode !== 0) {
             return {
-              result: 'loading',
+              result: 'starting',
               message: null,
             }
           }
