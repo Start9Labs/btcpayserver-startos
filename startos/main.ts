@@ -228,6 +228,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         command: sdk.useEntrypoint(['-c', 'listen_addresses=127.0.0.1']),
         env: {
           POSTGRES_HOST_AUTH_METHOD: 'trust',
+          LC_ALL: 'en_US.utf8',
         },
       },
       ready: {
