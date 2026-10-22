@@ -35,7 +35,7 @@
 
 ## Image and Container Runtime
 
-Four upstream images, unmodified. Three run always; the fourth only when the Shopify plugin is switched on.
+Four upstream images. `btcpayserver` and `shopify-app-deployer` get their CA store upgraded by `Dockerfile` and `Dockerfile.shopify` (the latter also points Node at the system store), a temporary layer that comes out once upstream ships images built on a fixed store; the other two are unmodified. Three run always; the fourth only when the Shopify plugin is switched on.
 
 | Property      | Value                                                                                                                |
 | ------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -266,7 +266,7 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 
 ```yaml
 package_id: btcpayserver
-image: btcpayserver/btcpayserver # plus nbxplorer, postgres, shopify-app-deployer
+image: btcpayserver/btcpayserver + root Dockerfile (CA store upgrade) # plus nbxplorer, postgres, shopify-app-deployer (+ Dockerfile.shopify)
 architectures:
   - x86_64
   - aarch64
