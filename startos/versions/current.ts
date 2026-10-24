@@ -1,17 +1,14 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.5:3',
+  version: '2.4.5:4',
   releaseNotes: {
-    en_US:
-      'Stops trusting certificates from a compromised certificate authority (eMudhra).',
+    en_US: 'Includes the October 2026 Node.js security fixes.',
     es_ES:
-      'Deja de confiar en los certificados de una autoridad de certificación comprometida (eMudhra).',
-    de_DE:
-      'Vertraut Zertifikaten einer kompromittierten Zertifizierungsstelle (eMudhra) nicht mehr.',
-    pl_PL:
-      'Przestaje ufać certyfikatom przejętego urzędu certyfikacji (eMudhra).',
-    fr_FR: `Ne fait plus confiance aux certificats d'une autorité de certification compromise (eMudhra).`,
+      'Incluye las correcciones de seguridad de Node.js de octubre de 2026.',
+    de_DE: 'Enthält die Node.js-Sicherheitskorrekturen vom Oktober 2026.',
+    pl_PL: 'Zawiera poprawki bezpieczeństwa Node.js z października 2026.',
+    fr_FR: "Inclut les correctifs de sécurité Node.js d'octobre 2026.",
   },
   migrations: {
     up: async () => {},
