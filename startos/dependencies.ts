@@ -79,7 +79,7 @@ const monerod = sdk.Dependency.optional('monerod', {
     title: 'Monero',
     icon: 'https://raw.githubusercontent.com/kn0wmad/monerod-startos/refs/heads/master/icon.png',
   },
-  versionRange: '>=0.18.5.1:2',
+  versionRange: '>=0.18.5.4:2',
   kind: 'running',
   healthChecks: ['monerod'],
   enabled: async ({ effects }) => {
