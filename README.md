@@ -9,7 +9,7 @@
 > upstream documentation is accurate and fully applicable — see the
 > Documentation section of `instructions.md` for links.
 
-[BTCPay Server](https://github.com/btcpayserver/btcpayserver) is a self-hosted Bitcoin payment processor. This package bundles the pieces upstream's Docker deployment expects you to run yourself — PostgreSQL and the NBXplorer UTXO tracker — as private sidecars, and wires them, your Bitcoin node, and an optional Lightning or Monero node together without any addresses being typed in.
+[BTCPay Server](https://github.com/btcpayserver/btcpayserver) is a self-hosted Bitcoin payment processor. This package bundles the pieces upstream's Docker deployment expects you to run yourself — PostgreSQL, the NBXplorer UTXO tracker and, for Monero, a wallet RPC — as private sidecars, and wires them, your Bitcoin node, and an optional Lightning or Monero node together without any addresses being typed in.
 
 - **Upstream repo:** <https://github.com/btcpayserver/btcpayserver>
 - **Wrapper repo:** <https://github.com/Start9Labs/btcpayserver-startos>
@@ -35,35 +35,36 @@
 
 ## Image and Container Runtime
 
-Four unmodified upstream images. Three run always; the fourth only when the Shopify plugin is switched on.
+Five unmodified published images. Three run always; the Monero wallet RPC only while Monero is enabled, and the Shopify deployer only while that plugin is switched on.
 
-| Property      | Value                                                                                                                |
-| ------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Images        | `btcpayserver/btcpayserver`, `nicolasdorier/nbxplorer`, `btcpayserver/postgres`, `btcpayserver/shopify-app-deployer` |
-| Architectures | x86_64, aarch64                                                                                                      |
-| Entrypoint    | Each image's own                                                                                                     |
+| Property      | Value                                                                                                                                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Images        | `btcpayserver/btcpayserver`, `nicolasdorier/nbxplorer`, `btcpayserver/postgres`, `btcpayserver/shopify-app-deployer`, `ghcr.io/sethforprivacy/simple-monero-wallet-rpc` |
+| Architectures | x86_64, aarch64                                                                                                                                                         |
+| Entrypoint    | Each image's own, except `monero-wallet-rpc`, which runs `monero-wallet-rpc` directly                                                                                   |
 
-| Subcontainer | Purpose                                                                        |
-| ------------ | ------------------------------------------------------------------------------ |
-| `btcpay`     | The `btcpay` daemon — the server and its web UI, and the one to `attach` to    |
-| `nbx`        | NBXplorer, the UTXO tracker that watches the chain on BTCPay's behalf          |
-| `postgres`   | The private database, shared by BTCPay and NBXplorer as two separate databases |
-| `shopify`    | The Shopify app deployer; present only while that plugin is enabled            |
+| Subcontainer        | Purpose                                                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `btcpay`            | The `btcpay` daemon — the server and its web UI, and the one to `attach` to                                    |
+| `nbx`               | NBXplorer, the UTXO tracker that watches the chain on BTCPay's behalf                                          |
+| `postgres`          | The private database, shared by BTCPay and NBXplorer as two separate databases                                 |
+| `monero-wallet-rpc` | The wallet RPC that BTCPay's Monero plugin keeps its view-only wallet in; present only while Monero is enabled |
+| `shopify`           | The Shopify app deployer; present only while that plugin is enabled                                            |
 
-Startup is ordered: `postgres` first, then `nbxplorer`, then `btcpay`, and `shopify` after that. One oneshot, `reset-start-height`, runs once NBXplorer is up — see [Actions](#actions).
+Startup is ordered: `postgres` first, then `nbxplorer`, then `btcpay`, and `shopify` after that. While Monero is enabled, `monero-wallet-rpc` comes up before `btcpay`, and `btcpay` restarts whenever it does: BTCPay's Monero plugin opens its wallet only as BTCPay starts. One oneshot, `reset-start-height`, runs once NBXplorer is up — see [Actions](#actions). While Monero is enabled, a second, `chown-monero-wallets`, hands the wallet directory to the image's `monero` user, which the wallet RPC runs as.
 
-Postgres listens on loopback only and runs with trust authentication, which is safe because that loopback is inside this service's own network namespace: nothing outside the service can reach it, and the two databases are never exposed.
+Postgres listens on loopback only and runs with trust authentication, which is safe because that loopback is inside this service's own network namespace: nothing outside the service can reach it, and the two databases are never exposed. The Monero wallet RPC listens on `127.0.0.1:18082` without RPC authentication, on the same terms.
 
 ## Volume and Data Layout
 
 Four volumes, and one of them never enters a container. The same volume can appear at different paths in different subcontainers.
 
-| Volume         | Mounted at                                                                                    | Purpose                                                                                                                                                                                 |
-| -------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins` | BTCPay's data directory, its `settings.config`, and installed plugins                                                                                                                   |
-| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                       | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it                                                                            |
-| `db`           | `/var/lib/postgresql` in `postgres`                                                           | The PostgreSQL data directory                                                                                                                                                           |
-| `main`         | — (host side)                                                                                 | `store.json`, any `superseded-*` directory set aside by the legacy-layout move, and the old `btcpayserver/altcoins/monero` directory it leaves in place; never mounted into a container |
+| Volume         | Mounted at                                                                                                                                                                                                           | Purpose                                                                                                                                                                                 |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `btcpayserver` | `/datadir` in `btcpay`, with its `Plugins` subdirectory also at `/root/.btcpayserver/Plugins`, and its `btcpayserver/altcoins/monero/wallets` subdirectory at that same path under `/datadir` in `monero-wallet-rpc` | BTCPay's data directory, its `settings.config`, installed plugins, and the Monero wallet files                                                                                          |
+| `nbxplorer`    | `/datadir` in `nbx`, and `/root/.nbxplorer` in `btcpay`                                                                                                                                                              | NBXplorer's data directory, its `settings.config`, and its cookie — which BTCPay reads to authenticate to it                                                                            |
+| `db`           | `/var/lib/postgresql` in `postgres`                                                                                                                                                                                  | The PostgreSQL data directory                                                                                                                                                           |
+| `main`         | — (host side)                                                                                                                                                                                                        | `store.json`, any `superseded-*` directory set aside by the legacy-layout move, and the old `btcpayserver/altcoins/monero` directory it leaves in place; never mounted into a container |
 
 Dependency volumes are mounted in as needed:
 
@@ -128,7 +129,7 @@ Enabling Monero also raises a task on Monero itself — see [Tasks](#tasks).
 
 ## Network Access and Interfaces
 
-One interface. NBXplorer, Postgres, and the Shopify deployer are all internal and never published.
+One interface. NBXplorer, Postgres, the Monero wallet RPC, and the Shopify deployer are all internal and never published.
 
 | Interface | Id     | Type | Port  | Description                     |
 | --------- | ------ | ---- | ----- | ------------------------------- |
@@ -145,7 +146,7 @@ Two ordering points matter, and both come from dependencies rather than from set
 1. **Bitcoin must be installed and running**, and NBXplorer cannot report itself synced until Bitcoin is. On a fresh node that is the length of an initial block download, followed by NBXplorer's own scan — both are reported as progress rather than as failures. See [Health Checks](#health-checks).
 2. **Choosing a Lightning node is a two-step operation.** The [Choose Lightning Node](#actions) action grants BTCPay access to the node; BTCPay then has to be told to use it, inside its own Lightning settings.
 
-An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten. The Monero wallet directory of the old layout, `main/btcpayserver/altcoins/monero`, is owned outside the range the container can map, so the move can neither read nor delete it and leaves it where it is.
+An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten. The Monero wallet directory of the old layout, `main/btcpayserver/altcoins/monero`, is owned outside the range the container can map, so the move can neither read nor delete it and leaves it where it is; a Monero wallet from that layout is set up again in BTCPay.
 
 ## Actions
 
@@ -165,7 +166,7 @@ Selects which Lightning node BTCPay may use — LND, Core Lightning, Eclair, or 
 
 Turns Monero support on or off.
 
-- **What it changes:** `chains` in BTCPay's config, and through it the Monero dependency and the block-notify task described under [Tasks](#tasks).
+- **What it changes:** `chains` in BTCPay's config, and through it the Monero dependency, the `monero-wallet-rpc` daemon, and the block-notify task described under [Tasks](#tasks).
 - **Cost:** seconds, then a restart.
 - **Repeat safety:** safe both ways; disabling removes the dependency.
 
@@ -221,15 +222,16 @@ The two credential-rotation tasks were raised once, by the upgrade that shipped 
 
 ## Health Checks
 
-Four checks at most, and the two that matter to a user are both about sync.
+Five checks at most, and the two that matter to a user are both about sync.
 
-| Check       | Displayed           | Method                                                | Grace | Present                     |
-| ----------- | ------------------- | ----------------------------------------------------- | ----- | --------------------------- |
-| `btcpay`    | "Web Interface"     | HTTP `GET /api/v1/health`                             | 60s   | always                      |
-| `nbxplorer` | "UTXO Tracker"      | NBXplorer's port is listening                         | 30s   | always                      |
-| `utxo-sync` | "UTXO Tracker Sync" | NBXplorer's status API, authenticated with its cookie | —     | always                      |
-| `postgres`  | — internal          | `pg_isready`                                          | —     | always                      |
-| `shopify`   | "Shopify Plugin"    | The deployer's port is listening                      | —     | while the plugin is enabled |
+| Check               | Displayed           | Method                                                | Grace | Present                     |
+| ------------------- | ------------------- | ----------------------------------------------------- | ----- | --------------------------- |
+| `btcpay`            | "Web Interface"     | HTTP `GET /api/v1/health`                             | 60s   | always                      |
+| `nbxplorer`         | "UTXO Tracker"      | NBXplorer's port is listening                         | 30s   | always                      |
+| `utxo-sync`         | "UTXO Tracker Sync" | NBXplorer's status API, authenticated with its cookie | —     | always                      |
+| `postgres`          | — internal          | `pg_isready`                                          | —     | always                      |
+| `monero-wallet-rpc` | "Monero Wallet RPC" | The wallet RPC's port is listening                    | —     | while Monero is enabled     |
+| `shopify`           | "Shopify Plugin"    | The deployer's port is listening                      | —     | while the plugin is enabled |
 
 **`utxo-sync` is the one to read**, because it distinguishes the two things that can be behind. While Bitcoin is still syncing it reports Bitcoin's own progress and says so explicitly — nothing is wrong, and NBXplorer cannot get ahead of its node. Once Bitcoin is synced it reports NBXplorer's own scan progress instead. It fails only when it cannot reach the node at all.
 
@@ -237,14 +239,16 @@ Four checks at most, and the two that matter to a user are both about sync.
 
 **`postgres` has `display: null`** — it exists so that a failed database restarts the service, not to be read. A service restarting with no failing check on screen is usually this one; the service logs name it.
 
-**`btcpay` failing** after a long grace period means its health endpoint is unreachable, returns an HTTP error, or does not return the expected JSON boolean `synchronized`. The request times out after five seconds and rejects redirects. A valid response with `synchronized: false` still establishes readiness; `utxo-sync` reports chain progress separately. Because BTCPay starts only after Postgres and NBXplorer are ready, a failing readiness check points at BTCPay itself rather than at its sidecars.
+**`btcpay` failing** after a long grace period means its health endpoint is unreachable, returns an HTTP error, or does not return the expected JSON boolean `synchronized`. The request times out after five seconds and rejects redirects. A valid response with `synchronized: false` still establishes readiness; `utxo-sync` reports chain progress separately. Because BTCPay starts only after Postgres, NBXplorer and, while Monero is enabled, the wallet RPC are ready, a failing readiness check points at BTCPay itself rather than at its sidecars.
+
+**`monero-wallet-rpc` failing** keeps BTCPay stopped until it recovers. It passes whether or not Monero is reachable; the store's Monero settings page in BTCPay shows whether Monero is reachable and synced, and whether a wallet is loaded.
 
 ## Backups and Restore
 
 The strategy is mixed, and the distinction decides what a restore actually gives you.
 
 - **`db` is dumped, not copied.** `Backups.withPgDump` runs a logical dump of the **`btcpayserver` database only**. The volume's files are never captured, and the dump is replayed into a fresh database on restore — which is what lets a future Postgres image read it.
-- **`btcpayserver` and `main` are copied wholesale** — BTCPay's data directory, its `settings.config`, installed plugins, `store.json`, and any `superseded-*` directory.
+- **`btcpayserver` and `main` are copied wholesale** — BTCPay's data directory, its `settings.config`, installed plugins, the Monero view-only wallet, `store.json`, and any `superseded-*` directory.
 - **`nbxplorer` is not backed up at all**, and neither is the `nbxplorer` database inside Postgres. Both are derived from the chain.
 
 **So a restored instance has your stores, invoices, users, and settings, but no UTXO tracker state.** NBXplorer rebuilds it by scanning the chain, which takes time proportional to how much history your wallets have; [Resync NBXplorer](#actions) is there for when that scan needs to start further back than it did on its own. The Bitcoin node must be present and synced before any of it can begin.
@@ -258,7 +262,8 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 5. **The Shopify integration runs as a separate sidecar** and only when explicitly enabled.
 6. **A `superseded-*` directory is never reaped.** Nothing removes it and it is copied into every backup; deleting it is the operator's call, once they have confirmed the data it displaced is back.
 7. **No riscv64 build.** x86_64 and aarch64 only.
-8. **Monero setup is incomplete.** The application image does not include the upstream Monero plugin or run a wallet-RPC daemon at the configured loopback address. Enable Altcoins wires Monerod and its callback but does not provision those remaining components.
+8. **The Monero plugin is not bundled.** It is installed from BTCPay's Plugin Directory; Enable Altcoins sets up what surrounds it — the Monero dependency, its block-notify task, and the wallet RPC the plugin connects to.
+9. **Monero's RPC credentials must stay disabled.** BTCPay and its wallet RPC connect to Monero's restricted RPC without a username or password.
 
 ---
 
@@ -266,7 +271,7 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 
 ```yaml
 package_id: btcpayserver
-image: btcpayserver/btcpayserver # plus nbxplorer, postgres, shopify-app-deployer
+image: btcpayserver/btcpayserver # plus nbxplorer, postgres, shopify-app-deployer, simple-monero-wallet-rpc
 architectures:
   - x86_64
   - aarch64
@@ -274,6 +279,7 @@ subcontainers:
   - btcpay # the server; the one to attach to
   - nbx # NBXplorer
   - postgres # private database
+  - monero-wallet-rpc # only while Monero is enabled
   - shopify # only while the Shopify plugin is enabled
 volumes:
   btcpayserver: /datadir
@@ -314,5 +320,6 @@ health_checks:
   - nbxplorer # displayed "UTXO Tracker"
   - utxo-sync # displayed "UTXO Tracker Sync"
   - postgres # internal
+  - monero-wallet-rpc # displayed "Monero Wallet RPC"; only while Monero is enabled
   - shopify # displayed "Shopify Plugin"; only while enabled
 ```

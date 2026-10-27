@@ -36,5 +36,11 @@ export const manifest = setupManifest({
       },
       arch: ['x86_64', 'aarch64'],
     },
+    'monero-wallet-rpc': {
+      source: {
+        dockerTag: 'ghcr.io/sethforprivacy/simple-monero-wallet-rpc:v0.18.5.4',
+      },
+      arch: ['x86_64', 'aarch64'],
+    },
   },
 })

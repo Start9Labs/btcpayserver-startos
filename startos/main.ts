@@ -38,6 +38,9 @@ import {
   shopifyPort,
   torSocksBridge,
   uiPort,
+  xmrWalletDir,
+  xmrWalletRpcPort,
+  xmrWalletSubpath,
 } from './utils'
 
 export const main = sdk.setupMain(async ({ effects }) => {
@@ -97,10 +100,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
     const restUrl = await lndRestBridge(effects).const()
     if (restUrl) btcpayPatch.btclightning = lndConnectionString(restUrl)
   }
-  if (getEnabledAltcoin('xmr', config.chains)) {
-    btcpayPatch.XMR_daemon_uri =
-      (await monerodRpcBridge(effects).const()) ?? undefined
-  }
+  const xmrEnabled = getEnabledAltcoin('xmr', config.chains)
+  const xmrDaemonUri = xmrEnabled
+    ? await monerodRpcBridge(effects).const()
+    : null
+  if (xmrEnabled) btcpayPatch.XMR_daemon_uri = xmrDaemonUri ?? undefined
   await btcpayConfig.merge(effects, btcpayPatch, { allowWriteAfterConst: true })
 
   // ========================
@@ -216,6 +220,18 @@ export const main = sdk.setupMain(async ({ effects }) => {
     { imageId: 'postgres' },
     pgMounts,
     'postgres',
+  )
+
+  const xmrWalletSub = sdk.SubContainer.of(
+    effects,
+    { imageId: 'monero-wallet-rpc' },
+    sdk.Mounts.of().mountVolume({
+      volumeId: 'btcpayserver',
+      subpath: xmrWalletSubpath,
+      mountpoint: xmrWalletDir,
+      readonly: false,
+    }),
+    'monero-wallet-rpc',
   )
 
   /**
@@ -334,6 +350,48 @@ export const main = sdk.setupMain(async ({ effects }) => {
       },
       requires: ['nbxplorer'],
     })
+    .addOneshot('chown-monero-wallets', () =>
+      xmrEnabled
+        ? {
+            subcontainer: xmrWalletSub,
+            exec: {
+              command: ['chown', '-R', 'monero:monero', xmrWalletDir],
+              user: 'root',
+            },
+            requires: [],
+          }
+        : null,
+    )
+    .addDaemon('monero-wallet-rpc', () =>
+      xmrEnabled
+        ? {
+            subcontainer: xmrWalletSub,
+            exec: {
+              command: [
+                'monero-wallet-rpc',
+                '--non-interactive',
+                '--rpc-bind-ip=127.0.0.1',
+                `--rpc-bind-port=${xmrWalletRpcPort}`,
+                '--disable-rpc-login',
+                '--trusted-daemon',
+                `--wallet-dir=${xmrWalletDir}`,
+                `--tx-notify=/usr/bin/curl -so /dev/null http://127.0.0.1:${uiPort}/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s`,
+                ...(xmrDaemonUri ? [`--daemon-address=${xmrDaemonUri}`] : []),
+              ],
+              user: 'monero',
+            },
+            ready: {
+              display: i18n('Monero Wallet RPC'),
+              fn: () =>
+                sdk.healthCheck.checkPortListening(effects, xmrWalletRpcPort, {
+                  successMessage: i18n('The Monero wallet RPC is reachable'),
+                  errorMessage: i18n('The Monero wallet RPC is unreachable'),
+                }),
+            },
+            requires: ['chown-monero-wallets'],
+          }
+        : null,
+    )
     .addDaemon('btcpay', {
       subcontainer: btcpaySub,
       exec: {
@@ -370,7 +428,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
           }
         },
       },
-      requires: ['nbxplorer', 'postgres'],
+      // The Monero plugin opens its wallet only as BTCPay starts.
+      requires: xmrEnabled
+        ? ['nbxplorer', 'postgres', 'monero-wallet-rpc']
+        : ['nbxplorer', 'postgres'],
     })
 
   // Add Shopify app daemon if enabled

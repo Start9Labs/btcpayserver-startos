@@ -38,14 +38,15 @@ export const mainInterfaceId = 'main'
 export const uiPort = 23000
 export const nbxPort = 24444
 export const shopifyPort = 5000
+export const xmrWalletRpcPort = 18082
 
 // Derived paths
 export const nbxCookiePath = `${nbxMountpoint}/Main/.cookie`
 export const bitcoindCookiePath = `${bitcoindMountpoint}/.cookie`
-export const xmrWalletDir = `${dataDir}/btcpayserver/altcoins/monero/wallets`
+export const xmrWalletSubpath = 'btcpayserver/altcoins/monero/wallets'
+export const xmrWalletDir = `${dataDir}/${xmrWalletSubpath}`
 
-// btcpay's own bundled Monero wallet-rpc (loopback, not a dependency).
-export const xmrWalletDaemonUri = 'http://127.0.0.1:18082'
+export const xmrWalletDaemonUri = `http://127.0.0.1:${xmrWalletRpcPort}`
 
 // Postgres
 export const PG_MOUNT = '/var/lib/postgresql'
