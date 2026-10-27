@@ -53,6 +53,9 @@ export default {
     48: 'Destinos permitidos',
     49: 'Nombres de host o direcciones IP exactos separados por comas, opcionalmente seguidos de un puerto. Use corchetes para IPv6. Ejemplo: nas.home.arpa:8080,[fd00::1]:443. No se admiten URL, comodines ni rangos de red. Un nombre de host confía en todas las direcciones que resuelve; omitir el puerto permite todos los puertos. Déjelo vacío para bloquear destinos privados. Los cambios reinician BTCPay Server.',
     50: 'Use nombres de host o direcciones IP exactos con un puerto opcional de 1 a 65535. Ponga las direcciones IPv6 entre corchetes; no se aceptan URL ni rangos de red.',
+    51: 'RPC del monedero Monero',
+    52: 'El RPC del monedero Monero es accesible',
+    53: 'El RPC del monedero Monero es inaccesible',
   } satisfies LangDict,
   de_DE: {
     0: 'UTXO-Tracker',
@@ -106,6 +109,9 @@ export default {
     48: 'Erlaubte Ziele',
     49: 'Kommagetrennte exakte Hostnamen oder IP-Adressen, optional gefolgt von einem Port. IPv6 in eckige Klammern setzen. Beispiel: nas.home.arpa:8080,[fd00::1]:443. Keine URLs, Platzhalter oder Netzwerkbereiche. Ein Hostname vertraut allen aufgelösten Adressen; ohne Port sind alle Ports erlaubt. Leer lassen, um private Ziele zu blockieren. Änderungen starten BTCPay Server neu.',
     50: 'Exakte Hostnamen oder IP-Adressen mit einem optionalen Port von 1 bis 65535 verwenden. IPv6-Adressen in eckige Klammern setzen; URLs und Netzwerkbereiche werden nicht akzeptiert.',
+    51: 'Monero-Wallet-RPC',
+    52: 'Der Monero-Wallet-RPC ist erreichbar',
+    53: 'Der Monero-Wallet-RPC ist nicht erreichbar',
   } satisfies LangDict,
   pl_PL: {
     0: 'Śledzenie UTXO',
@@ -159,6 +165,9 @@ export default {
     48: 'Dozwolone adresy docelowe',
     49: 'Dokładne nazwy hostów lub adresy IP oddzielone przecinkami, opcjonalnie z numerem portu. IPv6 ujmij w nawiasy kwadratowe. Przykład: nas.home.arpa:8080,[fd00::1]:443. Bez adresów URL, symboli wieloznacznych i zakresów sieci. Nazwa hosta dopuszcza wszystkie adresy, na które się rozwiązuje; pominięcie portu dopuszcza wszystkie porty. Pozostaw puste, aby blokować prywatne adresy docelowe. Zmiany ponownie uruchamiają BTCPay Server.',
     50: 'Użyj dokładnych nazw hostów lub adresów IP z opcjonalnym portem od 1 do 65535. Adresy IPv6 ujmij w nawiasy kwadratowe; adresy URL i zakresy sieci nie są akceptowane.',
+    51: 'RPC portfela Monero',
+    52: 'RPC portfela Monero jest osiągalne',
+    53: 'RPC portfela Monero jest nieosiągalne',
   } satisfies LangDict,
   fr_FR: {
     0: 'Suivi UTXO',
@@ -212,5 +221,8 @@ export default {
     48: 'Destinations autorisées',
     49: 'Noms d’hôte ou adresses IP exacts séparés par des virgules, éventuellement suivis d’un port. Utilisez des crochets pour IPv6. Exemple : nas.home.arpa:8080,[fd00::1]:443. Pas d’URL, de caractères génériques ni de plages réseau. Un nom d’hôte autorise toutes ses adresses résolues ; sans port, tous les ports sont autorisés. Laissez vide pour bloquer les destinations privées. Les modifications redémarrent BTCPay Server.',
     50: 'Utilisez des noms d’hôte ou adresses IP exacts avec un port facultatif de 1 à 65535. Entourez les adresses IPv6 de crochets ; les URL et plages réseau ne sont pas acceptées.',
+    51: 'RPC du portefeuille Monero',
+    52: 'Le RPC du portefeuille Monero est accessible',
+    53: 'Le RPC du portefeuille Monero est inaccessible',
   } satisfies LangDict,
 } as const

@@ -1,6 +1,6 @@
 # Updating the upstream version
 
-The wrapped application is **BTCPay Server**. Its complete release version supplies the upstream part of the StartOS version. The package pulls four images, each pinned as a `dockerTag` under `images` in `startos/manifest/index.ts`; NBXplorer, Postgres and the Shopify deployer are supporting components, not independent upstream-release triggers.
+The wrapped application is **BTCPay Server**. Its complete release version supplies the upstream part of the StartOS version. The package pulls five images, each pinned as a `dockerTag` under `images` in `startos/manifest/index.ts`; NBXplorer, Postgres, the Shopify deployer and the Monero wallet RPC are supporting components, not independent upstream-release triggers.
 
 ## Determining the upstream version
 
@@ -45,6 +45,14 @@ The wrapped application is **BTCPay Server**. Its complete release version suppl
 
   Pin lives in `startos/manifest/index.ts` → `images.shopify.source.dockerTag` (`btcpayserver/shopify-app-deployer:<version>`).
 
+- **Monero wallet RPC** ([sethforprivacy/simple-monero-wallet-rpc-docker](https://github.com/sethforprivacy/simple-monero-wallet-rpc-docker)) — tracks the `wallet-rpc` image that the Monero package pins, so the wallet keeps pace with the node it syncs from. Match that pin:
+
+  ```sh
+  gh api repos/Start9-Community/monerod-startos/contents/startos/manifest/index.ts --jq .content | base64 -d | grep simple-monero-wallet-rpc
+  ```
+
+  Pin lives in `startos/manifest/index.ts` → `images['monero-wallet-rpc'].source.dockerTag` (`ghcr.io/sethforprivacy/simple-monero-wallet-rpc:<version>`).
+
 ## Applying the bump
 
 Edit `images.btcpay.source.dockerTag` in `startos/manifest/index.ts` to the eligible BTCPay Server tag. Use the full version in `startos/versions/current.ts` with downstream revision `:0`.
@@ -55,5 +63,6 @@ Supporting image pins, when a BTCPay release or approved wrapper change requires
 - NBXplorer → `images.nbx.source.dockerTag`
 - Postgres → `images.postgres.source.dockerTag`
 - Shopify app deployer → `images.shopify.source.dockerTag`
+- Monero wallet RPC → `images['monero-wallet-rpc'].source.dockerTag`, whenever the Monero package moves its own
 
 When bumping BTCPay Server itself, check whether the release notes call for matching NBXplorer or PostgreSQL versions, and bump those tags in the same PR if so.

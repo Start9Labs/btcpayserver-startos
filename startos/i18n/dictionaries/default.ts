@@ -15,6 +15,9 @@ const dict = {
   'The Shopify app is not running': 10,
   'Synced to the tip of the Bitcoin blockchain': 11,
   'Failed to connect to Bitcoin node.': 12,
+  'Monero Wallet RPC': 51,
+  'The Monero wallet RPC is reachable': 52,
+  'The Monero wallet RPC is unreachable': 53,
 
   // actions/resetAdminPassword.ts
   'Reset Server Admin Password': 13,
