@@ -26,11 +26,19 @@ cd btcpayserver-wrapper
 
 ## Building
 
+This branch targets **StartOS 0.3.5.1** and packages BTCPay Server **2.4.7** with NBXplorer **2.6.21**, matching the [upstream deployment](https://github.com/btcpayserver/btcpayserver-docker/blob/6641c063e9c319033aae3042b8386bad30a596e6/docker-compose-generator/docker-fragments/nbxplorer.yml). It uses the published `btcpayserver/btcpayserver:2.4.7` image; no matching `btcpayserver-internal:2.4.7` tag is available.
+
+Use the legacy StartOS SDK and CLI (`start-sdk --version` and `start-cli --version` should report `0.3.5.1`). The StartOS 0.4 toolchain is incompatible with this package.
+
+The image uses Node.js 22.23.4 for the pinned Shopify CLI 3.84.1, which requires Node.js 20.10 or newer. The ARM configurator build disables the cross-compiler image's incompatible `sccache` wrapper.
+
 After setting up your environment, build the `btcpayserver` package by running:
 
 ```
 make
 ```
+
+Use `make x86` for an x86_64 package or `make arm` for an aarch64 package. Each target packs and verifies `btcpayserver.s9pk` without installing it.
 
 ## Installing (on StartOS)
 
@@ -58,4 +66,4 @@ the **System > Settings** section.
 
 Go to your Start9 Server Services page, select **BTCPay Server**, configure and start the service. Then, verify its interfaces are accessible.
 
-**Done!** 
+**Done!**

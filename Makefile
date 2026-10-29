@@ -5,6 +5,13 @@ TS_FILES := $(shell find ./ -name \*.ts)
 DOC_ASSETS := $(shell find ./docs/assets)
 CONFIGURATOR_SRC := $(shell find ./configurator/src) configurator/Cargo.toml configurator/Cargo.lock
 UTILS_SRC := $(shell find ./utils/**/*)
+ifeq ($(ARCH),aarch64)
+DOCKER_IMAGES := docker-images/aarch64.tar
+else ifeq ($(ARCH),x86_64)
+DOCKER_IMAGES := docker-images/x86_64.tar
+else
+DOCKER_IMAGES := docker-images/aarch64.tar docker-images/x86_64.tar
+endif
 
 .DELETE_ON_ERROR:
 
@@ -38,7 +45,7 @@ clean:
 	rm -f LICENSE
 	rm -rf configurator/target
 
-$(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.js docker-images/aarch64.tar docker-images/x86_64.tar
+$(PKG_ID).s9pk: manifest.yaml instructions.md LICENSE icon.png scripts/embassy.js $(DOCKER_IMAGES)
 ifeq ($(ARCH),aarch64)
 	@echo "start-sdk: Preparing aarch64 package ..."
 else ifeq ($(ARCH),x86_64)
@@ -48,7 +55,7 @@ else
 endif
 	@start-sdk pack
 
-docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
+docker-images/x86_64.tar: configurator/target/x86_64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile manifest.yaml
 ifeq ($(ARCH),aarch64)
 else
 	@echo "Building package for x86_64..."
@@ -56,7 +63,7 @@ else
 	DOCKER_CLI_EXPERIMENTAL=enabled docker buildx build --platform=linux/amd64 --tag start9/btcpayserver/main:$(PKG_VERSION) --build-arg ARCH=x86_64 --build-arg PLATFORM=amd64 -o type=docker,dest=docker-images/x86_64.tar -f ./Dockerfile .
 endif
 
-docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile
+docker-images/aarch64.tar: configurator/target/aarch64-unknown-linux-musl/release/configurator $(UTILS_SRC) Dockerfile manifest.yaml
 ifeq ($(ARCH),x86_64)
 else
 	@echo "Building package for aarch64..."
@@ -65,7 +72,7 @@ else
 endif
 
 configurator/target/aarch64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
-	docker run --rm -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo build --release --config net.git-fetch-with-cli=true
+	docker run --rm -e RUSTC_WRAPPER= -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:aarch64-musl cargo build --release --config net.git-fetch-with-cli=true
 
 configurator/target/x86_64-unknown-linux-musl/release/configurator: $(CONFIGURATOR_SRC)
 	docker run --rm -v ~/.cargo/registry:/root/.cargo/registry -v "$(shell pwd)"/configurator:/home/rust/src start9/rust-musl-cross:x86_64-musl cargo build --release --config net.git-fetch-with-cli=true
