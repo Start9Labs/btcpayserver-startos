@@ -1,33 +1,13 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.7:0',
+  version: '2.4.7:1',
   releaseNotes: {
-    en_US: `Updated BTCPay Server to 2.4.7. Fixes 85 security findings, including critical and high-severity issues affecting merchant isolation, payouts, authentication and payment accounting. Updating is strongly recommended, especially on servers shared by multiple merchants.
-
-Integrations using the legacy /invoices/create route must switch to /stores/{storeId}/invoices/create. Reading individual invoices through the BitPay API now requires authentication.
-
-Full release notes: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.7`,
-    es_ES: `BTCPay Server se actualizó a 2.4.7. Corrige 85 problemas de seguridad, incluidos problemas críticos y de alta gravedad que afectan al aislamiento entre comerciantes, los pagos salientes, la autenticación y la contabilidad de pagos. Se recomienda encarecidamente actualizar, especialmente en servidores compartidos por varios comerciantes.
-
-Las integraciones que utilicen la ruta antigua /invoices/create deben cambiar a /stores/{storeId}/invoices/create. Consultar facturas individuales mediante la API de BitPay ahora requiere autenticación.
-
-Notas completas de la versión: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.7`,
-    de_DE: `BTCPay Server wurde auf 2.4.7 aktualisiert. Behebt 85 Sicherheitsprobleme, darunter kritische und schwerwiegende Probleme bei der Trennung von Händlern, Auszahlungen, Authentifizierung und Zahlungsabrechnung. Das Update wird dringend empfohlen, besonders auf gemeinsam von mehreren Händlern genutzten Servern.
-
-Integrationen mit der alten Route /invoices/create müssen auf /stores/{storeId}/invoices/create umgestellt werden. Das Abrufen einzelner Rechnungen über die BitPay-API erfordert jetzt eine Authentifizierung.
-
-Vollständige Versionshinweise: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.7`,
-    pl_PL: `Zaktualizowano BTCPay Server do wersji 2.4.7. Naprawia 85 problemów bezpieczeństwa, w tym krytyczne i poważne problemy z izolacją sprzedawców, wypłatami, uwierzytelnianiem i rozliczaniem płatności. Aktualizacja jest zdecydowanie zalecana, zwłaszcza na serwerach współdzielonych przez wielu sprzedawców.
-
-Integracje korzystające ze starej ścieżki /invoices/create muszą przejść na /stores/{storeId}/invoices/create. Odczyt pojedynczych faktur przez API BitPay wymaga teraz uwierzytelnienia.
-
-Pełne informacje o wydaniu: https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.7`,
-    fr_FR: `Mise à jour de BTCPay Server vers 2.4.7. Corrige 85 problèmes de sécurité, dont des problèmes critiques et de gravité élevée touchant l'isolation des commerçants, les versements, l'authentification et la comptabilisation des paiements. La mise à jour est fortement recommandée, surtout sur les serveurs partagés entre plusieurs commerçants.
-
-Les intégrations utilisant l'ancienne route /invoices/create doivent passer à /stores/{storeId}/invoices/create. La lecture de factures individuelles via l'API BitPay nécessite désormais une authentification.
-
-Notes de version complètes : https://github.com/btcpayserver/btcpayserver/releases/tag/v2.4.7`,
+    en_US: `Updated NBXplorer to 2.6.21. Fixes on-chain invoices getting no Bitcoin address when the store wallet was created by importing into the Bitcoin node's wallet, on Bitcoin 30 and later, and includes .NET runtime security updates. Full changes: https://github.com/dgarage/NBXplorer/compare/v2.6.13...v2.6.21`,
+    es_ES: `NBXplorer se actualizó a 2.6.21. Corrige que las facturas on-chain no recibieran una dirección de Bitcoin cuando la billetera de la tienda se creó importándola en la billetera del nodo de Bitcoin, en Bitcoin 30 y posteriores, e incluye actualizaciones de seguridad del entorno de ejecución .NET. Cambios completos: https://github.com/dgarage/NBXplorer/compare/v2.6.13...v2.6.21`,
+    de_DE: `NBXplorer wurde auf 2.6.21 aktualisiert. Behebt, dass On-Chain-Rechnungen keine Bitcoin-Adresse erhielten, wenn die Wallet des Shops durch Import in die Wallet des Bitcoin-Knotens erstellt wurde, ab Bitcoin 30, und enthält Sicherheitsupdates der .NET-Laufzeitumgebung. Alle Änderungen: https://github.com/dgarage/NBXplorer/compare/v2.6.13...v2.6.21`,
+    pl_PL: `Zaktualizowano NBXplorer do wersji 2.6.21. Naprawia brak adresu Bitcoin w fakturach on-chain, gdy portfel sklepu utworzono przez import do portfela węzła Bitcoin, w Bitcoin 30 i nowszych, oraz zawiera aktualizacje bezpieczeństwa środowiska uruchomieniowego .NET. Pełna lista zmian: https://github.com/dgarage/NBXplorer/compare/v2.6.13...v2.6.21`,
+    fr_FR: `Mise à jour de NBXplorer vers 2.6.21. Corrige l'absence d'adresse Bitcoin sur les factures on-chain lorsque le portefeuille de la boutique a été créé par import dans le portefeuille du nœud Bitcoin, sur Bitcoin 30 et versions ultérieures, et inclut des mises à jour de sécurité de l'environnement d'exécution .NET. Modifications complètes : https://github.com/dgarage/NBXplorer/compare/v2.6.13...v2.6.21`,
   },
   migrations: {
     up: async () => {},
