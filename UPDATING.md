@@ -18,9 +18,7 @@ The wrapped application is **BTCPay Server**. Its complete release version suppl
     | jq '{name, tag_status, images: [.images[] | {architecture, os, status}]}'
   ```
 
-  Read the release's impact before assigning the scrutiny tier: even a final-component bump can introduce breaking changes.
-
-- **NBXplorer** ([btcpayserver/NBXplorer](https://github.com/btcpayserver/NBXplorer)) — tagged on GitHub but no Releases are published. Strip the leading `v` for the `dockerTag`. The Docker image is published as `nicolasdorier/nbxplorer`. (The older `dgarage/NBXplorer` URL still works but 301-redirects to `btcpayserver/NBXplorer`, which is the canonical home today.)
+- **NBXplorer** ([btcpayserver/NBXplorer](https://github.com/btcpayserver/NBXplorer)) — tagged on GitHub but no Releases are published. Strip the leading `v` for the `dockerTag`. The Docker image is published as `nicolasdorier/nbxplorer`.
 
   ```sh
   gh api repos/btcpayserver/NBXplorer/tags --jq '.[0].name'
@@ -55,7 +53,7 @@ The wrapped application is **BTCPay Server**. Its complete release version suppl
 
 ## Applying the bump
 
-Edit `images.btcpay.source.dockerTag` in `startos/manifest/index.ts` to the eligible BTCPay Server tag. Use the full version in `startos/versions/current.ts` with downstream revision `:0`.
+Edit `images.btcpay.source.dockerTag` in `startos/manifest/index.ts` to the eligible BTCPay Server tag.
 
 Supporting image pins, when a BTCPay release or approved wrapper change requires them:
 
