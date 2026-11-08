@@ -203,7 +203,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
         volumeId: 'main',
         subpath: null,
         mountpoint: bitcoindMountpoint,
-        readonly: false,
+        readonly: true,
       }),
     'nbx',
   )
