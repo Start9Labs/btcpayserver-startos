@@ -64,14 +64,15 @@ export const btcpayPostgres = pgConnectionString('btcpayserver', 'btcpayserver')
 // otherwise omitted (optional file-model fields), never dialed at a fake address.
 export const LND_REST_FALLBACK = 'https://127.0.0.1:8080'
 
-// Lightning connection strings written to btcpay's settings.config. CLN is a
-// local unix socket (static); LND is reached over the LXC bridge, so its
-// `server=` address is resolved at runtime. Node selection is discriminated by
-// the stable `type=` prefix, since the LND address varies per install.
-export const clnConnectionString = `type=clightning;server=unix:/${clnMountpoint}/bitcoin/lightning-rpc`
+// Lightning connection strings written to btcpay's settings.config, rewritten
+// on every start. CLN is a local unix socket; LND is reached over the LXC
+// bridge, so its `server=` address is resolved at runtime. Node selection is
+// discriminated by a stable prefix, since the full string varies.
+const CLN_CONN_PREFIX = `type=clightning;server=unix:/${clnMountpoint}/`
+export const clnConnectionString = `${CLN_CONN_PREFIX}lightning-rpc`
 const LND_CONN_PREFIX = 'type=lnd-rest'
 export function lndConnectionString(restUrl: string) {
-  return `${LND_CONN_PREFIX};server=${restUrl}/;macaroonfilepath=${lndMountpoint}/data/chain/bitcoin/mainnet/admin.macaroon;allowinsecure=true`
+  return `${LND_CONN_PREFIX};server=${restUrl}/;macaroonfilepath=${lndMountpoint}/admin.macaroon;allowinsecure=true`
 }
 // Eclair authenticates with an empty username and a password, so only `password`
 // is set. `bitcoin-host`/`bitcoin-auth` are accepted by BTCPay's parser but never
@@ -82,7 +83,7 @@ export function eclairConnectionString(apiUrl: string, password?: string) {
   return password ? `${base};password=${password}` : base
 }
 export const isLnd = (s?: string | null) => !!s?.startsWith(LND_CONN_PREFIX)
-export const isCln = (s?: string | null) => s === clnConnectionString
+export const isCln = (s?: string | null) => !!s?.startsWith(CLN_CONN_PREFIX)
 export const isEclair = (s?: string | null) =>
   !!s?.startsWith(ECLAIR_CONN_PREFIX)
 

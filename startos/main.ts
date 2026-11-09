@@ -2,6 +2,7 @@ import { HealthCheckResult } from '@start9labs/start-sdk/lib/health/checkFns'
 import { manifest as bitcoinManifest } from 'bitcoin-core-startos/startos/manifest'
 import { manifest as clnManifest } from 'cln-startos/startos/manifest'
 import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
+import { FileHelper } from '@start9labs/start-sdk'
 import { readFile } from 'fs/promises'
 import { btcpayConfig } from './fileModels/btcpay.config'
 import {
@@ -11,13 +12,13 @@ import {
 import { storeJson } from './fileModels/store.json'
 import { i18n } from './i18n'
 import { sdk } from './sdk'
-import { eclairConf } from 'eclair-startos/startos/fileModels/eclair.conf'
 import { manifest as eclairManifest } from 'eclair-startos/startos/manifest'
 import {
   bitcoindCookiePath,
   bitcoindMountpoint,
   bitcoindPeerBridge,
   bitcoindRpcBridge,
+  clnConnectionString,
   clnMountpoint,
   dataDir,
   eclairApiBridge,
@@ -99,6 +100,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
   if (isLnd(config.btclightning)) {
     const restUrl = await lndRestBridge(effects).const()
     if (restUrl) btcpayPatch.btclightning = lndConnectionString(restUrl)
+  } else if (isCln(config.btclightning)) {
+    btcpayPatch.btclightning = clnConnectionString
   }
   const xmrEnabled = getEnabledAltcoin('xmr', config.chains)
   const xmrDaemonUri = xmrEnabled
@@ -134,24 +137,24 @@ export const main = sdk.setupMain(async ({ effects }) => {
   if (isLnd(config.btclightning)) {
     mounts = mounts.mountDependency<typeof lndManifest>({
       dependencyId: 'lnd',
-      volumeId: 'main',
-      subpath: null,
+      volumeId: 'public',
+      subpath: 'admin',
       mountpoint: lndMountpoint,
       readonly: true,
     })
   } else if (isCln(config.btclightning)) {
     mounts = mounts.mountDependency<typeof clnManifest>({
       dependencyId: 'c-lightning',
-      volumeId: 'main',
-      subpath: null,
+      volumeId: 'public',
+      subpath: 'rpc',
       mountpoint: clnMountpoint,
       readonly: true,
     })
   } else if (isEclair(config.btclightning)) {
     mounts = mounts.mountDependency<typeof eclairManifest>({
       dependencyId: 'eclair',
-      volumeId: 'main',
-      subpath: null,
+      volumeId: 'public',
+      subpath: 'api',
       mountpoint: eclairMountpoint,
       readonly: true,
     })
@@ -175,10 +178,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
   if (isEclair(config.btclightning)) {
     const apiUrl = await eclairApiBridge(effects).const()
     const password = apiUrl
-      ? await eclairConf
-          .withPath(`${await btcpaySub.rootfs}${eclairMountpoint}/eclair.conf`)
-          .read((c) => c['api.password'])
-          .const(effects)
+      ? (
+          await FileHelper.string(
+            `${await btcpaySub.rootfs}${eclairMountpoint}/password`,
+          )
+            .read()
+            .const(effects)
+        )?.trim()
       : null
     if (apiUrl && password)
       await btcpayConfig.merge(
