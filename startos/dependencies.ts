@@ -33,17 +33,14 @@ const bitcoind = sdk.Dependency.required('bitcoind', {
   healthChecks: ['bitcoind'],
 })
 
-// Both floors are set by the credential-rotation task 2.4.2:1 raises:
-// revoke-macaroons only rotates LND's macaroon root key — the thing that
-// actually revokes — from 0.21.1-beta:11, and revoke-runes does not exist
-// before 26.6.6:9.
+// Lightning floors are each node's first release with the `public` credential tiers main mounts.
 const lnd = sdk.Dependency.optional('lnd', {
   description: lndDescription,
   metadata: {
     title: 'LND',
     icon: 'https://raw.githubusercontent.com/Start9Labs/lnd-startos/f17336a10769efd8782a347662848c50c6270349/icon.svg',
   },
-  versionRange: '>=0.21.1-beta:11',
+  versionRange: '>=0.21.6-beta:3',
   kind: 'running',
   healthChecks: ['lnd'],
   enabled: async ({ effects }) => isLnd(await lightning(effects)),
@@ -55,7 +52,7 @@ const cln = sdk.Dependency.optional('c-lightning', {
     title: 'CLN',
     icon: 'https://raw.githubusercontent.com/Start9Labs/cln-startos/71b2d1eb78e2d31cc4d62a410512422d39e856e9/icon.svg',
   },
-  versionRange: '>=26.6.6:9',
+  versionRange: '>=26.6.10:3',
   kind: 'running',
   healthChecks: ['lightningd'],
   enabled: async ({ effects }) => isCln(await lightning(effects)),
@@ -67,7 +64,7 @@ const eclair = sdk.Dependency.optional('eclair', {
     title: 'Eclair',
     icon: 'https://raw.githubusercontent.com/Start9Labs/eclair-startos/0f6f6e1dd6faa890422c899d775fb433c7115d3a/icon.png',
   },
-  versionRange: '>=0.14.2:0',
+  versionRange: '>=0.14.6:2',
   kind: 'running',
   healthChecks: ['eclair'],
   enabled: async ({ effects }) => isEclair(await lightning(effects)),
