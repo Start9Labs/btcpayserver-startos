@@ -41,11 +41,13 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 - **Enable Plugins** — toggle the bundled Shopify integration on or off.
 - **Configure Private Destinations** — allow requests to a trusted private webhook, LNURL service or custom Lightning node. Enter exact hostnames or IP addresses separated by commas, optionally with ports: `nas.home.arpa:8080,[fd00::1]:443`. Do not enter URLs, wildcards or network ranges. A hostname trusts all addresses it resolves to; specify a port to limit access. Leave empty to remove every exception. Saving restarts BTCPay. Nodes chosen with **Choose Lightning Node** need no exception.
 - **Resync NBXplorer** — re-scan the UTXO set from a chosen block height. Provide the height as an integer; BTCPay restarts and NBXplorer rescans from there.
-- **Reset Server Admin Password** — generate a new random password for the server admin account. Only works when exactly one server admin user exists; copy the password from the result screen before dismissing, it is not retrievable afterwards.
+- **Reset Server Admin Password** — generate a new random password for the server admin account and sign it out of its existing sessions. Only works when exactly one server admin user exists; copy the password from the result screen before dismissing, it is not retrievable afterwards.
 
 ### Backups
 
-StartOS backups include the BTCPay app data, the PostgreSQL `btcpayserver` database (users, stores, invoices), the Monero view-only wallet, and the package configuration. The NBXplorer index is **not** backed up — on restore, NBXplorer resyncs from Bitcoin, which can take time before the Web UI becomes fully usable again.
+StartOS backups include the BTCPay app data, both PostgreSQL databases — `btcpayserver` (users, stores, invoices) and `nbxplorer` (hot-wallet seeds and keys, wallet history, address usage) — the Monero view-only wallet, and the package configuration.
+
+A backup taken before version 2.4.7:4 does not include the `nbxplorer` database. Restoring one loses any hot wallet's seed and signing, starts wallet history empty, and reuses addresses. Take a new backup, and if you run a hot wallet, make sure you have its seed written down.
 
 ## Limitations
 

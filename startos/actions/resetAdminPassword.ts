@@ -74,10 +74,14 @@ async function resetServerAdminPassword(newPassword: string) {
       )
     }
 
-    const hash = generateHash(newPassword)
+    // A new SecurityStamp signs out the account's existing sessions.
     await client.query(
-      `UPDATE "AspNetUsers" SET "PasswordHash"=$1 WHERE "Id"=$2`,
-      [hash, admins.rows[0].Id],
+      `UPDATE "AspNetUsers" SET "PasswordHash"=$1, "SecurityStamp"=$2 WHERE "Id"=$3`,
+      [
+        generateHash(newPassword),
+        randomBytes(20).toString('hex').toUpperCase(),
+        admins.rows[0].Id,
+      ],
     )
   } finally {
     await client.end()

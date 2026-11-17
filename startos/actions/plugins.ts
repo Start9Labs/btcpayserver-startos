@@ -27,7 +27,9 @@ export const enablePlugins = sdk.Action.withInput(
 
   input,
 
-  async ({ effects }) => {},
+  async ({ effects }) => ({
+    shopify: (await storeJson.read((s) => s.plugins.shopify).once()) ?? false,
+  }),
 
   async ({ effects, input }) => {
     await storeJson.merge(effects, { plugins: { ...input } })
