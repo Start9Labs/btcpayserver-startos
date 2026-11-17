@@ -31,6 +31,7 @@ import {
 const LEGACY_ROOT = '/media/startos/volumes/main'
 const LEGACY_CONFIG = `${LEGACY_ROOT}/start9/config.yaml`
 const LEGACY_MARKER = `${LEGACY_ROOT}/postgresql/data/PG_VERSION`
+const LEGACY_RETIRED = `${LEGACY_ROOT}/postgresql.retired`
 
 // Mountpoints inside the subcontainer that does the moving.
 const MAIN = '/mnt/main'
@@ -38,6 +39,9 @@ const BTCPAY = '/mnt/btcpay'
 const NBX = '/mnt/nbx'
 const OLD_PGDATA = `${MAIN}/postgresql/data`
 const LEGACY_MARKER_IN_SUB = `${OLD_PGDATA}/PG_VERSION`
+const RETIRED = `${MAIN}/postgresql.retired`
+// Present once the destinations hold only what this move copied into them.
+const COPYING = `${MAIN}/.layout-move-copying`
 
 type LegacyConfig = {
   lightning?: { type?: 'lnd' | 'c-lightning' }
@@ -56,7 +60,9 @@ const exists = (path: string) =>
  *
  * The destinations are not necessarily empty: an install that took the broken
  * update ran a fresh BTCPay against them, so they can hold a live PostgreSQL 18
- * cluster and a new admin's real data. Hence moved aside, not deleted.
+ * cluster and a new admin's real data. Hence moved aside, not deleted — unless
+ * `COPYING` says an earlier attempt of this move put it there, in which case it
+ * is a partial copy of data still in `main` and is discarded.
  *
  * The snapshot has to land in `main` rather than under the volume it came from:
  * the postgres entrypoint sweeps every entry at the db mount root into the old
@@ -73,11 +79,54 @@ function snapshotScript(stamp: string) {
       name=\${pair%%:*}
       dir=\${pair#*:}
       [ -d "$dir" ] || continue
+      if [ -f ${COPYING} ]; then
+        find "$dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+        continue
+      fi
       [ -n "$(find "$dir" -mindepth 1 -maxdepth 1 -print -quit)" ] || continue
       mkdir -p "${dest}/$name"
       find "$dir" -mindepth 1 -maxdepth 1 -exec mv -t "${dest}/$name/" {} +
-    done`
+    done
+    touch ${COPYING}`
 }
+
+/**
+ * Remove the old layout. Renaming `postgresql` retires the marker in one step,
+ * so an interruption anywhere below leaves an install this resumes rather than
+ * one that looks unmoved. altcoins/monero cannot be deleted from here any more
+ * than it can be read, so it stays.
+ */
+const cleanupScript = `set -e
+  [ ! -d ${MAIN}/postgresql ] || mv ${MAIN}/postgresql ${RETIRED}
+  rm -rf ${MAIN}/plugins ${MAIN}/nbxplorer ${MAIN}/start9
+  if [ -d ${MAIN}/btcpayserver/altcoins/monero ]; then
+    find ${MAIN}/btcpayserver -mindepth 1 -maxdepth 1 ! -name altcoins -exec rm -rf {} +
+    find ${MAIN}/btcpayserver/altcoins -mindepth 1 -maxdepth 1 ! -name monero -exec rm -rf {} +
+  else
+    rm -rf ${MAIN}/btcpayserver
+  fi
+  rm -rf ${RETIRED} ${COPYING}`
+
+const mainOnly = () =>
+  sdk.Mounts.of().mountVolume({
+    volumeId: 'main',
+    subpath: null,
+    mountpoint: MAIN,
+    readonly: false,
+  })
+
+const removeLegacyLayout = (effects: T.Effects) =>
+  sdk.SubContainer.withTemp(
+    effects,
+    { imageId: 'postgres' },
+    mainOnly(),
+    'remove-legacy-layout',
+    (sub) =>
+      sub.execFail(['sh', '-c', cleanupScript], {
+        user: 'root',
+        timeout: null,
+      }),
+  )
 
 /**
  * Volume mapping:
@@ -92,13 +141,7 @@ function snapshotScript(stamp: string) {
  * is `/var/lib/postgresql/18/docker`.
  */
 async function moveVolumes(effects: T.Effects, stamp: string) {
-  const mounts = sdk.Mounts.of()
-    .mountVolume({
-      volumeId: 'main',
-      subpath: null,
-      mountpoint: MAIN,
-      readonly: false,
-    })
+  const mounts = mainOnly()
     .mountVolume({
       volumeId: 'db',
       subpath: null,
@@ -189,33 +232,16 @@ async function moveVolumes(effects: T.Effects, stamp: string) {
         user: 'root',
         timeout: null,
       })
-
-      // Last, and only on success: removing the old layout is what stops this
-      // running again. altcoins/monero cannot be deleted from here any more
-      // than it can be read, so it stays; postgresql, the marker, goes last.
-      await sub.execFail(
-        [
-          'sh',
-          '-c',
-          `set -e
-          rm -rf ${MAIN}/plugins ${MAIN}/nbxplorer ${MAIN}/start9
-          if [ -d ${MAIN}/btcpayserver/altcoins/monero ]; then
-            find ${MAIN}/btcpayserver -mindepth 1 -maxdepth 1 ! -name altcoins -exec rm -rf {} +
-            find ${MAIN}/btcpayserver/altcoins -mindepth 1 -maxdepth 1 ! -name monero -exec rm -rf {} +
-          else
-            rm -rf ${MAIN}/btcpayserver
-          fi
-          rm -rf ${MAIN}/postgresql`,
-        ],
-        { user: 'root', timeout: null },
-      )
     },
   )
 }
 
 export const repairLegacyLayout = sdk.setupOnInit(
   async (effects, _kind, progress) => {
-    if (!(await exists(LEGACY_MARKER))) return
+    if (!(await exists(LEGACY_MARKER))) {
+      if (await exists(LEGACY_RETIRED)) await removeLegacyLayout(effects)
+      return
+    }
 
     const phase = progress.addPhase(
       'Moving your BTCPay Server data to its new storage',
@@ -223,7 +249,7 @@ export const repairLegacyLayout = sdk.setupOnInit(
     )
     phase.start()
 
-    // Read before moving — the move deletes start9/config.yaml.
+    // Read before the old layout, start9/config.yaml included, is removed.
     const legacy: LegacyConfig | undefined = await readFile(
       LEGACY_CONFIG,
       'utf-8',
@@ -254,6 +280,8 @@ export const repairLegacyLayout = sdk.setupOnInit(
     }
 
     await raiseLightningCredentialTask(effects)
+
+    await removeLegacyLayout(effects)
 
     phase.complete()
   },

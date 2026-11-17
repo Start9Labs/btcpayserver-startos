@@ -61,7 +61,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const config = await btcpayConfig.read().const(effects)
   if (!config) throw new Error('BTCPay config not found')
 
-  const nbxConfig = await nbxplorerConfig.read().const(effects)
+  // Excludes the rescan keys `reset-start-height` clears, so clearing them cannot restart the service mid-rescan.
+  const nbxConfig = await nbxplorerConfig
+    .read(({ 'btc.rescan': _, 'btc.startheight': __, ...rest }) => rest)
+    .const(effects)
   if (!nbxConfig) throw new Error('NBXplorer config not found')
 
   // ========================

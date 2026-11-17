@@ -146,7 +146,7 @@ Two ordering points matter, and both come from dependencies rather than from set
 1. **Bitcoin must be installed and running**, and NBXplorer cannot report itself synced until Bitcoin is. On a fresh node that is the length of an initial block download, followed by NBXplorer's own scan — both are reported as progress rather than as failures. See [Health Checks](#health-checks).
 2. **Choosing a Lightning node is a two-step operation.** The [Choose Lightning Node](#actions) action grants BTCPay access to the node; BTCPay then has to be told to use it, inside its own Lightning settings.
 
-An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten. The Monero wallet directory of the old layout, `main/btcpayserver/altcoins/monero`, is owned outside the range the container can map, so the move can neither read nor delete it and leaves it where it is; a Monero wallet from that layout is set up again in BTCPay.
+An install carried over from the older single-`main` layout has its data moved onto the four volumes on init, and that first start is long — it moves a database, and the Postgres image upgrades the cluster before accepting connections. The trigger is the old cluster still sitting under `main`, not a version, so **an empty BTCPay on such an install — no stores, no accounts, every password rejected — means the move has not run yet, and restarting the service runs it.** Where a destination volume was not already empty, what was in it is set aside under `main/superseded-<timestamp>/` rather than overwritten. An interrupted move resumes on the next start: a partial copy is discarded and copied again rather than set aside, and once the old cluster is renamed to `main/postgresql.retired` the move only finishes deleting the old layout. The Monero wallet directory of the old layout, `main/btcpayserver/altcoins/monero`, is owned outside the range the container can map, so the move can neither read nor delete it and leaves it where it is; a Monero wallet from that layout is set up again in BTCPay.
 
 ## Actions
 
@@ -191,7 +191,7 @@ Run when a private webhook, LNURL endpoint or custom Lightning connection is rej
 
 Rescans the chain from a chosen block height. Run it when BTCPay is missing transactions it should have seen — typically after importing an existing wallet with history.
 
-- **What it changes:** NBXplorer's `btc.startheight` and `btc.rescan`, then restarts the service. The oneshot clears both once NBXplorer is running again, so the rescan is not repeated on later starts.
+- **What it changes:** NBXplorer's `btc.startheight` and `btc.rescan`, then restarts the service. The oneshot clears both once NBXplorer is running again, so the rescan is not repeated on later starts; `main` does not watch those two keys, so clearing them does not restart the service again.
 - **Cost:** the rescan itself, which is proportional to how far back you start; the service is restarted immediately.
 - **Repeat safety:** safe to re-run. It does not destroy anything — a rescan re-reads the chain into NBXplorer's database.
 
@@ -199,7 +199,7 @@ Rescans the chain from a chosen block height. Run it when BTCPay is missing tran
 
 Sets a temporary password on the first server-admin account. Run it when locked out.
 
-- **What it changes:** that account's password hash in the BTCPay database, written directly over Postgres.
+- **What it changes:** that account's password hash and security stamp in the BTCPay database, written directly over Postgres. The new stamp signs the account out of its existing browser sessions within BTCPay's five-minute validation interval. API keys the account created stay valid; revoke them in BTCPay if the account was compromised.
 - **Availability:** only while the service is running, because it goes through the running database.
 - **Confirmation:** asks before running, since the account's current password stops working.
 - **Repeat safety:** safe to re-run; each run generates a fresh password.
@@ -247,18 +247,18 @@ Five checks at most, and the two that matter to a user are both about sync.
 
 The strategy is mixed, and the distinction decides what a restore actually gives you.
 
-- **`db` is dumped, not copied.** `Backups.withPgDump` runs a logical dump of the **`btcpayserver` database only**. The volume's files are never captured, and the dump is replayed into a fresh database on restore — which is what lets a future Postgres image read it.
+- **`db` is dumped, not copied.** A pre-backup hook runs a logical dump of **both databases**, `btcpayserver` and `nbxplorer`. The volume's files are never captured, and each dump is replayed into a fresh cluster on restore — which is what lets a future Postgres image read it. A backup taken by an earlier release holds only the `btcpayserver` dump; restoring it leaves NBXplorer to create an empty database of its own.
 - **`btcpayserver` and `main` are copied wholesale** — BTCPay's data directory, its `settings.config`, installed plugins, the Monero view-only wallet, `store.json`, and any `superseded-*` directory.
-- **`nbxplorer` is not backed up at all**, and neither is the `nbxplorer` database inside Postgres. Both are derived from the chain.
+- **The `nbxplorer` volume is not backed up.** It holds only `settings.config` and NBXplorer's cookie, both regenerated on start.
 
-**So a restored instance has your stores, invoices, users, and settings, but no UTXO tracker state.** NBXplorer rebuilds it by scanning the chain, which takes time proportional to how much history your wallets have; [Resync NBXplorer](#actions) is there for when that scan needs to start further back than it did on its own. The Bitcoin node must be present and synced before any of it can begin.
+**The `nbxplorer` database is not derived from the chain.** It holds every hot wallet's seed, master key and account key (BTCPay reads them back from NBXplorer to sign and to show the seed), the index of the next unused address per wallet, and NBXplorer's indexing progress. A restore from a backup without it loses hot-wallet signing and seed display, hands out previously used addresses again, and starts NBXplorer at the chain tip with no wallet history until a [Resync NBXplorer](#actions) from before the wallets' first transaction.
 
 ## Limitations and Differences
 
 1. **PostgreSQL and NBXplorer are private sidecars.** They belong to this service, cannot be shared with another, and cannot be substituted for an external instance.
 2. **Only a Lightning node on this server can be selected through the action.** An external node is still possible, but it is configured inside BTCPay as "custom", not here.
 3. **Monero requires a matching setting on the Monero service**, which is why enabling it raises a task there rather than just working.
-4. **NBXplorer state is not in backups.** A restore is followed by a rescan.
+4. **A backup taken before 2.4.7:4 holds no NBXplorer database.** Restoring one loses hot-wallet keys and wallet history; see [Backups and Restore](#backups-and-restore).
 5. **The Shopify integration runs as a separate sidecar** and only when explicitly enabled.
 6. **A `superseded-*` directory is never reaped.** Nothing removes it and it is copied into every backup; deleting it is the operator's call, once they have confirmed the data it displaced is back.
 7. **No riscv64 build.** x86_64 and aarch64 only.
