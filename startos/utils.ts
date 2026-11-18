@@ -4,6 +4,7 @@ import {
   peerLocalHostId as btcPeerLocalHostId,
   peerPortLocal as btcPeerPortLocal,
   rpcHostId as btcRpcHostId,
+  rpcCookieName,
   rpcPort as btcRpcPort,
 } from 'bitcoin-core-startos/startos/utils'
 import {
@@ -42,7 +43,7 @@ export const xmrWalletRpcPort = 18082
 
 // Derived paths
 export const nbxCookiePath = `${nbxMountpoint}/Main/.cookie`
-export const bitcoindCookiePath = `${bitcoindMountpoint}/.cookie`
+export const bitcoindCookiePath = `${bitcoindMountpoint}/${rpcCookieName}`
 export const xmrWalletSubpath = 'btcpayserver/altcoins/monero/wallets'
 export const xmrWalletDir = `${dataDir}/${xmrWalletSubpath}`
 
