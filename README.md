@@ -70,7 +70,7 @@ Dependency volumes are mounted in as needed:
 
 | Mount                       | Source                                        | Access    | Used for                              |
 | --------------------------- | --------------------------------------------- | --------- | ------------------------------------- |
-| `/root/.bitcoin` (in `nbx`) | Bitcoin's `main` volume                       | read-only | NBXplorer reads the node's RPC cookie |
+| `/root/.bitcoin` (in `nbx`) | Bitcoin's `public` volume                     | read-only | NBXplorer reads the node's RPC cookie |
 | `/mnt/lnd`                  | LND's `public` volume, `admin/` tier          | read-only | `admin.macaroon` and `tls.cert`       |
 | `/mnt/cln`                  | Core Lightning's `public` volume, `rpc/` tier | read-only | The `lightning-rpc` unix socket       |
 | `/mnt/eclair`               | Eclair's `public` volume, `api/` tier         | read-only | `password`, Eclair's API password     |

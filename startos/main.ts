@@ -1,5 +1,6 @@
 import { HealthCheckResult } from '@start9labs/start-sdk/lib/health/checkFns'
 import { manifest as bitcoinManifest } from 'bitcoin-core-startos/startos/manifest'
+import { rpcVolumeId } from 'bitcoin-core-startos/startos/utils'
 import { manifest as clnManifest } from 'cln-startos/startos/manifest'
 import { manifest as lndManifest } from 'lnd-startos/startos/manifest'
 import { FileHelper } from '@start9labs/start-sdk'
@@ -209,7 +210,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
       })
       .mountDependency<typeof bitcoinManifest>({
         dependencyId: 'bitcoind',
-        volumeId: 'main',
+        volumeId: rpcVolumeId,
         subpath: null,
         mountpoint: bitcoindMountpoint,
         readonly: true,
