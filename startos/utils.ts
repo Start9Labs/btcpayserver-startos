@@ -1,5 +1,5 @@
-import { T } from '@start9labs/start-sdk'
-import { readFile } from 'fs/promises'
+import { FileHelper, T } from '@start9labs/start-sdk'
+import { mkdir, readFile } from 'fs/promises'
 import {
   peerLocalHostId as btcPeerLocalHostId,
   peerPortLocal as btcPeerPortLocal,
@@ -12,8 +12,10 @@ import {
   restPort as lndRestPort,
 } from 'lnd-startos/startos/interfaces'
 import {
+  rpcLoginFileName as xmrRpcLoginFileName,
   rpcRestrictedHostId as xmrRpcHostId,
   rpcRestrictedPort as xmrRpcPort,
+  rpcVolumeId as xmrRpcVolumeId,
 } from 'monerod-startos/startos/utils'
 import {
   apiHostId as eclairApiHostId,
@@ -189,6 +191,59 @@ export const monerodRpcBridge = (effects: T.Effects) => {
       const h = await addr.const()
       return h && `http://${h}`
     },
+  }
+}
+
+// Mounted onto `nbxplorer`, which is never backed up, so monerod's login stays out of backups.
+const monerodPublic = sdk.volumes.nbxplorer.subpath('monerod-public')
+const monerodRpcLogin = FileHelper.string(
+  `${monerodPublic}/${xmrRpcLoginFileName}`,
+)
+let monerodMountedFor: string | null = null
+
+/**
+ * monerod's daemon RPC login as `username:password`, read from its `public` volume; `null`
+ * while its credentials are off, or while monerod is absent or predates publishing it.
+ * Call it on every `main` run, address `null` included: it resets the mount across a reinstall.
+ */
+export const readMonerodRpcLogin = async (
+  effects: T.Effects,
+  bridgeAddress: string | null,
+) => {
+  const hasPublic =
+    !!bridgeAddress &&
+    (await sdk
+      .getServiceManifest(
+        effects,
+        'monerod',
+        (m) => m?.volumes.includes(xmrRpcVolumeId) ?? false,
+      )
+      .const())
+  if (!bridgeAddress || !hasPublic) {
+    monerodMountedFor = null
+    return null
+  }
+  try {
+    if (monerodMountedFor !== bridgeAddress) {
+      await mkdir(monerodPublic, { recursive: true })
+      await sdk.mount(effects, {
+        location: monerodPublic,
+        target: {
+          packageId: 'monerod',
+          volumeId: xmrRpcVolumeId,
+          subpath: null,
+          readonly: true,
+          idmap: [],
+        },
+      })
+      monerodMountedFor = bridgeAddress
+    }
+    return (
+      (await monerodRpcLogin.read((s) => s.trim() || null).const(effects)) ??
+      null
+    )
+  } catch {
+    return null
   }
 }
 

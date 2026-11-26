@@ -24,6 +24,8 @@ const shape = z.looseObject({
   // stops first-admin registration from enabling it — StartOS handles updates
   updateurl: z.literal('').catch(''),
   XMR_daemon_uri: z.string().optional().catch(undefined),
+  XMR_daemon_username: z.undefined().optional().catch(undefined),
+  XMR_daemon_password: z.undefined().optional().catch(undefined),
   XMR_wallet_daemon_uri: z
     .literal(xmrWalletDaemonUri)
     .catch(xmrWalletDaemonUri),
@@ -33,8 +35,6 @@ const shape = z.looseObject({
   // Configuration
   socksendpoint: z.string().optional().catch(undefined),
   ssrfexceptions: z.string().catch(''),
-  XMR_daemon_username: z.string().catch(''),
-  XMR_daemon_password: z.string().catch(''),
   chains: z.enum(['btc', 'btc,xmr']).catch('btc'),
   btclightning: z.string().optional().catch(undefined),
 })
