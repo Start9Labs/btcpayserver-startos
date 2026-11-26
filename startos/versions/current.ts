@@ -1,18 +1,18 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '2.4.7:5',
+  version: '2.4.7:6',
   releaseNotes: {
     en_US:
-      "Requires StartOS 0.4.1 or later. Update Bitcoin first: BTCPay Server can now read only Bitcoin's RPC credential, not its data directory or wallets.",
+      "Monero payments now keep working when Monero's daemon RPC credentials are turned on. Update Monero first.",
     es_ES:
-      'Requiere StartOS 0.4.1 o posterior. Actualiza Bitcoin primero: BTCPay Server ahora solo puede leer la credencial RPC de Bitcoin, no su directorio de datos ni sus billeteras.',
+      'Los pagos en Monero ahora siguen funcionando cuando se activan las credenciales RPC del daemon de Monero. Actualiza Monero primero.',
     de_DE:
-      'Erfordert StartOS 0.4.1 oder neuer. Aktualisiere zuerst Bitcoin: BTCPay Server kann jetzt nur noch die RPC-Zugangsdaten von Bitcoin lesen, nicht sein Datenverzeichnis oder seine Wallets.',
+      'Monero-Zahlungen funktionieren jetzt auch, wenn die Daemon-RPC-Zugangsdaten von Monero aktiviert sind. Aktualisiere zuerst Monero.',
     pl_PL:
-      'Wymaga StartOS 0.4.1 lub nowszego. Najpierw zaktualizuj Bitcoin: BTCPay Server może teraz odczytać tylko poświadczenie RPC Bitcoina, a nie jego katalog danych ani portfele.',
+      'Płatności Monero działają teraz także po włączeniu poświadczeń RPC demona Monero. Najpierw zaktualizuj Monero.',
     fr_FR:
-      "Nécessite StartOS 0.4.1 ou une version ultérieure. Mettez d'abord Bitcoin à jour : BTCPay Server ne peut désormais lire que l'identifiant RPC de Bitcoin, et non son répertoire de données ni ses portefeuilles.",
+      "Les paiements Monero fonctionnent désormais aussi lorsque les identifiants RPC du démon Monero sont activés. Mets d'abord Monero à jour.",
   },
   migrations: {
     up: async () => {},

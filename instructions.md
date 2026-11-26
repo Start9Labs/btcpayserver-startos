@@ -37,7 +37,7 @@ You can point a custom domain (e.g. `donate.example.com`, `shop.example.com`) di
 ### Actions
 
 - **Choose Lightning Node** — pick LND, Core Lightning, Eclair, or None/External. The selected service becomes a required dependency. After the first selection you must also confirm **Internal Node** under BTCPay's own **Lightning** settings.
-- **Enable Altcoins** — toggle Monero on or off. Turning Monero on makes Monero a required dependency and runs the wallet RPC that BTCPay's Monero plugin connects to.
+- **Enable Altcoins** — toggle Monero on or off. Turning Monero on makes Monero a required dependency and runs the wallet RPC that BTCPay's Monero plugin connects to. Monero's daemon RPC credentials are read automatically when enabled; changing them restarts BTCPay.
 - **Enable Plugins** — toggle the bundled Shopify integration on or off.
 - **Configure Private Destinations** — allow requests to a trusted private webhook, LNURL service or custom Lightning node. Enter exact hostnames or IP addresses separated by commas, optionally with ports: `nas.home.arpa:8080,[fd00::1]:443`. Do not enter URLs, wildcards or network ranges. A hostname trusts all addresses it resolves to; specify a port to limit access. Leave empty to remove every exception. Saving restarts BTCPay. Nodes chosen with **Choose Lightning Node** need no exception.
 - **Resync NBXplorer** — re-scan the UTXO set from a chosen block height. Provide the height as an integer; BTCPay restarts and NBXplorer rescans from there.
@@ -53,6 +53,5 @@ A backup taken before version 2.4.7:4 does not include the `nbxplorer` database.
 
 - **Mainnet only.** Testnet and signet are not exposed by this package.
 - **The Monero plugin is not bundled.** Install it from BTCPay's Plugin Directory after turning Monero on.
-- **Monero's RPC Credentials must stay disabled.** BTCPay Server connects to Monero without a username or password, so leave **RPC Credentials** off in Monero's **Daemon RPC Settings**.
 - **One internal Lightning node at a time.** You can wire BTCPay to LND, Core Lightning _or_ Eclair, not several simultaneously.
 - **Reset Server Admin Password requires exactly one server admin.** If multiple admin accounts exist, use another admin account to reset the password through the Web UI instead.

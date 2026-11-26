@@ -68,12 +68,13 @@ Four volumes, and one of them never enters a container. The same volume can appe
 
 Dependency volumes are mounted in as needed:
 
-| Mount                       | Source                                        | Access    | Used for                              |
-| --------------------------- | --------------------------------------------- | --------- | ------------------------------------- |
-| `/root/.bitcoin` (in `nbx`) | Bitcoin's `public` volume                     | read-only | NBXplorer reads the node's RPC cookie |
-| `/mnt/lnd`                  | LND's `public` volume, `admin/` tier          | read-only | `admin.macaroon` and `tls.cert`       |
-| `/mnt/cln`                  | Core Lightning's `public` volume, `rpc/` tier | read-only | The `lightning-rpc` unix socket       |
-| `/mnt/eclair`               | Eclair's `public` volume, `api/` tier         | read-only | `password`, Eclair's API password     |
+| Mount                                     | Source                                        | Access    | Used for                                                |
+| ----------------------------------------- | --------------------------------------------- | --------- | ------------------------------------------------------- |
+| `/root/.bitcoin` (in `nbx`)               | Bitcoin's `public` volume                     | read-only | NBXplorer reads the node's RPC cookie                   |
+| `/mnt/lnd`                                | LND's `public` volume, `admin/` tier          | read-only | `admin.macaroon` and `tls.cert`                         |
+| `/mnt/cln`                                | Core Lightning's `public` volume, `rpc/` tier | read-only | The `lightning-rpc` unix socket                         |
+| `/mnt/eclair`                             | Eclair's `public` volume, `api/` tier         | read-only | `password`, Eclair's API password                       |
+| `nbxplorer/monerod-public` (package code) | Monero's `public` volume                      | read-only | `rpc-login`, Monero's daemon RPC login, when one is set |
 
 ## File Models
 
@@ -93,9 +94,9 @@ Three models. Two are the applications' own INI configuration, and in both the p
 
 Two of those keep BTCPay from advertising updates it cannot perform here, since StartOS does the updating: `dockerdeployment=false` hides the Maintenance page and its update button, and an empty `updateurl` disables the daily GitHub release check — which also removes the "check releases on GitHub" toggle from Server Settings → Policies and stops first-admin registration from switching it on. Plugin updates are a separate mechanism and still work normally from BTCPay's UI.
 
-**Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and `btclightning` when the backend is LND, Core Lightning or Eclair. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
+**Written on every start**, from addresses resolved over the service bridge rather than stored: `socksendpoint` (Tor's SOCKS proxy), `XMR_daemon_uri` (when Monero is enabled), and `btclightning` when the backend is LND, Core Lightning or Eclair. The Monero login is passed through `BTCPAY_XMR_DAEMON_USERNAME` and `BTCPAY_XMR_DAEMON_PASSWORD` in the BTCPay daemon's environment, and through `--daemon-login` to the wallet RPC. These values are empty or omitted when Monero publishes no login. The package code mounts Monero's `public` volume onto `nbxplorer`, which is not backed up, and restarts BTCPay when the login changes. The login is never written to `settings.config`; its `XMR_daemon_username` and `XMR_daemon_password` keys are removed on every start. Editing any of these by hand does not survive a restart, and does not need to — they heal themselves when a dependency is installed, removed, or re-ported.
 
-**Yours, through an action:** `btclightning` selects the Lightning backend, `chains` enables Monero, and `ssrfexceptions` stores trusted private destinations. `ssrfexceptions` defaults to empty and survives restarts and backups; it is not generated from dependency addresses. The configured internal Lightning node uses upstream's trusted client and needs no exception. `XMR_daemon_username` and `XMR_daemon_password` default to empty and are not exposed.
+**Yours, through an action:** `btclightning` selects the Lightning backend, `chains` enables Monero, and `ssrfexceptions` stores trusted private destinations. `ssrfexceptions` defaults to empty and survives restarts and backups; it is not generated from dependency addresses. The configured internal Lightning node uses upstream's trusted client and needs no exception.
 
 ### nbxplorer settings.config
 
@@ -263,7 +264,6 @@ The strategy is mixed, and the distinction decides what a restore actually gives
 6. **A `superseded-*` directory is never reaped.** Nothing removes it and it is copied into every backup; deleting it is the operator's call, once they have confirmed the data it displaced is back.
 7. **No riscv64 build.** x86_64 and aarch64 only.
 8. **The Monero plugin is not bundled.** It is installed from BTCPay's Plugin Directory; Enable Altcoins sets up what surrounds it — the Monero dependency, its block-notify task, and the wallet RPC the plugin connects to.
-9. **Monero's RPC credentials must stay disabled.** BTCPay and its wallet RPC connect to Monero's restricted RPC without a username or password.
 
 ---
 

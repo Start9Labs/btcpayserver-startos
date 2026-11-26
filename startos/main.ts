@@ -33,6 +33,7 @@ import {
   lndMountpoint,
   lndRestBridge,
   monerodRpcBridge,
+  readMonerodRpcLogin,
   nbxMountpoint,
   nbxPort,
   nbxStallWatchdog,
@@ -111,6 +112,10 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const xmrDaemonUri = xmrEnabled
     ? await monerodRpcBridge(effects).const()
     : null
+  const xmrLogin = await readMonerodRpcLogin(effects, xmrDaemonUri)
+  const colon = xmrLogin?.indexOf(':') ?? -1
+  const xmrUsername = colon > 0 ? xmrLogin!.slice(0, colon) : ''
+  const xmrPassword = colon > 0 ? xmrLogin!.slice(colon + 1) : ''
   if (xmrEnabled) btcpayPatch.XMR_daemon_uri = xmrDaemonUri ?? undefined
   await btcpayConfig.merge(effects, btcpayPatch, { allowWriteAfterConst: true })
 
@@ -387,6 +392,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
                 `--wallet-dir=${xmrWalletDir}`,
                 `--tx-notify=/usr/bin/curl -so /dev/null http://127.0.0.1:${uiPort}/monerolikedaemoncallback/tx?cryptoCode=xmr&hash=%s`,
                 ...(xmrDaemonUri ? [`--daemon-address=${xmrDaemonUri}`] : []),
+                ...(xmrLogin ? [`--daemon-login=${xmrLogin}`] : []),
               ],
               user: 'monero',
             },
@@ -408,6 +414,9 @@ export const main = sdk.setupMain(async ({ effects }) => {
         command: sdk.useEntrypoint(),
         env: {
           BTCPAY_DATADIR: dataDir,
+          // Monero's login stays in runtime configuration, outside backed-up volumes.
+          BTCPAY_XMR_DAEMON_USERNAME: xmrUsername,
+          BTCPAY_XMR_DAEMON_PASSWORD: xmrPassword,
           BTCPAY_SHOPIFY_PLUGIN_DEPLOYER: `http://127.0.0.1:${shopifyPort}/`,
           LC_ALL: 'C',
         },
